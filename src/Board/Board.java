@@ -44,6 +44,8 @@ public class Board {
     public boolean blackCastleQ;
     public boolean blackCastled;
 
+    public boolean viewRotated; //May not use, for viewing the board.
+
     public Board() {
     }
 
@@ -52,8 +54,10 @@ public class Board {
         loadFEN(fen);
     }
 
+    /*
+    * Setting up the board, using a FEN string. First the string is validated.*/
     public void loadFEN(String fen) {
-
+        // if valid FEN
         if (FENValidator.isValidFEN(fen)) {
 
         } else {
