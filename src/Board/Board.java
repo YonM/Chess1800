@@ -1,5 +1,7 @@
 package Board;
 
+import Fen.FENValidator;
+
 /**
  * Created by Yonathan on 03/12/2014.
  * Class for the board of the chess game.
@@ -42,5 +44,20 @@ public class Board {
     public boolean blackCastleQ;
     public boolean blackCastled;
 
+    public Board() {
+    }
 
+    public Board(String fen) {
+        this();
+        loadFEN(fen);
+    }
+
+    public void loadFEN(String fen) {
+
+        if (FENValidator.isValidFEN(fen)) {
+
+        } else {
+            //FEN IS NOT VALID
+        }
+    }
 }
