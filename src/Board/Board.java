@@ -17,20 +17,21 @@ public class Board {
     public long whiteKnights;
     public long whiteBishops;
     public long whiteRooks;
-    public long whiteQueen;
+    public long whiteQueens;
     public long whiteKing;
 
     public long blackPawns;
     public long blackKnights;
     public long blackBishops;
     public long blackRooks;
-    public long blackQueen;
+    public long blackQueens;
     public long blackKing;
 
     public long whitePieces;
     public long blackPieces;
-
     public long occupiedSquares;
+
+
     public int[] square;
 
     public boolean whiteToMove;
@@ -64,5 +65,13 @@ public class Board {
         } else {
             //FEN IS NOT VALID
         }
+    }
+
+    public void updateAggregateBoards() {
+        whitePieces = whitePawns | whiteKnights | whiteBishops | whiteRooks | whiteQueens | whiteKing;
+
+        blackPieces = blackPawns | blackKnights | blackBishops | blackRooks | blackQueens | blackKing;
+
+        occupiedSquares = whitePieces | blackPieces;
     }
 }
