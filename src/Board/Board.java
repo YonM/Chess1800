@@ -55,7 +55,8 @@ public class Board {
     }
 
     /*
-    * Setting up the board, using a FEN string. First the string is validated.*/
+    * Setting up the board, using a FEN string. First the string is validated.
+    * */
     public void loadFEN(String fen) {
         // if valid FEN
         if (FENValidator.isValidFEN(fen)) {
