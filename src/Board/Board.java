@@ -12,6 +12,7 @@ public class Board {
 
     public static final int MAX_MOVES = 255;
 
+    public static final String FEN_START_POSITION = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
     public long whitePawns;
     public long whiteKnights;
@@ -29,7 +30,7 @@ public class Board {
 
     public long whitePieces;
     public long blackPieces;
-    public long occupiedSquares;
+    public long allPieces;
 
 
     public int[] square;
@@ -72,6 +73,6 @@ public class Board {
 
         blackPieces = blackPawns | blackKnights | blackBishops | blackRooks | blackQueens | blackKing;
 
-        occupiedSquares = whitePieces | blackPieces;
+        allPieces = whitePieces | blackPieces;
     }
 }

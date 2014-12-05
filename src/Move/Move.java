@@ -4,7 +4,7 @@ package Move;
  * Created by Yonathan on 03/12/2014.
  * This class, as the name indicates, is for the moves of a chess game.
  * A move is represented by an int, which contains 32-bits. Based
- * on Ruibal's Carballo.
+ * on Ruibal's Carballo. Source: https://github.com/albertoruibal/carballo/
  * The format is as follows:
  *
  *  Type | c | piece | To       | From  |
@@ -15,6 +15,7 @@ package Move;
  *  'piece' is the piece that is moving represented by a number from 1 to 15.
  *  'To' is the square on the bitboard, the piece is moving to. 6 bits for 0-63.
  *  'From' is the square the piece started its move from. Again, 6 bits for 0-63.
+ *  @author Alberto Alonso Ruibal updated by Yonathan
  */
 public class Move {
 
@@ -29,7 +30,7 @@ public class Move {
     // Move Types
     public static final int TYPE_KINGSIDE_CASTLING = 1;
     public static final int TYPE_QUEENSIDE_CASTLING = 2;
-    public static final int TYPE_PASSANT = 3;
+    public static final int TYPE_EN_PASSANT = 3;
 
     // promotions must be always >= TYPE_PROMOTION_QUEEN
     public static final int TYPE_PROMOTION_QUEEN = 4;

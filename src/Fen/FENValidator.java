@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
  * This class is to check if the user inputted FEN is valid. This code was provided by Jaco Van Niekerk
  *
  * @ http://vicki-chess.blogspot.co.uk/2013_03_01_archive.html
+ * @author Jaco Van Niekerk
  */
 public class FENValidator {
 
