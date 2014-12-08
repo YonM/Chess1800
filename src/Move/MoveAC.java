@@ -17,7 +17,7 @@ package Move;
  *  'From' is the square the piece started its move from. Again, 6 bits for 0-63.
  *  @author Alberto Alonso Ruibal updated by Yonathan
  */
-public class Move {
+public class MoveAC {
 
     // Move pieces ordered by value
     public static final int PAWN = 1;
@@ -86,7 +86,7 @@ public class Move {
     }
 
     public static boolean isPromotion(int move) {
-        return Move.getMoveType(move) >= TYPE_PROMOTION_QUEEN;
+        return MoveAC.getMoveType(move) >= TYPE_PROMOTION_QUEEN;
     }
 
 

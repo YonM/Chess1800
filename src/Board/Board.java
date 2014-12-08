@@ -1,18 +1,11 @@
 package Board;
 
-import Fen.FENValidator;
-
 /**
- * Created by Yonathan on 03/12/2014.
- * Class for the board of the chess game.
+ * Created by Yonathan on 08/12/2014.
  */
 public class Board {
-
-    public static final int MAX_GAME_LENGTH = 1024;
-
-    public static final int MAX_MOVES = 255;
-
-    public static final String FEN_START_POSITION = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    public int[] square;
+    public int material;
 
     public long whitePawns;
     public long whiteKnights;
@@ -32,47 +25,141 @@ public class Board {
     public long blackPieces;
     public long allPieces;
 
-
-    public int[] square;
-
-    public boolean whiteToMove;
     public int epSquare;
-    public int fiftyMoveRule;
+    public int fiftyMove;
+    public int nextMove;
+    public int castleWhite;
+    public int castleBlack;
 
-    public boolean whiteCastleK;
-    public boolean whiteCastleQ;
-    public boolean whiteCastled;
-    public boolean blackCastleK;
-    public boolean blackCastleQ;
-    public boolean blackCastled;
+    public boolean viewRotated;
+    private static Board instance;
 
-    public boolean viewRotated; //May not use, for viewing the board.
+    public void initialize() {
+        for (int i = 0; i < 64; i++)
+            square[i] = BoardUtils.EMPTY;
+        setupBoard(true);
+        initializeFromSquares(square, BoardUtils.WHITE_MOVE, 0, BoardUtils.CANCASTLEOO + BoardUtils.CANCASTLEOOO, BoardUtils.CANCASTLEOO + BoardUtils.CANCASTLEOOO, 0);
 
-    public Board() {
+
     }
 
-    public Board(String fen) {
-        this();
-        loadFEN(fen);
+
+    public void initializeFromSquares(int[] input, char nextToMove, int fiftyMove, int castleWhiteSide, int castleBlackSide, int epSquare) {
+        clearBoards();
+        //setup the 12 boards
+        for (int i = 0; i < 64; i++) {
+            square[i] = input[i];
+            switch (i) {
+                case BoardUtils.WHITE_KING:
+                    whiteKing |= BoardUtils.bitSet[i];
+
+                case BoardUtils.WHITE_QUEEN:
+                    whiteQueens |= BoardUtils.bitSet[i];
+
+                case BoardUtils.WHITE_ROOK:
+                    whiteRooks |= BoardUtils.bitSet[i];
+                case BoardUtils.WHITE_BISHOP:
+                    whiteBishops |= BoardUtils.bitSet[i];
+                case BoardUtils.WHITE_KNIGHT:
+                    whiteKnights |= BoardUtils.bitSet[i];
+                case BoardUtils.WHITE_PAWN:
+                    whitePawns |= BoardUtils.bitSet[i];
+                case BoardUtils.BLACK_KING:
+                    blackKing |= BoardUtils.bitSet[i];
+                case BoardUtils.BLACK_QUEEN:
+                    blackQueens |= BoardUtils.bitSet[i];
+                case BoardUtils.BLACK_ROOK:
+                    blackRooks |= BoardUtils.bitSet[i];
+                case BoardUtils.BLACK_BISHOP:
+                    blackBishops |= BoardUtils.bitSet[i];
+                case BoardUtils.BLACK_KNIGHT:
+                    blackKnights |= BoardUtils.bitSet[i];
+                case BoardUtils.BLACK_PAWN:
+                    blackPawns |= BoardUtils.bitSet[i];
+            }
+
+
+        }
+        whitePieces = whiteKing | whiteQueens | whiteRooks | whiteBishops | whiteKnights | whitePawns;
+        blackPieces = blackKing | blackQueens | blackRooks | blackBishops | blackKnights | blackPawns;
+        allPieces = whitePieces | blackPieces;
+
+        nextMove = nextToMove;
+        this.epSquare = epSquare;
+        this.fiftyMove = fiftyMove;
+
+        //material;
+
+
     }
 
-    /*
-    * Setting up the board, using a FEN string. First the string is validated.
-    * */
-    public void loadFEN(String fen) {
-        // if valid FEN
-        if (FENValidator.isValidFEN(fen)) {
+    private void clearBoards() {
+        whiteKing = 0;
+        whiteQueens = 0;
+        whiteRooks = 0;
+        whiteBishops = 0;
+        whiteKnights = 0;
+        whitePawns = 0;
+        blackKing = 0;
+        blackQueens = 0;
+        blackRooks = 0;
+        blackBishops = 0;
+        blackKnights = 0;
+        blackPawns = 0;
+        whitePieces = 0;
+        blackPieces = 0;
+        allPieces = 0;
+    }
 
+    private void setupBoard(boolean start) {
+        if (start) {
+            square[BoardUtils.E1] = BoardUtils.WHITE_KING;
+            square[BoardUtils.D1] = BoardUtils.WHITE_QUEEN;
+            square[BoardUtils.A1] = BoardUtils.WHITE_ROOK;
+            square[BoardUtils.H1] = BoardUtils.WHITE_ROOK;
+            square[BoardUtils.B1] = BoardUtils.WHITE_KNIGHT;
+            square[BoardUtils.G1] = BoardUtils.WHITE_KNIGHT;
+            square[BoardUtils.C1] = BoardUtils.WHITE_BISHOP;
+            square[BoardUtils.F1] = BoardUtils.WHITE_BISHOP;
+            square[BoardUtils.A2] = BoardUtils.WHITE_PAWN;
+            square[BoardUtils.B2] = BoardUtils.WHITE_PAWN;
+            square[BoardUtils.C2] = BoardUtils.WHITE_PAWN;
+            square[BoardUtils.D2] = BoardUtils.WHITE_PAWN;
+            square[BoardUtils.E2] = BoardUtils.WHITE_PAWN;
+            square[BoardUtils.F2] = BoardUtils.WHITE_PAWN;
+            square[BoardUtils.G2] = BoardUtils.WHITE_PAWN;
+            square[BoardUtils.H2] = BoardUtils.WHITE_PAWN;
+
+            square[BoardUtils.E8] = BoardUtils.BLACK_KING;
+            square[BoardUtils.D8] = BoardUtils.BLACK_QUEEN;
+            square[BoardUtils.A8] = BoardUtils.BLACK_ROOK;
+            square[BoardUtils.H8] = BoardUtils.BLACK_ROOK;
+            square[BoardUtils.B8] = BoardUtils.BLACK_KNIGHT;
+            square[BoardUtils.G8] = BoardUtils.BLACK_KNIGHT;
+            square[BoardUtils.C8] = BoardUtils.BLACK_BISHOP;
+            square[BoardUtils.F8] = BoardUtils.BLACK_BISHOP;
+            square[BoardUtils.A7] = BoardUtils.BLACK_PAWN;
+            square[BoardUtils.B7] = BoardUtils.BLACK_PAWN;
+            square[BoardUtils.C7] = BoardUtils.BLACK_PAWN;
+            square[BoardUtils.D7] = BoardUtils.BLACK_PAWN;
+            square[BoardUtils.E7] = BoardUtils.BLACK_PAWN;
+            square[BoardUtils.F7] = BoardUtils.BLACK_PAWN;
+            square[BoardUtils.G7] = BoardUtils.BLACK_PAWN;
+            square[BoardUtils.H7] = BoardUtils.BLACK_PAWN;
         } else {
-            //FEN IS NOT VALID
+
         }
     }
 
-    public void updateAggregateBoards() {
-        whitePieces = whitePawns | whiteKnights | whiteBishops | whiteRooks | whiteQueens | whiteKing;
-
-        blackPieces = blackPawns | blackKnights | blackBishops | blackRooks | blackQueens | blackKing;
-
-        allPieces = whitePieces | blackPieces;
+    public static Board getInstance() {
+        if (instance == null) {
+            instance = new Board();
+        }
+        return instance;
     }
+
+    public void initializeFromFEN() {
+
+    }
+
 }
