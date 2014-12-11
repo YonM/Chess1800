@@ -61,6 +61,7 @@ public class BoardUtils {
     public final static int KING_VALUE = 999999;
     public final static int CHECKMATE = KING_VALUE;
 
+    private char[] charBitSet = new char[8];
     public static long[] bitSet;
     private static int[][] boardIndex;
 
