@@ -56,12 +56,13 @@ public class BoardUtils {
     public final static int PAWN_VALUE = 100;
     public final static int KNIGHT_VALUE = 325;
     public final static int BISHOP_VALUE = 325;
+    public final static int ROOK_VALUE = 500;
     public final static int QUEEN_VALUE = 975;
     public final static int KING_VALUE = 999999;
     public final static int CHECKMATE = KING_VALUE;
 
     public static long[] bitSet;
-    public static int[][] boardIndex;
+    private static int[][] boardIndex;
 
     //For castling
     public final static char CANCASTLEOO = 1;
@@ -74,7 +75,14 @@ public class BoardUtils {
     private static BoardUtils instance;
 
     public BoardUtils() {
-        initialize();
+        initialize(null);
+        Board board = Board.getInstance();
+        board.initialize();
+
+    }
+
+    public BoardUtils(String fen) {
+        initialize(fen);
         Board board = Board.getInstance();
         board.initialize();
 
@@ -87,7 +95,7 @@ public class BoardUtils {
         return instance;
     }
 
-    public static void initialize() {
+    public static void initialize(String fen) {
         int i, rank, file;
         //Long with only 1 bit set.
         bitSet[0] = 0x1;
@@ -102,8 +110,20 @@ public class BoardUtils {
                 boardIndex[rank][file] = (rank * 8) + file;
             }
         }
+        Board board = Board.getInstance();
+        if (fen == null)
+            board.initialize();
+        else
+            board.initializeFromFEN(fen);
+
 
     }
+
+    public static int getIndex(int rank, int file) {
+        return boardIndex[rank][file];
+    }
+
+    //public static
 
 
 }
