@@ -16,14 +16,14 @@ public class BoardUtils {
     public final static int A8 = 56, B8 = 571, C8 = 58, D8 = 59, E8 = 60, F8 = 61, G8 = 62, H8 = 63;
 
     public final static int FILES[] = {
-            0, 0, 0, 0, 0, 0, 0, 0,
-            1, 1, 1, 1, 1, 1, 1, 1,
-            2, 2, 2, 2, 2, 2, 2, 2,
-            3, 3, 3, 3, 3, 3, 3, 3,
-            4, 4, 4, 4, 4, 4, 4, 4,
-            5, 5, 5, 5, 5, 5, 5, 5,
-            6, 6, 6, 6, 6, 6, 6, 6,
-            7, 7, 7, 7, 7, 7, 7, 7
+            0, 1, 2, 3, 4, 5, 6, 7,
+            0, 1, 2, 3, 4, 5, 6, 7,
+            0, 1, 2, 3, 4, 5, 6, 7,
+            0, 1, 2, 3, 4, 5, 6, 7,
+            0, 1, 2, 3, 4, 5, 6, 7,
+            0, 1, 2, 3, 4, 5, 6, 7,
+            0, 1, 2, 3, 4, 5, 6, 7,
+            0, 1, 2, 3, 4, 5, 6, 7
     };
 
     public final static int RANKS[] = {
@@ -63,18 +63,15 @@ public class BoardUtils {
     public final static int KING_VALUE = 999999;
     public final static int CHECKMATE = KING_VALUE;
 
-    public static final char[] CHARBITSET = new char[8];
+    public static final short[] CHARBITSET = new short[8];
     public static final long[] BITSET = new long[64];
-    private static int[][] boardIndex;
+    private static final int[][] boardIndex = new int[8][8];
 
 
     //For castling
     public final static char CANCASTLEOO = 1;
     public final static char CANCASTLEOOO = 2;
-    public static int white_OOO_Castle;
-    public static int black_OOO_Castle;
-    public static int white_OO_Castle;
-    public static int black_OO_Castle;
+
 
     private static BoardUtils instance;
 
@@ -108,7 +105,7 @@ public class BoardUtils {
         }
         CHARBITSET[0] = 1;
         for (square = 1; square < 8; square++)
-            CHARBITSET[square] = (char) (CHARBITSET[square - 1] << 1);
+            CHARBITSET[square] = (short) (CHARBITSET[square - 1] << 1);
 
         //boardIndex is used to convert rank&file to a square.
         for (rank = 0; rank < 8; rank++) {
