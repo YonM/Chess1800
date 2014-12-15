@@ -56,7 +56,8 @@ public abstract class BitboardAttacks {
     public static final long[][] DIAGA8H1_ATTACKS = new long[64][64];
     public static final long[][] DIAGA1H8_ATTACKS = new long[64][64];
 
-    int square, rank, aRank, file, aFile, attackBit;
+    int square, rank, aRank, file, aFile, attackBit, diaga8h1, diaga1h8;
+    ;
     short state6Bit;
 
     public BitboardAttacks() {
@@ -112,11 +113,48 @@ public abstract class BitboardAttacks {
 
     }
 
+    private void generateDiagA1H8Attacks() {
+        for (square = 0; square < 64; square++) {
+            for (state6Bit = 0; state6Bit < 64; state6Bit++) {
+                for (attackBit = 0; attackBit < 8; attackBit++) {
+                    //  conversion from 64 board squares to the 8 corresponding positions in the GEN_SLIDING_ATTACKS array: MIN((7-RANKS[square]),(FILES[square]))
+                    if ((GEN_SLIDING_ATTACKS[(7 - BoardUtils.RANKS[square]) < BoardUtils.FILES[square] ? (7 - BoardUtils.RANKS[square]) : BoardUtils.FILES[square]][state6Bit] & BoardUtils.CHARBITSET[attackBit]) != 0) {
+                        // conversion of square/attackBit to the corresponding 64 board file and rank:
+                        diaga1h8 = BoardUtils.FILES[square] + BoardUtils.RANKS[square]; //from -7 to 7 & longest=0
+                        if (diaga1h8 < 8) {
+                            file = attackBit;
+                            rank = diaga1h8 - file;
+                        } else {
+                            rank = 7 - attackBit;
+                            file = diaga1h8 - rank;
+                        }
+                        if ((file >= 0) && (file < 8) && (rank >= 0) && (rank < 8))
+                            DIAGA1H8_ATTACKS[square][state6Bit] |= BoardUtils.BITSET[BoardUtils.getIndex(rank, file)];
+                    }
+                }
+            }
+        }
+
+    }
+
     private void generateDiagA8H1Attacks() {
         for (square = 0; square < 64; square++) {
             for (state6Bit = 0; state6Bit < 64; state6Bit++) {
                 for (attackBit = 0; attackBit < 8; attackBit++) {
-                    if ()
+                    //  conversion from 64 board squares to the 8 corresponding positions in the GEN_SLIDING_ATTACKS array: MIN((7-RANKS[square]),(FILES[square]))
+                    if ((GEN_SLIDING_ATTACKS[(7 - BoardUtils.RANKS[square]) < BoardUtils.FILES[square] ? (7 - BoardUtils.RANKS[square]) : BoardUtils.FILES[square]][state6Bit] & BoardUtils.CHARBITSET[attackBit]) != 0) {
+                        // conversion of square/attackBit to the corresponding 64 board file and rank:
+                        diaga8h1 = BoardUtils.FILES[square] + BoardUtils.RANKS[square]; //from 0 to 14 & longest =7
+                        if (diaga8h1 < 8) {
+                            file = attackBit;
+                            rank = diaga8h1 - file;
+                        } else {
+                            rank = 7 - attackBit;
+                            file = diaga8h1 - rank;
+                        }
+                        if ((file >= 0) && (file < 8) && (rank >= 0) && (rank < 8))
+                            DIAGA8H1_ATTACKS[square][state6Bit] |= BoardUtils.BITSET[BoardUtils.getIndex(rank, file)];
+                    }
                 }
             }
         }
@@ -307,7 +345,6 @@ public abstract class BitboardAttacks {
     }
 
     private void setupMasks() {
-        int diag8h1, diaga1h8;
         for (int rank = 0; rank < 8; rank++) {
             for (int file = 0; file < 8; file++) {
                 RANKMASK[BoardUtils.getIndex(rank, file)] = BoardUtils.BITSET[BoardUtils.getIndex(rank, 1)] | BoardUtils.BITSET[BoardUtils.getIndex(rank, 2)] | BoardUtils.BITSET[BoardUtils.getIndex(rank, 3)];
@@ -316,15 +353,15 @@ public abstract class BitboardAttacks {
                 FILEMASK[BoardUtils.getIndex(rank, file)] = BoardUtils.BITSET[BoardUtils.getIndex(1, file)] | BoardUtils.BITSET[BoardUtils.getIndex(2, file)] | BoardUtils.BITSET[BoardUtils.getIndex(3, file)];
                 FILEMASK[BoardUtils.getIndex(rank, file)] = BoardUtils.BITSET[BoardUtils.getIndex(4, file)] | BoardUtils.BITSET[BoardUtils.getIndex(5, file)] | BoardUtils.BITSET[BoardUtils.getIndex(6, file)];
 
-                diag8h1 = file + rank; // 0 to 14 & longest = 7
+                diaga8h1 = file + rank; // 0 to 14 & longest = 7
                 DIAGA8H1MASK[BoardUtils.getIndex(rank, file)] = 0x0;
-                if (diag8h1 < 8) {
-                    for (square = 1; square < diag8h1; square++)
-                        DIAGA8H1MASK[BoardUtils.getIndex(rank, file)] |= BoardUtils.BITSET[BoardUtils.getIndex(diag8h1 - square, square)];
+                if (diaga8h1 < 8) {
+                    for (square = 1; square < diaga8h1; square++)
+                        DIAGA8H1MASK[BoardUtils.getIndex(rank, file)] |= BoardUtils.BITSET[BoardUtils.getIndex(diaga8h1 - square, square)];
 
                 } else {
-                    for (square = 1; square < 15 - diag8h1; square++)
-                        DIAGA8H1MASK[BoardUtils.getIndex(rank, file)] |= BoardUtils.BITSET[BoardUtils.getIndex(7 - square, diag8h1 + square - 7)];
+                    for (square = 1; square < 15 - diaga8h1; square++)
+                        DIAGA8H1MASK[BoardUtils.getIndex(rank, file)] |= BoardUtils.BITSET[BoardUtils.getIndex(7 - square, diaga8h1 + square - 7)];
 
                 }
                 diaga1h8 = file - rank; //-7 to 7 & longest = 0;
