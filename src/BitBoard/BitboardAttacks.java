@@ -27,7 +27,7 @@ public class BitboardAttacks {
     }
 
     private void setupMasks() {
-        int diag8h1, square;
+        int diag8h1, diaga1h8, square;
         for (int rank = 0; rank < 8; rank++) {
             for (int file = 0; file < 8; file++) {
                 RANKMASK[BoardUtils.getIndex(rank, file)] = BoardUtils.BITSET[BoardUtils.getIndex(rank, 1)] | BoardUtils.BITSET[BoardUtils.getIndex(rank, 2)] | BoardUtils.BITSET[BoardUtils.getIndex(rank, 3)];
@@ -39,15 +39,25 @@ public class BitboardAttacks {
                 diag8h1 = file + rank; // 0 to 14 & longest = 7
                 DIAGA8H1MASK[BoardUtils.getIndex(rank, file)] = 0x0;
                 if (diag8h1 < 8) {
-                    for (square = 1; square < diag8h1; square++) {
+                    for (square = 1; square < diag8h1; square++)
                         DIAGA8H1MASK[BoardUtils.getIndex(rank, file)] |= BoardUtils.BITSET[BoardUtils.getIndex(diag8h1 - square, square)];
-                    }
-                } else {
-                    for (square = 1; square < 15 - diag8h1; square++) {
-                        DIAGA8H1MASK[BoardUtils.getIndex(rank, file)] |= BoardUtils.BITSET[BoardUtils.getIndex(7 - square, diag8h1 + square - 7)];
-                    }
-                }
 
+                } else {
+                    for (square = 1; square < 15 - diag8h1; square++)
+                        DIAGA8H1MASK[BoardUtils.getIndex(rank, file)] |= BoardUtils.BITSET[BoardUtils.getIndex(7 - square, diag8h1 + square - 7)];
+
+                }
+                diaga1h8 = rank - file; //-7 to 7 & longest = 0;
+                DIAGA1H8MASK[BoardUtils.getIndex(rank, file)] = 0x0;
+                if (diaga1h8 > -1) {
+                    for (square = 1; square < 8 - diaga1h8; square++)
+                        DIAGA1H8MASK[BoardUtils.getIndex(rank, file)] |= BoardUtils.BITSET[BoardUtils.getIndex(square, diaga1h8 + square)];
+
+                } else {
+                    for (square = 1; square < 8 + diaga1h8; square++)
+                        DIAGA1H8MASK[BoardUtils.getIndex(rank, file)] |= BoardUtils.BITSET[BoardUtils.getIndex(square - diaga1h8, square)];
+
+                }
             }
         }
     }
