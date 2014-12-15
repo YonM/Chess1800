@@ -61,7 +61,7 @@ public class BitboardMagicAttacksAC extends BitboardAttacksAC {
             for (int j = 0; j < rookPositions; j++) {
                 long pieces = generatePieces(j, magicNumberShiftsRook[i], rookMask[i]);
                 int magicIndex = magicTransform(pieces, magicNumberRook[i], magicNumberShiftsRook[i]);
-                rookMagic[i][magicIndex] = getRookShiftAttacks(square, pieces);
+                //rookMagic[i][magicIndex] = getRookShiftAttacks(square, pieces);
             }
 
             int bishopPositions = (1 << magicNumberShiftsBishop[i]);
@@ -69,7 +69,7 @@ public class BitboardMagicAttacksAC extends BitboardAttacksAC {
             for (int j = 0; j < bishopPositions; j++) {
                 long pieces = generatePieces(j, magicNumberShiftsBishop[i], bishopMask[i]);
                 int magicIndex = magicTransform(pieces, magicNumberBishop[i], magicNumberShiftsBishop[i]);
-                bishopMagic[i][magicIndex] = getBishopShiftAttacks(square, pieces);
+                //bishopMagic[i][magicIndex] = getBishopShiftAttacks(square, pieces);
             }
             square <<= 1;
             i++;
