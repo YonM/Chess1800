@@ -1,5 +1,7 @@
 package Board;
 
+import BitBoard.BitboardMagicAttacks;
+
 /**
  * Created by Yonathan on 08/12/2014.
  */
@@ -61,9 +63,10 @@ public class BoardUtils {
     public final static int KING_VALUE = 999999;
     public final static int CHECKMATE = KING_VALUE;
 
-    private char[] charBitSet = new char[8];
-    public static long[] bitSet;
+    private final char[] CHARBITSET = new char[8];
+    public static final long[] BITSET = new long[64];
     private static int[][] boardIndex;
+
 
     //For castling
     public final static char CANCASTLEOO = 1;
@@ -99,9 +102,9 @@ public class BoardUtils {
     public static void initialize(String fen) {
         int i, rank, file;
         //Long with only 1 bit set.
-        bitSet[0] = 0x1;
+        BITSET[0] = 0x1;
         for (i = 1; i < 64; i++) {
-            bitSet[i] = bitSet[i - 1] << 1;
+            BITSET[i] = BITSET[i - 1] << 1;
         }
 
         //boardIndex is used to convert rank&file to a square.
@@ -117,6 +120,7 @@ public class BoardUtils {
         else
             board.initializeFromFEN(fen);
 
+        BitboardMagicAttacks magicAttacks = new BitboardMagicAttacks();
 
     }
 

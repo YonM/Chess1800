@@ -35,6 +35,7 @@ public class Board {
     public int castleBlack;
 
     public static final int MAX_GAME_LENGTH = 1024;
+    public static final int MAX_MOVES = 256;
 
     public boolean viewRotated;
     private static Board instance;
