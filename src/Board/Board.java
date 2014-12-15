@@ -165,40 +165,40 @@ public class Board {
             square[i] = input[i];
             switch (i) {
                 case BoardUtils.WHITE_KING:
-                    whiteKing |= BoardUtils.bitSet[i];
+                    whiteKing |= BoardUtils.BITSET[i];
                     break;
                 case BoardUtils.WHITE_QUEEN:
-                    whiteQueens |= BoardUtils.bitSet[i];
+                    whiteQueens |= BoardUtils.BITSET[i];
                     break;
                 case BoardUtils.WHITE_ROOK:
-                    whiteRooks |= BoardUtils.bitSet[i];
+                    whiteRooks |= BoardUtils.BITSET[i];
                     break;
                 case BoardUtils.WHITE_BISHOP:
-                    whiteBishops |= BoardUtils.bitSet[i];
+                    whiteBishops |= BoardUtils.BITSET[i];
                     break;
                 case BoardUtils.WHITE_KNIGHT:
-                    whiteKnights |= BoardUtils.bitSet[i];
+                    whiteKnights |= BoardUtils.BITSET[i];
                     break;
                 case BoardUtils.WHITE_PAWN:
-                    whitePawns |= BoardUtils.bitSet[i];
+                    whitePawns |= BoardUtils.BITSET[i];
                     break;
                 case BoardUtils.BLACK_KING:
-                    blackKing |= BoardUtils.bitSet[i];
+                    blackKing |= BoardUtils.BITSET[i];
                     break;
                 case BoardUtils.BLACK_QUEEN:
-                    blackQueens |= BoardUtils.bitSet[i];
+                    blackQueens |= BoardUtils.BITSET[i];
                     break;
                 case BoardUtils.BLACK_ROOK:
-                    blackRooks |= BoardUtils.bitSet[i];
+                    blackRooks |= BoardUtils.BITSET[i];
                     break;
                 case BoardUtils.BLACK_BISHOP:
-                    blackBishops |= BoardUtils.bitSet[i];
+                    blackBishops |= BoardUtils.BITSET[i];
                     break;
                 case BoardUtils.BLACK_KNIGHT:
-                    blackKnights |= BoardUtils.bitSet[i];
+                    blackKnights |= BoardUtils.BITSET[i];
                     break;
                 case BoardUtils.BLACK_PAWN:
-                    blackPawns |= BoardUtils.bitSet[i];
+                    blackPawns |= BoardUtils.BITSET[i];
                     break;
             }
 

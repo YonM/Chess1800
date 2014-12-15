@@ -63,7 +63,7 @@ public class BoardUtils {
     public final static int KING_VALUE = 999999;
     public final static int CHECKMATE = KING_VALUE;
 
-    private final char[] CHARBITSET = new char[8];
+    public static final char[] CHARBITSET = new char[8];
     public static final long[] BITSET = new long[64];
     private static int[][] boardIndex;
 
@@ -100,12 +100,15 @@ public class BoardUtils {
     }
 
     public static void initialize(String fen) {
-        int i, rank, file;
+        int i, rank, file, square;
         //Long with only 1 bit set.
         BITSET[0] = 0x1;
         for (i = 1; i < 64; i++) {
             BITSET[i] = BITSET[i - 1] << 1;
         }
+        CHARBITSET[0] = 1;
+        for (square = 1; square < 8; square++)
+            CHARBITSET[square] = (char) (CHARBITSET[square - 1] << 1);
 
         //boardIndex is used to convert rank&file to a square.
         for (rank = 0; rank < 8; rank++) {

@@ -7,7 +7,7 @@ import Board.BoardUtils;
  *
  * Inspired by Stef Luijten's Winglet Chess @ http://web.archive.org/web/20120621100214/http://www.sluijten.com/winglet/
  */
-public class BitboardAttacks {
+public abstract class BitboardAttacks {
 
     //6bit masks for move generation
     public static final long[] RANKMASK = new long[64];
@@ -47,14 +47,14 @@ public class BitboardAttacks {
                         DIAGA8H1MASK[BoardUtils.getIndex(rank, file)] |= BoardUtils.BITSET[BoardUtils.getIndex(7 - square, diag8h1 + square - 7)];
 
                 }
-                diaga1h8 = rank - file; //-7 to 7 & longest = 0;
+                diaga1h8 = file - rank; //-7 to 7 & longest = 0;
                 DIAGA1H8MASK[BoardUtils.getIndex(rank, file)] = 0x0;
                 if (diaga1h8 > -1) {
-                    for (square = 1; square < 8 - diaga1h8; square++)
-                        DIAGA1H8MASK[BoardUtils.getIndex(rank, file)] |= BoardUtils.BITSET[BoardUtils.getIndex(square, diaga1h8 + square)];
+                    for (square = 1; square < 7 - diaga1h8; square++)
+                        DIAGA1H8MASK[BoardUtils.getIndex(rank, file)] |= BoardUtils.BITSET[BoardUtils.getIndex(square, square + diaga1h8)];
 
                 } else {
-                    for (square = 1; square < 8 + diaga1h8; square++)
+                    for (square = 1; square < 7 + diaga1h8; square++)
                         DIAGA1H8MASK[BoardUtils.getIndex(rank, file)] |= BoardUtils.BITSET[BoardUtils.getIndex(square - diaga1h8, square)];
 
                 }
