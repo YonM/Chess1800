@@ -60,7 +60,7 @@ public abstract class BitboardAttacks {
     public static final long[][] DIAGA8H1_ATTACKS = new long[64][64];
     public static final long[][] DIAGA1H8_ATTACKS = new long[64][64];
 
-    int square, rank, aRank, file, aFile, attackBit, diaga8h1, diaga1h8;
+    protected int square, rank, aRank, file, aFile, attackBit, diaga8h1, diaga1h8;
     ;
     short state6Bit;
 
