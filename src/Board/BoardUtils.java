@@ -65,7 +65,7 @@ public class BoardUtils {
 
     public static final short[] CHARBITSET = new short[8];
     public static final long[] BITSET = new long[64];
-    private static final int[][] boardIndex = new int[8][8];
+    private static final int[][] BOARDINDEX = new int[8][8];
 
 
     //For castling
@@ -107,11 +107,11 @@ public class BoardUtils {
         for (square = 1; square < 8; square++)
             CHARBITSET[square] = (short) (CHARBITSET[square - 1] << 1);
 
-        //boardIndex is used to convert rank&file to a square.
+        //BOARDINDEX is used to convert rank&file to a square.
         for (rank = 0; rank < 8; rank++) {
 
             for (file = 0; file < 8; file++) {
-                boardIndex[rank][file] = (rank * 8) + file;
+                BOARDINDEX[rank][file] = (rank * 8) + file;
             }
         }
         Board board = Board.getInstance();
@@ -125,7 +125,7 @@ public class BoardUtils {
     }
 
     public static int getIndex(int rank, int file) {
-        return boardIndex[rank][file];
+        return BOARDINDEX[rank][file];
     }
 
     //public static

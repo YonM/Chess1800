@@ -1,6 +1,7 @@
 package BitBoard;
 
 import Board.BoardUtils;
+import Move.Move;
 
 /**
  * Created by Yonathan on 15/12/2014.
@@ -22,10 +23,13 @@ public abstract class BitboardAttacks {
     public static final long[] MASKCE = new long[2];
 
     //Pre generated castling moves
-    public static int white_OOO_Castle;
-    public static int black_OOO_Castle;
-    public static int white_OO_Castle;
-    public static int black_OO_Castle;
+    public static final int WHITE_OOO_CASTLE = Move.generateMove(BoardUtils.E1, BoardUtils.G1, BoardUtils.WHITE_KING, BoardUtils.EMPTY, BoardUtils.WHITE_KING);
+    public static final int BLACK_OOO_CASTLE = Move.generateMove(BoardUtils.E8, BoardUtils.G8, BoardUtils.BLACK_KING, BoardUtils.EMPTY, BoardUtils.BLACK_KING);
+    ;
+    public static final int WHITE_OO_CASTLE = Move.generateMove(BoardUtils.E1, BoardUtils.C1, BoardUtils.WHITE_KING, BoardUtils.EMPTY, BoardUtils.WHITE_KING);
+    ;
+    public static final int BLACK_OO_CASTLE = Move.generateMove(BoardUtils.E8, BoardUtils.C8, BoardUtils.BLACK_KING, BoardUtils.EMPTY, BoardUtils.BLACK_KING);
+    ;
 
 
     //For generating attacks
@@ -110,24 +114,39 @@ public abstract class BitboardAttacks {
         generateDiagA8H1Attacks();
         generateDiagA1H8Attacks();
 
+        MASKEG[0] = BoardUtils.BITSET[BoardUtils.E1] | BoardUtils.BITSET[BoardUtils.F1] | BoardUtils.BITSET[BoardUtils.G1];
+        MASKEG[1] = BoardUtils.BITSET[BoardUtils.E8] | BoardUtils.BITSET[BoardUtils.F8] | BoardUtils.BITSET[BoardUtils.G8];
+
+        MASKFG[0] = BoardUtils.BITSET[BoardUtils.F1] | BoardUtils.BITSET[BoardUtils.G1];
+        MASKFG[1] = BoardUtils.BITSET[BoardUtils.F8] | BoardUtils.BITSET[BoardUtils.G8];
+
+        MASKBD[0] = BoardUtils.BITSET[BoardUtils.B1] | BoardUtils.BITSET[BoardUtils.C1] | BoardUtils.BITSET[BoardUtils.D1];
+        MASKBD[1] = BoardUtils.BITSET[BoardUtils.B8] | BoardUtils.BITSET[BoardUtils.C8] | BoardUtils.BITSET[BoardUtils.D8];
+
+        MASKCE[0] = BoardUtils.BITSET[BoardUtils.C1] | BoardUtils.BITSET[BoardUtils.D1] | BoardUtils.BITSET[BoardUtils.E1];
+        MASKCE[1] = BoardUtils.BITSET[BoardUtils.C8] | BoardUtils.BITSET[BoardUtils.D8] | BoardUtils.BITSET[BoardUtils.E8];
+
+
 
     }
 
+    //For Bishops & Queens
     private void generateDiagA1H8Attacks() {
         for (square = 0; square < 64; square++) {
             for (state6Bit = 0; state6Bit < 64; state6Bit++) {
                 for (attackBit = 0; attackBit < 8; attackBit++) {
-                    //  conversion from 64 board squares to the 8 corresponding positions in the GEN_SLIDING_ATTACKS array: MIN((7-RANKS[square]),(FILES[square]))
-                    if ((GEN_SLIDING_ATTACKS[(7 - BoardUtils.RANKS[square]) < BoardUtils.FILES[square] ? (7 - BoardUtils.RANKS[square]) : BoardUtils.FILES[square]][state6Bit] & BoardUtils.CHARBITSET[attackBit]) != 0) {
-                        // conversion of square/attackBit to the corresponding 64 board file and rank:
-                        diaga1h8 = BoardUtils.FILES[square] + BoardUtils.RANKS[square]; //from -7 to 7 & longest=0
-                        if (diaga1h8 < 8) {
+                    //  Conversion from 64 board squares to the 8 corresponding positions in the GEN_SLIDING_ATTACKS array: MIN((RANKS[square]),(FILES[square]))
+                    if ((GEN_SLIDING_ATTACKS[(BoardUtils.RANKS[square]) < BoardUtils.FILES[square] ? (BoardUtils.RANKS[square]) : BoardUtils.FILES[square]][state6Bit] & BoardUtils.CHARBITSET[attackBit]) != 0) {
+                        // Conversion of square/attackBit to the corresponding 64 board file and rank:
+                        diaga1h8 = BoardUtils.FILES[square] - BoardUtils.RANKS[square]; //from -7 to 7 & longest=0
+                        if (diaga1h8 < 0) {
                             file = attackBit;
-                            rank = diaga1h8 - file;
+                            rank = file - diaga1h8;
                         } else {
-                            rank = 7 - attackBit;
-                            file = diaga1h8 - rank;
+                            rank = attackBit;
+                            file = diaga1h8 + rank;
                         }
+                        //if within the board add attack
                         if ((file >= 0) && (file < 8) && (rank >= 0) && (rank < 8))
                             DIAGA1H8_ATTACKS[square][state6Bit] |= BoardUtils.BITSET[BoardUtils.getIndex(rank, file)];
                     }
@@ -137,6 +156,7 @@ public abstract class BitboardAttacks {
 
     }
 
+    //For Bishops & Queens
     private void generateDiagA8H1Attacks() {
         for (square = 0; square < 64; square++) {
             for (state6Bit = 0; state6Bit < 64; state6Bit++) {
@@ -152,6 +172,7 @@ public abstract class BitboardAttacks {
                             rank = 7 - attackBit;
                             file = diaga8h1 - rank;
                         }
+                        //if within the board add attack
                         if ((file >= 0) && (file < 8) && (rank >= 0) && (rank < 8))
                             DIAGA8H1_ATTACKS[square][state6Bit] |= BoardUtils.BITSET[BoardUtils.getIndex(rank, file)];
                     }
