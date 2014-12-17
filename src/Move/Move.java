@@ -19,11 +19,65 @@ public class Move {
     public static final int SQUARE_MASK = 0x3f;
     public static final int PIECE_TYPE_MASK = 0x0000000f;
 
+    protected int moveInt;
+
+    public Move(int move) {
+        moveInt = move;
+    }
+
+    public Move() {
+        moveInt = 0;
+    }
+
     public static int generateMove(int from, int to, int piece, int capture, int promotion) {
         return from | to << 6 | piece << 12 | capture << 16 | promotion << 20;
     }
 
-    public static int getFrom(int move) {
+    public int getFrom() {
+        return (moveInt & SQUARE_MASK);
+    }
+
+    public int getTo() {
+        return (moveInt >>> 6) & SQUARE_MASK;
+    }
+
+    public int getPiece() {
+        return (moveInt >>> 12) & PIECE_TYPE_MASK;
+    }
+
+    public int getCapture() {
+        return (moveInt >>> 16) & PIECE_TYPE_MASK;
+    }
+
+    public int getPromotion() {
+        return (moveInt >>> 20) & PIECE_TYPE_MASK;
+    }
+
+    public void setFrom(int from) {
+        moveInt &= 0xffffffc0;
+        moveInt |= (from & SQUARE_MASK);
+    }
+
+    public void setTo(int to) {
+        moveInt &= 0xfffff03f;
+        moveInt |= (to & SQUARE_MASK) << 6;
+    }
+
+    public void setPiece(int piece) {
+        moveInt &= 0xffff0fff;
+        moveInt |= (piece & PIECE_TYPE_MASK) << 12;
+    }
+
+    public void setCapture(int capture) {
+        moveInt &= 0xfff0ffff;
+        moveInt |= (capture & PIECE_TYPE_MASK) << 16;
+    }
+
+    public void setPromotion(int promotion) {
+        moveInt &= 0xff0fffff;
+        moveInt |= (promotion & PIECE_TYPE_MASK) << 20;
+    }
+/*    public static int getFrom(int move) {
         return (move & SQUARE_MASK);
     }
 
@@ -41,6 +95,7 @@ public class Move {
 
     public static int getPromotion(int move) {
         return (move >>> 20) & PIECE_TYPE_MASK;
-    }
+    }*/
+
 
 }

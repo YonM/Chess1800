@@ -11,7 +11,19 @@ public class MoveGenerator {
     private Board board = Board.getInstance();
 
 
-    public static int moveGen() {
+    public int moveGen() {
+        byte oppSide;
+        int from, to;
+        long tempPiece, tempMove, targets, freeSquares;
+        int move = 0;
+
+        oppSide = board.whiteToMove ?;
+        if (board.whiteToMove) {
+            //White's move
+
+        } else {
+            //Black's move
+        }
         return -1;
     }
 }

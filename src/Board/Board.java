@@ -36,10 +36,13 @@ public class Board {
     public int castleWhite;
     public int castleBlack;
 
-    public static final int MAX_GAME_LENGTH = 1024;
-    public static final int MAX_MOVES = 255;
+    public static final int MAX_GAME_LENGTH = 1024; //Maximum number of half-moves, if 50-move rule is obeyed.
+    public static final int MAX_MOVES = 256;
 
-    private int[] moves;
+    public static final int MAX_PLY = 64;
+
+    public int[] moves = new int[MAX_GAME_LENGTH * 4];
+    public int[] moveBufLen = new int[MAX_PLY];
 
     public boolean viewRotated;
     private static Board instance;
