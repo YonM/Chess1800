@@ -2,6 +2,7 @@ package Board;
 
 import BitBoard.BitOperations;
 import Fen.FENValidator;
+import Move.Move;
 
 /**
  * Created by Yonathan on 08/12/2014.
@@ -33,6 +34,9 @@ public class Board {
     public int epSquare;
     public int fiftyMove;
     public boolean whiteToMove;
+
+    public final int CANCASTLEOO = 1;
+    public final int CANCASTLEOOO = 2;
     public int castleWhite;
     public int castleBlack;
 
@@ -41,11 +45,16 @@ public class Board {
 
     public static final int MAX_PLY = 64;
 
-    public int[] moves = new int[MAX_GAME_LENGTH * 4];
-    public int[] moveBufLen = new int[MAX_PLY];
+    public Move[] moves;
+    public int[] moveBufLen;
 
     public boolean viewRotated;
     private static Board instance;
+
+    public Board() {
+        moves = new Move[MAX_GAME_LENGTH * 4];
+        moveBufLen = new int[MAX_PLY];
+    }
 
     public void initialize() {
         for (int i = 0; i < 64; i++)

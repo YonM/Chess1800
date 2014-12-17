@@ -19,7 +19,7 @@ public class Move {
     public static final int SQUARE_MASK = 0x3f;
     public static final int PIECE_TYPE_MASK = 0x0000000f;
 
-    protected int moveInt;
+    public int moveInt;
 
     public Move(int move) {
         moveInt = move;
