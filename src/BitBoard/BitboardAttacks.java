@@ -5,7 +5,7 @@ import Move.Move;
 
 /**
  * Created by Yonathan on 15/12/2014.
- *
+ * Attack moves are pre-generated here.
  * Inspired by Stef Luijten's Winglet Chess @ http://web.archive.org/web/20120621100214/http://www.sluijten.com/winglet/
  */
 public abstract class BitboardAttacks {

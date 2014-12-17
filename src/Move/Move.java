@@ -2,6 +2,18 @@ package Move;
 
 /**
  * Created by Yonathan on 11/12/2014.
+ * Moves are represented by an int.
+ * Inspired by Stef Luijten's Winglet Chess @ http://web.archive.org/web/20120621100214/http://www.sluijten.com/winglet/
+ * Structure:
+ *
+ * Prom | Capture   | Piece | To    | From
+ * 0111 | 1101      | 0001  | 111101| 110110
+ *
+ * Prom - 4bit identifier for promotion piece but also for special moves such as en-passant and castling.
+ * Capture - 4bit identifier for the piece being captured in the move.
+ * Piece - 4bit identifier for the piece being moved.
+ * To - 6bit identifier of the square being moved to.
+ * From - 6bit identifier for the square being move from.
  */
 public class Move {
     public static final int SQUARE_MASK = 0x3f;

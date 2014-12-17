@@ -4,6 +4,8 @@ import Board.BoardUtils;
 
 /**
  * Created by Yonathan on 15/12/2014.
+ * Magic move generation for the sliding pieces.
+ * Inspired by Stef Luijten's Winglet Chess @ http://web.archive.org/web/20120621100214/http://www.sluijten.com/winglet/
  */
 public class BitboardMagicAttacks extends BitboardAttacks {
     public static final long[] FILEMAGIC = new long[64];

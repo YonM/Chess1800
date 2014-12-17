@@ -4,6 +4,8 @@ import BitBoard.BitboardMagicAttacks;
 
 /**
  * Created by Yonathan on 08/12/2014.
+ * Provides utilities for the Board.
+ * Inspired by Stef Luijten's Winglet Chess @ http://web.archive.org/web/20120621100214/http://www.sluijten.com/winglet/
  */
 public class BoardUtils {
     public final static int A1 = 0, B1 = 1, C1 = 2, D1 = 3, E1 = 4, F1 = 5, G1 = 6, H1 = 7;

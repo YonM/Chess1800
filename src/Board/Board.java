@@ -5,6 +5,8 @@ import Fen.FENValidator;
 
 /**
  * Created by Yonathan on 08/12/2014.
+ * Singleton class to represent the board.
+ * Inspired by Stef Luijten's Winglet Chess @ http://web.archive.org/web/20120621100214/http://www.sluijten.com/winglet/
  */
 public class Board {
     public int[] square = new int[64];
