@@ -39,8 +39,8 @@ public class BoardUtils {
             7, 7, 7, 7, 7, 7, 7, 7
     };
 
-    public final static char WHITE_MOVE = 0;
-    public final static char BLACK_MOVE = 1;
+//    public final static char WHITE_MOVE = 0;
+//    public final static char BLACK_MOVE = 1;
 
     public final static int EMPTY = 0;
     public final static int WHITE_PAWN = 1;

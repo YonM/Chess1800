@@ -32,12 +32,14 @@ public class Board {
 
     public int epSquare;
     public int fiftyMove;
-    public int nextMove;
+    public boolean whiteToMove;
     public int castleWhite;
     public int castleBlack;
 
     public static final int MAX_GAME_LENGTH = 1024;
     public static final int MAX_MOVES = 255;
+
+    private int[] moves;
 
     public boolean viewRotated;
     private static Board instance;
@@ -46,7 +48,7 @@ public class Board {
         for (int i = 0; i < 64; i++)
             square[i] = BoardUtils.EMPTY;
         setupBoard();
-        initializeFromSquares(square, BoardUtils.WHITE_MOVE, 0, BoardUtils.CANCASTLEOO + BoardUtils.CANCASTLEOOO, BoardUtils.CANCASTLEOO + BoardUtils.CANCASTLEOOO, 0);
+        initializeFromSquares(square, true, 0, BoardUtils.CANCASTLEOO + BoardUtils.CANCASTLEOOO, BoardUtils.CANCASTLEOO + BoardUtils.CANCASTLEOOO, 0);
 
 
     }
@@ -115,7 +117,7 @@ public class Board {
                     if (c != '/') file++;
                 }
             }
-            char nextToMove = tokens[1].toCharArray()[0];
+            boolean nextToMove = tokens[1].toCharArray()[0] == 'w';
             int tempWhiteCastle = 0, tempBlackCastle = 0, ePSquare = 0, temp50Move = 0;
             //For castling
             if (tokens.length > 2) {
@@ -160,7 +162,7 @@ public class Board {
     }
 
 
-    public void initializeFromSquares(int[] input, char nextToMove, int fiftyMove, int castleWhiteSide, int castleBlackSide, int epSquare) {
+    public void initializeFromSquares(int[] input, boolean nextToMove, int fiftyMove, int castleWhiteSide, int castleBlackSide, int epSquare) {
         clearBitboards();
         //setup the 12 boards
         for (int i = 0; i < 64; i++) {
@@ -208,7 +210,7 @@ public class Board {
         }
         updateAggregateBitboards();
 
-        nextMove = nextToMove;
+        whiteToMove = nextToMove;
         castleWhite = castleWhiteSide;
         castleBlack = castleBlackSide;
         this.epSquare = epSquare;
