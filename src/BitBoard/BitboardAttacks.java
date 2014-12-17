@@ -45,7 +45,6 @@ public abstract class BitboardAttacks {
             57, 57, 57, 57, 57, 57, 57, 57
     };
 
-
     //Attack bitboards
     public static final long[] KNIGHT_ATTACKS = new long[64];
     public static final long[] KING_ATTACKS = new long[64];
