@@ -15,7 +15,7 @@ import board.BoardUtils;
  * -King protection by own pawns in the opening and midgame and away from enemy pieces.
  * -King positional bonus/penalty different in end game, must be central and near his own pawns.
  *
- * Scores calculated from white perspective, in centipawns and then returns the score from the perspective
+ * Scores calculated from white perspective and then returns the score from the perspective
  * of the side to move.
  */
 public class Evaluator {
@@ -87,6 +87,9 @@ public class Evaluator {
         */
 
         if (whiteTotalMat + whitePawns > blackTotalMat + blackPawns) {
+            score += 450 + 300 * whiteTotal - 600 * blackTotal;
+
+        } else if (whiteTotalMat + whitePawns < blackTotalMat + blackPawns) {
 
         }
 

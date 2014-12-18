@@ -2,9 +2,9 @@ Chess1800
 =========
 
 Chess Project for University by Yonathan Maalo.
-<br>The project will contain:</p>
+<br>The project will contain:
 
-<br>Bitboard - Board Representation
+Bitboard - Board Representation
 <br>Magic Bitboards - For generating Attacks
 <br>Pseudo-Legal Move Generator- To generate moves, legality checked if the move is actually used.
 <br>Alpha-Beta - Search algorithm
