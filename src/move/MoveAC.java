@@ -1,4 +1,4 @@
-package Move;
+package move;
 
 /**
  * Created by Yonathan on 03/12/2014.

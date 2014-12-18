@@ -1,11 +1,11 @@
-package MoveGen;
+package movegen;
 
-import BitBoard.BitOperations;
-import BitBoard.BitboardAttacks;
-import BitBoard.BitboardMagicAttacks;
-import Board.Board;
-import Board.BoardUtils;
-import Move.Move;
+import bitboard.BitOperations;
+import bitboard.BitboardAttacks;
+import bitboard.BitboardMagicAttacks;
+import board.Board;
+import board.BoardUtils;
+import move.Move;
 
 /**
  * Created by Yonathan on 15/12/2014.
@@ -78,11 +78,11 @@ public class MoveGenerator {
                 }
                 tempMove ^= BoardUtils.BITSET[to];
             }
-            if (board.epSquare != 0)       // Add en-passant captures
-                if ((BitboardAttacks.BLACK_PAWN_ATTACKS[from] & BoardUtils.BITSET[board.epSquare]) != 0) {
+            if (board.ePSquare != 0)       // Add en-passant captures
+                if ((BitboardAttacks.BLACK_PAWN_ATTACKS[from] & BoardUtils.BITSET[board.ePSquare]) != 0) {
                     move.setPromotion(BoardUtils.BLACK_PAWN);
                     move.setCapture(BoardUtils.BLACK_PAWN);
-                    move.setTo(board.epSquare);
+                    move.setTo(board.ePSquare);
                     board.moves[index++].moveInt = move.moveInt;
                 }
             tempPiece ^= BoardUtils.BITSET[from];
@@ -215,11 +215,11 @@ public class MoveGenerator {
                 }
                 tempMove ^= BoardUtils.BITSET[to];
             }
-            if (board.epSquare != 0)       // Add en-passant captures
-                if ((BitboardAttacks.WHITE_PAWN_ATTACKS[from] & BoardUtils.BITSET[board.epSquare]) != 0) {
+            if (board.ePSquare != 0)       // Add en-passant captures
+                if ((BitboardAttacks.WHITE_PAWN_ATTACKS[from] & BoardUtils.BITSET[board.ePSquare]) != 0) {
                     move.setPromotion(BoardUtils.WHITE_PAWN);
                     move.setCapture(BoardUtils.BLACK_PAWN);
-                    move.setTo(board.epSquare);
+                    move.setTo(board.ePSquare);
                     board.moves[index++].moveInt = move.moveInt;
                 }
             tempPiece ^= BoardUtils.BITSET[from];

@@ -1,6 +1,6 @@
-package Board;
+package board;
 
-import BitBoard.BitboardMagicAttacks;
+import bitboard.BitboardMagicAttacks;
 
 /**
  * Created by Yonathan on 08/12/2014.

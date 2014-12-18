@@ -1,4 +1,4 @@
-package BitBoard;
+package bitboard;
 
 /**
  * Created by Yonathan on 07/12/2014.

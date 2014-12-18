@@ -1,4 +1,4 @@
-package Zobrist;
+package zobrist;
 
 /**
  * Created by Yonathan on 04/12/2014.

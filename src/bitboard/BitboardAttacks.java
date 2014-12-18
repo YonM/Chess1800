@@ -1,7 +1,7 @@
-package BitBoard;
+package bitboard;
 
-import Board.BoardUtils;
-import Move.Move;
+import board.BoardUtils;
+import move.Move;
 
 /**
  * Created by Yonathan on 15/12/2014.

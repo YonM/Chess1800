@@ -1,6 +1,6 @@
-package Board;
+package board;
 
-import Fen.FENValidator;
+import fen.FENValidator;
 
 /**
  * Created by Yonathan on 03/12/2014.

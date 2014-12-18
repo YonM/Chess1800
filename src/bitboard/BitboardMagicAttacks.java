@@ -1,7 +1,7 @@
-package BitBoard;
+package bitboard;
 
-import Board.Board;
-import Board.BoardUtils;
+import board.Board;
+import board.BoardUtils;
 
 /**
  * Created by Yonathan on 15/12/2014.

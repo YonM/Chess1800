@@ -1,4 +1,4 @@
-package Move;
+package move;
 
 /**
  * Created by Yonathan on 11/12/2014.
@@ -18,6 +18,8 @@ package Move;
 public class Move {
     public static final int SQUARE_MASK = 0x3f;
     public static final int PIECE_TYPE_MASK = 0x0000000f;
+    public static final int PROMTION_MASK = 0x00700000;
+    public static final int CASTLING_MASK = 0x007001c0;
 
     public int moveInt;
 
@@ -77,6 +79,32 @@ public class Move {
         moveInt &= 0xff0fffff;
         moveInt |= (promotion & PIECE_TYPE_MASK) << 20;
     }
+
+    public boolean isEnPassant() {
+        return (moveInt & 0x00700000) == 0x00100000;
+    }
+
+    public boolean isPromotion() {
+        return (moveInt & PROMTION_MASK) > 0x00200000;
+    }
+
+    public boolean isCastle() {
+        return (moveInt & PROMTION_MASK) == 0x00200000;
+    }
+
+    public boolean isCastleOO() {
+        return (moveInt & CASTLING_MASK) == 0x00200180;
+    }
+
+
+
+
+
+
+
+
+
+
 /*    public static int getFrom(int move) {
         return (move & SQUARE_MASK);
     }

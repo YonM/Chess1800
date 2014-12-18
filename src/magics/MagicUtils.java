@@ -1,4 +1,4 @@
-package Magics;
+package magics;
 
 /**
  * Created by Yonathan on 08/12/2014.
