@@ -15,7 +15,7 @@ import move.Move;
 public class MoveGenerator {
     private Board board;
     private Move move;
-
+    private static MoveGenerator instance;
     private long tempPiece, tempMove, targets, freeSquares;
 
     private boolean oppSide;
@@ -24,6 +24,12 @@ public class MoveGenerator {
     public MoveGenerator() {
         move = new Move();
         board = Board.getInstance();
+    }
+
+    public static MoveGenerator getInstance() {
+        if (instance == null)
+            instance = new MoveGenerator();
+        return instance;
     }
 
     public int moveGen(int index) {
@@ -330,7 +336,7 @@ public class MoveGenerator {
 //   - castling legality: test to see if the king passes through, or ends up on,
 //     a square that is attacked
 //     ============================================================================
-    private boolean isAttacked(long target, boolean white_to_move) {
+    public boolean isAttacked(long target, boolean white_to_move) {
         long tempTarget = target, slidingAttackers;
         int to;
         if (white_to_move) { //Test for attacks from WHITE to target;
