@@ -383,11 +383,29 @@ public class Board {
                 break;
             case 2:
                 unmakeWhiteKingMove(move);
+                break;
+            case 3:
+                unmakeWhiteKnightMove();
+                break;
+            case 5:
+                unmakeWhiteBishopMove();
+                break;
+            case 6:
+                unmakeWhiteRookMove();
+                break;
+            case 7:
+                unmakeWhiteQueenMove();
+                break;
+            case 9:
+                unmakeBlackPawnMove();
+                break;
 
+//TODO
             default:
                 throw new RuntimeException("Unreachable");
         }
     }
+
 
     private void makeWhitePawnMove(Move move) {
         whitePawns ^= fromToBoard;
@@ -668,13 +686,112 @@ public class Board {
                 unmakeCapture(captured, to);
                 allPieces ^= fromBoard;
             }
+        } else {
+            allPieces ^= fromToBoard;
+        }
+        if (move.isPromotion()) {
+            unmakeWhitePromotion(move.getPromotion(), to);
+        }
+    }
+
+    private void unmakeWhiteKingMove(Move move) {
+        whiteKing ^= fromToBoard;
+        whitePieces ^= fromToBoard;
+        square[from] = BoardUtils.WHITE_KING;
+        square[to] = BoardUtils.EMPTY;
+        if (captured != 0) {
+            unmakeCapture(captured, to);
+            allPieces ^= fromBoard;
+        } else {
+            allPieces ^= fromToBoard;
+        }
+
+        if (move.isCastle()) {
+            if (move.isCastleOO()) {
+                whiteRooks ^= BoardUtils.BITSET[BoardUtils.H1] | BoardUtils.BITSET[BoardUtils.F1];
+                whitePieces ^= BoardUtils.BITSET[BoardUtils.H1] | BoardUtils.BITSET[BoardUtils.F1];
+                allPieces ^= BoardUtils.BITSET[BoardUtils.H1] | BoardUtils.BITSET[BoardUtils.F1];
+                square[BoardUtils.H1] = BoardUtils.WHITE_ROOK;
+                square[BoardUtils.F1] = BoardUtils.EMPTY;
+            } else {
+                whiteRooks ^= BoardUtils.BITSET[BoardUtils.A1] | BoardUtils.BITSET[BoardUtils.D1];
+                whitePieces ^= BoardUtils.BITSET[BoardUtils.A1] | BoardUtils.BITSET[BoardUtils.D1];
+                allPieces ^= BoardUtils.BITSET[BoardUtils.A1] | BoardUtils.BITSET[BoardUtils.D1];
+                square[BoardUtils.A1] = BoardUtils.WHITE_ROOK;
+                square[BoardUtils.D1] = BoardUtils.EMPTY;
+            }
         }
 
     }
 
-    private void unmakeWhiteKingMove(Move move) {
+    private void unmakeWhiteKnightMove() {
+        whiteKnights ^= fromToBoard;
+        whitePieces ^= fromToBoard;
+        square[from] = BoardUtils.WHITE_KNIGHT;
+        square[to] = BoardUtils.EMPTY;
+        if (captured != 0) {
+            unmakeCapture(captured, to);
+            allPieces ^= fromBoard;
+        } else {
+            allPieces ^= fromToBoard;
+        }
+    }
+
+    private void unmakeWhiteBishopMove() {
+        whiteBishops ^= fromToBoard;
+        whitePieces ^= fromToBoard;
+        square[from] = BoardUtils.WHITE_BISHOP;
+        square[to] = BoardUtils.EMPTY;
+        if (captured != 0) {
+            unmakeCapture(captured, to);
+            allPieces ^= fromBoard;
+        } else {
+            allPieces ^= fromToBoard;
+        }
+    }
+
+    private void unmakeWhiteRookMove() {
+        whiteRooks ^= fromToBoard;
+        whitePieces ^= fromToBoard;
+        square[from] = BoardUtils.WHITE_ROOK;
+        square[to] = BoardUtils.EMPTY;
+        if (captured != 0) {
+            unmakeCapture(captured, to);
+            allPieces ^= fromBoard;
+        } else {
+            allPieces ^= fromToBoard;
+        }
 
     }
+
+    private void unmakeWhiteQueenMove() {
+        whiteQueens ^= fromToBoard;
+        whitePieces ^= fromToBoard;
+        square[from] = BoardUtils.WHITE_QUEEN;
+        square[to] = BoardUtils.EMPTY;
+        if (captured != 0) {
+            unmakeCapture(captured, to);
+            allPieces ^= fromBoard;
+        } else {
+            allPieces ^= fromToBoard;
+        }
+    }
+
+
+//TODO
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -683,6 +800,14 @@ public class Board {
     }
 
     private void makeBlackPromotion(int promotion, int to) {
+
+    }
+
+    private void unmakeWhitePromotion(int promotion, int to) {
+
+    }
+
+    private void unmakeBlackPromotion(int promotion, int to) {
 
     }
 
