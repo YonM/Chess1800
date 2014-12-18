@@ -47,7 +47,7 @@ public class Evaluator {
         whiteBishops = BitOperations.popCount(board.whiteBishops);
         whiteRooks = BitOperations.popCount(board.whiteRooks);
         whiteQueens = BitOperations.popCount(board.whiteQueens);
-        whiteTotalMat = KNIGHT_VALUE * whiteKnights + BISHOP_VALUE * whiteBishops + ROOK_VALUE * whiteRooks + QUEEN_VALUE * whiteQueens;
+        whiteTotalMat = 3 * whiteKnights + 3 * whiteBishops + 5 * whiteRooks + 10 * whiteQueens;
         whiteTotal = whitePawns + whiteKnights + whiteBishops + whiteRooks + whiteQueens;
 
         blackPawns = BitOperations.popCount(board.blackPawns);
@@ -55,7 +55,7 @@ public class Evaluator {
         blackBishops = BitOperations.popCount(board.blackBishops);
         blackRooks = BitOperations.popCount(board.blackRooks);
         blackQueens = BitOperations.popCount(board.blackQueens);
-        blackTotalMat = KNIGHT_VALUE * blackKnights + BISHOP_VALUE * blackBishops + ROOK_VALUE * blackRooks + QUEEN_VALUE * blackQueens;
+        blackTotalMat = 3 * blackKnights + 3 * blackBishops + 5 * blackRooks + 10 * blackQueens;
         blackTotal = blackPawns + blackKnights + blackBishops + blackRooks + blackQueens;
 
         //Test for end game if white or black total material less than the value of a Rook+ Queen.
@@ -87,10 +87,10 @@ public class Evaluator {
         */
 
         if (whiteTotalMat + whitePawns > blackTotalMat + blackPawns) {
-            score += 450 + 300 * whiteTotal - 600 * blackTotal;
+            score += 45 + 3 * whiteTotal - 6 * blackTotal;
 
         } else if (whiteTotalMat + whitePawns < blackTotalMat + blackPawns) {
-
+            score -= 45 - 3 * blackTotal - 6 * whiteTotal;
         }
 
 
