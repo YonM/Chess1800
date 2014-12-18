@@ -312,7 +312,7 @@ public class Board {
         return instance;
     }
 
-    public void makeMove(Move move) {
+    public void doMove(Move move) {
         from = move.getFrom();
         to = move.getTo();
         piece = move.getPiece();
@@ -327,7 +327,7 @@ public class Board {
         gameLine[endOfSearch].ePSquare = ePSquare;
         endOfSearch++;
         switch (piece) {
-            case 1://White Pawn
+            case 1:
                 makeWhitePawnMove(move);
                 break;
             case 2:
@@ -339,11 +339,55 @@ public class Board {
             case 5:
                 makeWhiteBishopMove();
                 break;
-
-
+            case 6:
+                makeWhiteRookMove();
+                break;
+            case 7:
+                makeWhiteQueenMove();
+                break;
+            case 9:
+                makeBlackPawnMove(move);
+                break;
+            case 10:
+                makeBlackKingMove(move);
+                break;
+            case 11:
+                makeBlackKnightMove();
+                break;
+            case 13:
+                makeBlackBishopMove();
+                break;
+            case 14:
+                makeBlackRookMove();
+                break;
+            case 15:
+                makeBlackQueenMove();
+                break;
+            default:
+                throw new RuntimeException("Unreachable");
         }
+        whiteToMove = !whiteToMove;
     }
 
+    public void undoMove(Move move) {
+        piece = move.getPiece();
+        captured = move.getCapture();
+        from = move.getFrom();
+        to = move.getTo();
+        fromBoard = BoardUtils.BITSET[from];
+        fromToBoard = fromBoard | BoardUtils.BITSET[to];
+
+        switch (piece) {
+            case 1:
+                unmakeWhitePawnMove(move);
+                break;
+            case 2:
+                unmakeWhiteKingMove(move);
+
+            default:
+                throw new RuntimeException("Unreachable");
+        }
+    }
 
     private void makeWhitePawnMove(Move move) {
         whitePawns ^= fromToBoard;
@@ -429,18 +473,229 @@ public class Board {
     private void makeWhiteBishopMove() {
         whiteBishops ^= fromToBoard;
         whitePieces ^= fromToBoard;
+        square[from] = BoardUtils.EMPTY;
+        square[to] = BoardUtils.WHITE_BISHOP;
+        ePSquare = 0;
+        fiftyMove++;
+        if (captured != 0) {
+            makeCapture(captured, to);
+            allPieces ^= fromBoard;
+        } else {
+            allPieces ^= fromToBoard;
+        }
 
     }
+
+    private void makeWhiteRookMove() {
+        whiteRooks ^= fromToBoard;
+        whitePieces ^= fromToBoard;
+        square[from] = BoardUtils.EMPTY;
+        square[to] = BoardUtils.WHITE_ROOK;
+        ePSquare = 0;
+        fiftyMove++;
+        if (from == BoardUtils.A1)
+            castleWhite &= ~CANCASTLEOOO;
+        if (from == BoardUtils.H1)
+            castleWhite &= ~CANCASTLEOO;
+
+        if (captured != 0) {
+            makeCapture(captured, to);
+            allPieces ^= fromBoard;
+        } else {
+            allPieces ^= fromToBoard;
+        }
+    }
+
+    private void makeWhiteQueenMove() {
+        whiteQueens ^= fromToBoard;
+        whitePieces ^= fromToBoard;
+        square[from] = BoardUtils.EMPTY;
+        square[to] = BoardUtils.WHITE_QUEEN;
+        ePSquare = 0;
+        fiftyMove++;
+        if (captured != 0) {
+            makeCapture(captured, to);
+            allPieces ^= fromBoard;
+        } else {
+            allPieces ^= fromToBoard;
+        }
+
+    }
+
+    private void makeBlackPawnMove(Move move) {
+        blackPawns ^= fromToBoard;
+        blackPieces ^= fromToBoard;
+        square[from] = BoardUtils.EMPTY;
+        square[to] = BoardUtils.BLACK_PAWN;
+        ePSquare = 0;
+        fiftyMove = 0;
+        if (BoardUtils.RANKS[from] == 6)
+            if (BoardUtils.RANKS[to] == 4)
+                ePSquare = from - 8;
+        if (captured != 0) {
+            if (move.isEnPassant()) {
+                whitePawns ^= BoardUtils.BITSET[to + 8];
+                whitePieces ^= BoardUtils.BITSET[to + 8];
+                allPieces ^= fromToBoard | BoardUtils.BITSET[to + 8];
+                square[to + 8] = BoardUtils.EMPTY;
+                material -= BoardUtils.PAWN_VALUE;
+            } else {
+                makeCapture(captured, to);
+                allPieces ^= fromBoard;
+            }
+        } else {
+            allPieces ^= fromToBoard;
+        }
+        if (move.isPromotion()) {
+            makeBlackPromotion(move.getPromotion(), to);
+            square[to] = move.getPromotion();
+        }
+    }
+
+
+    private void makeBlackKingMove(Move move) {
+        blackKing ^= fromToBoard;
+        blackPieces ^= fromToBoard;
+        square[from] = BoardUtils.EMPTY;
+        square[to] = BoardUtils.BLACK_KING;
+        ePSquare = 0;
+        fiftyMove++;
+        castleWhite = 0;
+        if (captured != 0) {
+            makeCapture(captured, to);
+            allPieces ^= fromBoard;
+        } else {
+            allPieces ^= fromToBoard;
+        }
+        if (move.isCastle()) {
+            if (move.isCastleOO()) {
+                blackRooks ^= BoardUtils.BITSET[BoardUtils.H8] | BoardUtils.BITSET[BoardUtils.F8];
+                blackPieces ^= BoardUtils.BITSET[BoardUtils.H8] | BoardUtils.BITSET[BoardUtils.F8];
+                allPieces ^= BoardUtils.BITSET[BoardUtils.H8] | BoardUtils.BITSET[BoardUtils.F8];
+                square[BoardUtils.H8] = BoardUtils.EMPTY;
+                square[BoardUtils.F8] = BoardUtils.BLACK_ROOK;
+
+            } else {
+                blackRooks ^= BoardUtils.BITSET[BoardUtils.A8] | BoardUtils.BITSET[BoardUtils.D8];
+                blackPieces ^= BoardUtils.BITSET[BoardUtils.A8] | BoardUtils.BITSET[BoardUtils.D8];
+                allPieces ^= BoardUtils.BITSET[BoardUtils.A8] | BoardUtils.BITSET[BoardUtils.D8];
+                square[BoardUtils.A8] = BoardUtils.EMPTY;
+                square[BoardUtils.D8] = BoardUtils.BLACK_ROOK;
+
+            }
+
+        }
+    }
+
+    private void makeBlackKnightMove() {
+        blackKnights ^= fromToBoard;
+        blackPieces ^= fromToBoard;
+        square[from] = BoardUtils.EMPTY;
+        square[to] = BoardUtils.BLACK_KNIGHT;
+        ePSquare = 0;
+        fiftyMove++;
+        if (captured != 0) {
+            makeCapture(captured, to);
+            allPieces ^= fromBoard;
+        } else {
+            allPieces ^= fromToBoard;
+        }
+    }
+
+    private void makeBlackBishopMove() {
+        blackBishops ^= fromToBoard;
+        blackPieces ^= fromToBoard;
+        square[from] = BoardUtils.EMPTY;
+        square[to] = BoardUtils.BLACK_BISHOP;
+        ePSquare = 0;
+        fiftyMove++;
+        if (captured != 0) {
+            makeCapture(captured, to);
+            allPieces ^= fromBoard;
+        } else {
+            allPieces ^= fromToBoard;
+        }
+    }
+
+    private void makeBlackRookMove() {
+        blackRooks ^= fromToBoard;
+        blackPieces ^= fromToBoard;
+        square[from] = BoardUtils.EMPTY;
+        square[to] = BoardUtils.BLACK_ROOK;
+        ePSquare = 0;
+        fiftyMove++;
+        if (from == BoardUtils.A8)
+            castleBlack &= ~CANCASTLEOOO;
+        if (from == BoardUtils.H8)
+            castleBlack &= ~CANCASTLEOO;
+
+        if (captured != 0) {
+            makeCapture(captured, to);
+            allPieces ^= fromBoard;
+        } else {
+            allPieces ^= fromToBoard;
+        }
+    }
+
+    private void makeBlackQueenMove() {
+        blackQueens ^= fromToBoard;
+        blackPieces ^= fromToBoard;
+        square[from] = BoardUtils.EMPTY;
+        square[to] = BoardUtils.BLACK_QUEEN;
+        ePSquare = 0;
+        fiftyMove++;
+        if (captured != 0) {
+            makeCapture(captured, to);
+            allPieces ^= fromBoard;
+        } else {
+            allPieces ^= fromToBoard;
+        }
+    }
+
+    private void unmakeWhitePawnMove(Move move) {
+        whitePawns ^= fromToBoard;
+        whitePieces ^= fromToBoard;
+        square[from] = BoardUtils.WHITE_PAWN;
+        square[to] = BoardUtils.EMPTY;
+        if (captured != 0) {
+            if (move.isEnPassant()) {
+                blackPawns ^= BoardUtils.BITSET[to - 8];
+                blackPieces ^= BoardUtils.BITSET[to - 8];
+                allPieces ^= fromToBoard | BoardUtils.BITSET[to - 8];
+                square[to - 8] = BoardUtils.BLACK_PAWN;
+                material -= BoardUtils.PAWN_VALUE;
+            } else {
+                unmakeCapture(captured, to);
+                allPieces ^= fromBoard;
+            }
+        }
+
+    }
+
+    private void unmakeWhiteKingMove(Move move) {
+
+    }
+
+
 
     private void makeWhitePromotion(int promotion, int to) {
 
     }
+
+    private void makeBlackPromotion(int promotion, int to) {
+
+    }
+
 
     private void makeCapture(int captured, int to) {
         long toBoard = BoardUtils.BITSET[to];
         switch (captured) {
 
         }
+    }
+
+    private void unmakeCapture(int captured, int to) {
+
     }
 
     private class GameLineRecord {
