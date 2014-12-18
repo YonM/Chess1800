@@ -2,6 +2,7 @@ package evaluation;
 
 import bitboard.BitOperations;
 import board.Board;
+import board.BoardUtils;
 
 /**
  * Created by Yonathan on 18/12/2014.
@@ -71,8 +72,24 @@ public class Evaluator {
             if (((whiteTotalMat == KNIGHT_VALUE) && (whiteKnights == 1) && (blackTotalMat == 0)) ||
                     ((blackTotalMat == KNIGHT_VALUE)) && (blackKnights == 1) && (whiteTotalMat == 0)) return 0;
 
-            // 2 kings with one or more bishops and all bishops on the same colour:
+            // 2 kings with one or more bishops and all bishops on the same colour
+            if (whiteBishops + blackBishops > 0) {
+                if (whiteKnights + whiteRooks + whiteQueens + blackKnights + blackRooks + blackQueens == 0) {
+                    if ((((board.whiteBishops | board.blackBishops) & BoardUtils.WHITE_SQUARES) == 0) ||
+                            (((board.whiteBishops | board.blackBishops) & BoardUtils.BLACK_SQUARES) == 0)) return 0;
+                }
+            }
         }
+
+        /* Evaluate material. Winning side will prefer to exchange pieces.
+        *  Add 3 centipawns to score for exchange with unequal material
+        *  Losing a piece (from balanced material) becomes more severe in the endgame.
+        */
+
+        if (whiteTotalMat + whitePawns > blackTotalMat + blackPawns) {
+
+        }
+
 
         return -1;
     }

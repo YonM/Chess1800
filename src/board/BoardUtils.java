@@ -102,11 +102,10 @@ public class BoardUtils {
         BITSET[0] = 0x1;
         for (i = 1; i < 64; i++) {
             BITSET[i] = BITSET[i - 1] << 1;
-
         }
         long tempBlackSquares = 0;
         for (i = 0; i < 64; i++) {
-            if ((i + RANKS[i]) % 2 != 0)
+            if ((i + RANKS[i]) % 2 == 0)
                 tempBlackSquares = BITSET[i];
         }
         BLACK_SQUARES = tempBlackSquares;
