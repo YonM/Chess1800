@@ -4,7 +4,8 @@ import bitboard.BitboardMagicAttacks;
 
 /**
  * Created by Yonathan on 08/12/2014.
- * Provides utilities for the Board.
+ * Provides utilities for the Board & other classes. Used to initialize a lot of data related to the board,
+ * evaluation etc.
  * Inspired by Stef Luijten's Winglet Chess @ http://web.archive.org/web/20120621100214/http://www.sluijten.com/winglet/
  */
 public class BoardUtils {
@@ -62,6 +63,8 @@ public class BoardUtils {
     public static final short[] CHARBITSET = new short[8];
     public static final long[] BITSET = new long[64];
     private static final int[][] BOARDINDEX = new int[8][8];
+    public static final long BLACK_SQUARES;
+    public static final long WHITE_SQUARES;
 
 
     //For castling
@@ -92,13 +95,23 @@ public class BoardUtils {
         return instance;
     }
 
-    public static void initialize(String fen) {
+    //Static initializer to initialize final variables
+    static {
         int i, rank, file, square;
         //Long with only 1 bit set.
         BITSET[0] = 0x1;
         for (i = 1; i < 64; i++) {
             BITSET[i] = BITSET[i - 1] << 1;
+
         }
+        long tempBlackSquares = 0;
+        for (i = 0; i < 64; i++) {
+            if ((i + RANKS[i]) % 2 != 0)
+                tempBlackSquares = BITSET[i];
+        }
+        BLACK_SQUARES = tempBlackSquares;
+        WHITE_SQUARES = ~BLACK_SQUARES;
+
         CHARBITSET[0] = 1;
         for (square = 1; square < 8; square++)
             CHARBITSET[square] = (short) (CHARBITSET[square - 1] << 1);
@@ -110,12 +123,15 @@ public class BoardUtils {
                 BOARDINDEX[rank][file] = (rank * 8) + file;
             }
         }
+    }
+    public static void initialize(String fen) {
         Board board = Board.getInstance();
         if (fen == null)
             board.initialize();
         else
             board.initializeFromFEN(fen);
 
+        //Generate attack tables
         BitboardMagicAttacks magicAttacks = new BitboardMagicAttacks();
 
     }
