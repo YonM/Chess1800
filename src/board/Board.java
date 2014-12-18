@@ -1,8 +1,10 @@
 package board;
 
 import bitboard.BitOperations;
+import evaluation.Evaluator;
 import fen.FENValidator;
 import move.Move;
+import movegen.MoveGenerator;
 
 /**
  * Created by Yonathan on 08/12/2014.
@@ -57,10 +59,12 @@ public class Board {
 
     public boolean viewRotated;
     private static Board instance;
+    private MoveGenerator movegen;
 
     public Board() {
         moves = new Move[MAX_GAME_LENGTH * 4];
         moveBufLen = new int[MAX_PLY];
+        movegen = MoveGenerator.getInstance();
     }
 
     public void initialize() {
@@ -235,12 +239,12 @@ public class Board {
         this.ePSquare = ePSquare;
         this.fiftyMove = fiftyMove;
 
-        material = BitOperations.popCount(whitePawns) * BoardUtils.PAWN_VALUE + BitOperations.popCount(whiteKnights) * BoardUtils.KNIGHT_VALUE
-                + BitOperations.popCount(whiteBishops) * BoardUtils.BISHOP_VALUE + BitOperations.popCount(whiteRooks) * BoardUtils.ROOK_VALUE
-                + BitOperations.popCount(whiteQueens) * BoardUtils.QUEEN_VALUE;
-        material -= (BitOperations.popCount(blackPawns) * BoardUtils.PAWN_VALUE + BitOperations.popCount(blackKnights) * BoardUtils.KNIGHT_VALUE
-                + BitOperations.popCount(blackBishops) * BoardUtils.BISHOP_VALUE + BitOperations.popCount(blackRooks) * BoardUtils.ROOK_VALUE
-                + BitOperations.popCount(blackQueens) * BoardUtils.QUEEN_VALUE);
+        material = BitOperations.popCount(whitePawns) * Evaluator.PAWN_VALUE + BitOperations.popCount(whiteKnights) * Evaluator.KNIGHT_VALUE
+                + BitOperations.popCount(whiteBishops) * Evaluator.BISHOP_VALUE + BitOperations.popCount(whiteRooks) * Evaluator.ROOK_VALUE
+                + BitOperations.popCount(whiteQueens) * Evaluator.QUEEN_VALUE;
+        material -= (BitOperations.popCount(blackPawns) * Evaluator.PAWN_VALUE + BitOperations.popCount(blackKnights) * Evaluator.KNIGHT_VALUE
+                + BitOperations.popCount(blackBishops) * Evaluator.BISHOP_VALUE + BitOperations.popCount(blackRooks) * Evaluator.ROOK_VALUE
+                + BitOperations.popCount(blackQueens) * Evaluator.QUEEN_VALUE);
 
     }
 
@@ -441,7 +445,7 @@ public class Board {
                 blackPieces ^= BoardUtils.BITSET[to - 8];
                 allPieces ^= fromToBoard | BoardUtils.BITSET[to - 8];
                 square[to - 8] = BoardUtils.EMPTY;
-                material += BoardUtils.PAWN_VALUE;
+                material += Evaluator.PAWN_VALUE;
             } else {
                 makeCapture(captured, to);
                 allPieces ^= fromBoard;
@@ -574,7 +578,7 @@ public class Board {
                 whitePieces ^= BoardUtils.BITSET[to + 8];
                 allPieces ^= fromToBoard | BoardUtils.BITSET[to + 8];
                 square[to + 8] = BoardUtils.EMPTY;
-                material -= BoardUtils.PAWN_VALUE;
+                material -= Evaluator.PAWN_VALUE;
             } else {
                 makeCapture(captured, to);
                 allPieces ^= fromBoard;
@@ -699,7 +703,7 @@ public class Board {
                 blackPieces ^= BoardUtils.BITSET[to - 8];
                 allPieces ^= fromToBoard | BoardUtils.BITSET[to - 8];
                 square[to - 8] = BoardUtils.BLACK_PAWN;
-                material -= BoardUtils.PAWN_VALUE;
+                material -= Evaluator.PAWN_VALUE;
             } else {
                 unmakeCapture(captured, to);
                 allPieces ^= fromBoard;
@@ -805,7 +809,7 @@ public class Board {
                 whitePieces ^= BoardUtils.BITSET[to + 8];
                 allPieces ^= fromToBoard | BoardUtils.BITSET[to + 8];
                 square[to + 8] = BoardUtils.EMPTY;
-                material += BoardUtils.PAWN_VALUE;
+                material += Evaluator.PAWN_VALUE;
             } else {
                 unmakeCapture(captured, to);
                 allPieces ^= fromBoard;
@@ -903,49 +907,80 @@ public class Board {
     private void makeWhitePromotion(int promotion, int to) {
         toBoard = BoardUtils.BITSET[to];
         whitePawns ^= toBoard;
-        material -= BoardUtils.PAWN_VALUE;
+        material -= Evaluator.PAWN_VALUE;
 
         if (promotion == 7) {
             whiteQueens ^= toBoard;
-            material += BoardUtils.QUEEN_VALUE;
+            material += Evaluator.QUEEN_VALUE;
         } else if (promotion == 6) {
             whiteRooks ^= toBoard;
-            material += BoardUtils.ROOK_VALUE;
+            material += Evaluator.ROOK_VALUE;
         } else if (promotion == 5) {
             whiteBishops ^= toBoard;
-            material += BoardUtils.BISHOP_VALUE;
+            material += Evaluator.BISHOP_VALUE;
         } else if (promotion == 3) {
             whiteKnights ^= toBoard;
-            material += BoardUtils.KNIGHT_VALUE;
+            material += Evaluator.KNIGHT_VALUE;
         }
     }
 
     private void makeBlackPromotion(int promotion, int to) {
+        toBoard = BoardUtils.BITSET[to];
+        blackPawns ^= toBoard;
+        material -= Evaluator.PAWN_VALUE;
+
+        if (promotion == 15) {
+            blackQueens ^= toBoard;
+            material -= Evaluator.QUEEN_VALUE;
+        } else if (promotion == 14) {
+            blackRooks ^= toBoard;
+            material -= Evaluator.ROOK_VALUE;
+        } else if (promotion == 13) {
+            blackBishops ^= toBoard;
+            material -= Evaluator.BISHOP_VALUE;
+        } else if (promotion == 11) {
+            blackKnights ^= toBoard;
+            material -= Evaluator.KNIGHT_VALUE;
+        }
 
     }
 
     private void unmakeWhitePromotion(int promotion, int to) {
         toBoard = BoardUtils.BITSET[to];
         whitePawns ^= toBoard;
-        material += BoardUtils.PAWN_VALUE;
+        material += Evaluator.PAWN_VALUE;
         if (promotion == 7) {
             whiteQueens ^= toBoard;
-            material -= BoardUtils.QUEEN_VALUE;
+            material -= Evaluator.QUEEN_VALUE;
         } else if (promotion == 6) {
             whiteRooks ^= toBoard;
-            material -= BoardUtils.ROOK_VALUE;
+            material -= Evaluator.ROOK_VALUE;
         } else if (promotion == 5) {
             whiteBishops ^= toBoard;
-            material -= BoardUtils.BISHOP_VALUE;
+            material -= Evaluator.BISHOP_VALUE;
         } else if (promotion == 3) {
             whiteKnights ^= toBoard;
-            material -= BoardUtils.KNIGHT_VALUE;
+            material -= Evaluator.KNIGHT_VALUE;
         }
-
     }
 
     private void unmakeBlackPromotion(int promotion, int to) {
-
+        toBoard = BoardUtils.BITSET[to];
+        blackPawns ^= toBoard;
+        material += Evaluator.PAWN_VALUE;
+        if (promotion == 15) {
+            blackQueens ^= toBoard;
+            material += Evaluator.QUEEN_VALUE;
+        } else if (promotion == 14) {
+            blackRooks ^= toBoard;
+            material += Evaluator.ROOK_VALUE;
+        } else if (promotion == 13) {
+            blackBishops ^= toBoard;
+            material += Evaluator.BISHOP_VALUE;
+        } else if (promotion == 11) {
+            blackKnights ^= toBoard;
+            material += Evaluator.KNIGHT_VALUE;
+        }
     }
 
 
@@ -955,7 +990,7 @@ public class Board {
             case 1:
                 whitePawns ^= toBoard;
                 whitePieces ^= toBoard;
-                material -= BoardUtils.PAWN_VALUE;
+                material -= Evaluator.PAWN_VALUE;
                 break;
             case 2:
                 whiteKing ^= toBoard;
@@ -964,17 +999,17 @@ public class Board {
             case 3:
                 whiteKnights ^= toBoard;
                 whitePieces ^= toBoard;
-                material -= BoardUtils.KNIGHT_VALUE;
+                material -= Evaluator.KNIGHT_VALUE;
                 break;
             case 5:
                 whiteBishops ^= toBoard;
                 whitePieces ^= toBoard;
-                material -= BoardUtils.BISHOP_VALUE;
+                material -= Evaluator.BISHOP_VALUE;
                 break;
             case 6:
                 whiteRooks ^= toBoard;
                 whitePieces ^= toBoard;
-                material -= BoardUtils.ROOK_VALUE;
+                material -= Evaluator.ROOK_VALUE;
                 if (to == BoardUtils.A1)
                     castleWhite &= ~CANCASTLEOOO;
                 if (to == BoardUtils.H1)
@@ -983,12 +1018,12 @@ public class Board {
             case 7:
                 whiteQueens ^= toBoard;
                 whitePieces ^= toBoard;
-                material -= BoardUtils.QUEEN_VALUE;
+                material -= Evaluator.QUEEN_VALUE;
                 break;
             case 9:
                 blackPawns ^= toBoard;
                 blackPieces ^= toBoard;
-                material += BoardUtils.PAWN_VALUE;
+                material += Evaluator.PAWN_VALUE;
                 break;
             case 10:
                 blackKing ^= toBoard;
@@ -997,17 +1032,17 @@ public class Board {
             case 11:
                 blackKnights ^= toBoard;
                 blackPieces ^= toBoard;
-                material += BoardUtils.KNIGHT_VALUE;
+                material += Evaluator.KNIGHT_VALUE;
                 break;
             case 13:
                 blackBishops ^= toBoard;
                 blackPieces ^= toBoard;
-                material += BoardUtils.BISHOP_VALUE;
+                material += Evaluator.BISHOP_VALUE;
                 break;
             case 14:
                 blackRooks ^= toBoard;
                 blackPieces ^= toBoard;
-                material += BoardUtils.ROOK_VALUE;
+                material += Evaluator.ROOK_VALUE;
                 if (to == BoardUtils.A8)
                     castleBlack &= ~CANCASTLEOOO;
                 if (to == BoardUtils.H8)
@@ -1016,7 +1051,7 @@ public class Board {
             case 15:
                 blackQueens ^= toBoard;
                 blackPieces ^= toBoard;
-                material += BoardUtils.QUEEN_VALUE;
+                material += Evaluator.QUEEN_VALUE;
                 break;
             default:
                 throw new RuntimeException("Unreachable");
@@ -1032,7 +1067,7 @@ public class Board {
                 whitePawns ^= toBoard;
                 whitePieces ^= toBoard;
                 square[to] = BoardUtils.WHITE_PAWN;
-                material += BoardUtils.PAWN_VALUE;
+                material += Evaluator.PAWN_VALUE;
                 break;
             case 2:
                 whiteKing ^= toBoard;
@@ -1043,31 +1078,31 @@ public class Board {
                 whiteKnights ^= toBoard;
                 whitePieces ^= toBoard;
                 square[to] = BoardUtils.WHITE_KNIGHT;
-                material += BoardUtils.KNIGHT_VALUE;
+                material += Evaluator.KNIGHT_VALUE;
                 break;
             case 5:
                 whiteBishops ^= toBoard;
                 whitePieces ^= toBoard;
                 square[to] = BoardUtils.WHITE_BISHOP;
-                material += BoardUtils.BISHOP_VALUE;
+                material += Evaluator.BISHOP_VALUE;
                 break;
             case 6:
                 whiteRooks ^= toBoard;
                 whitePieces ^= toBoard;
                 square[to] = BoardUtils.WHITE_ROOK;
-                material += BoardUtils.ROOK_VALUE;
+                material += Evaluator.ROOK_VALUE;
                 break;
             case 7:
                 whiteQueens ^= toBoard;
                 whitePieces ^= toBoard;
                 square[to] = BoardUtils.WHITE_QUEEN;
-                material += BoardUtils.QUEEN_VALUE;
+                material += Evaluator.QUEEN_VALUE;
                 break;
             case 9:
                 blackPawns ^= toBoard;
                 blackPieces ^= toBoard;
                 square[to] = BoardUtils.BLACK_PAWN;
-                material -= BoardUtils.PAWN_VALUE;
+                material -= Evaluator.PAWN_VALUE;
                 break;
             case 10:
                 blackKing ^= toBoard;
@@ -1078,29 +1113,40 @@ public class Board {
                 blackKnights ^= toBoard;
                 blackPieces ^= toBoard;
                 square[to] = BoardUtils.BLACK_KNIGHT;
-                material -= BoardUtils.KNIGHT_VALUE;
+                material -= Evaluator.KNIGHT_VALUE;
                 break;
             case 13:
                 blackBishops ^= toBoard;
                 blackPieces ^= toBoard;
                 square[to] = BoardUtils.BLACK_BISHOP;
-                material -= BoardUtils.BISHOP_VALUE;
+                material -= Evaluator.BISHOP_VALUE;
                 break;
             case 14:
                 blackRooks ^= toBoard;
                 blackPieces ^= toBoard;
                 square[to] = BoardUtils.BLACK_ROOK;
-                material -= BoardUtils.ROOK_VALUE;
+                material -= Evaluator.ROOK_VALUE;
                 break;
             case 15:
                 blackQueens ^= toBoard;
                 blackPieces ^= toBoard;
                 square[to] = BoardUtils.BLACK_QUEEN;
-                material -= BoardUtils.QUEEN_VALUE;
+                material -= Evaluator.QUEEN_VALUE;
                 break;
             default:
                 throw new RuntimeException("Unreachable");
         }
+    }
+
+    public boolean isOtherKingAttacked() {
+        if (whiteToMove) return movegen.isAttacked(blackKing, whiteToMove);
+        return movegen.isAttacked(whiteKing, whiteToMove);
+
+    }
+
+    public boolean isOwnKingAttacked() {
+        if (whiteToMove) return movegen.isAttacked(whiteKing, !whiteToMove);
+        return movegen.isAttacked(blackKing, !whiteToMove);
     }
 
     private class GameLineRecord {

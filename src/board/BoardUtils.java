@@ -57,13 +57,7 @@ public class BoardUtils {
     public final static int BLACK_QUEEN = 15;
 
     //For evaluation
-    public final static int PAWN_VALUE = 100;
-    public final static int KNIGHT_VALUE = 325;
-    public final static int BISHOP_VALUE = 325;
-    public final static int ROOK_VALUE = 500;
-    public final static int QUEEN_VALUE = 975;
-    public final static int KING_VALUE = 999999;
-    public final static int CHECKMATE = KING_VALUE;
+
 
     public static final short[] CHARBITSET = new short[8];
     public static final long[] BITSET = new long[64];
