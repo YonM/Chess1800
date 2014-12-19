@@ -1,6 +1,4 @@
 package movegen;
-
-import bitboard.BitOperations;
 import bitboard.BitboardAttacks;
 import bitboard.BitboardMagicAttacks;
 import board.Board;
@@ -341,7 +339,7 @@ public class MoveGenerator {
         int to;
         if (white_to_move) { //Test for attacks from WHITE to target;
             while (tempTarget != 0) {
-                to = (int) BitOperations.lsb(tempTarget);
+                to = (int) Long.lowestOneBit(tempTarget);
                 if ((board.whitePawns & BitboardAttacks.BLACK_PAWN_ATTACKS[to]) != 0 || (board.whiteKnights & BitboardAttacks.KNIGHT_ATTACKS[to]) != 0
                         || (board.whiteKing & BitboardAttacks.KING_ATTACKS[to]) != 0)
                     return true;
@@ -365,7 +363,7 @@ public class MoveGenerator {
 
         } else {            //test for attacks from BLACK to target;
             while (tempTarget != 0) {
-                to = (int) BitOperations.lsb(tempTarget);
+                to = (int) Long.lowestOneBit(tempTarget);
                 if ((board.blackPawns & BitboardAttacks.WHITE_PAWN_ATTACKS[to]) != 0 || (board.blackKnights & BitboardAttacks.KNIGHT_ATTACKS[to]) != 0
                         || (board.blackKing & BitboardAttacks.KING_ATTACKS[to]) != 0)
                     return true;
@@ -392,13 +390,13 @@ public class MoveGenerator {
     }
 
     private void setToAndCapture() {
-        to = (int) BitOperations.lsb(from);
+        to = (int) Long.lowestOneBit(from);
         move.setTo(to);
         move.setCapture(board.square[to]);
     }
 
     private void setFrom() {
-        from = (int) BitOperations.lsb(tempPiece);
+        from = (int) Long.lowestOneBit(tempPiece);
         move.setFrom(from);
     }
 

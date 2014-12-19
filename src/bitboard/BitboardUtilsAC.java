@@ -3,7 +3,7 @@ package bitboard;
 /**
  * Created by Yonathan on 07/12/2014.
  */
-public class BitboardUtils {
+public class BitboardUtilsAC {
     public static final long A8 = 0x8000000000000000L;
     public static final long H1 = 0x0000000000000001L;
 

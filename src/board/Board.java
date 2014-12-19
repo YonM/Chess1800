@@ -1,6 +1,4 @@
 package board;
-
-import bitboard.BitOperations;
 import evaluation.Evaluator;
 import fen.FENValidator;
 import move.Move;
@@ -239,12 +237,12 @@ public class Board {
         this.ePSquare = ePSquare;
         this.fiftyMove = fiftyMove;
 
-        material = BitOperations.popCount(whitePawns) * Evaluator.PAWN_VALUE + BitOperations.popCount(whiteKnights) * Evaluator.KNIGHT_VALUE
-                + BitOperations.popCount(whiteBishops) * Evaluator.BISHOP_VALUE + BitOperations.popCount(whiteRooks) * Evaluator.ROOK_VALUE
-                + BitOperations.popCount(whiteQueens) * Evaluator.QUEEN_VALUE;
-        material -= (BitOperations.popCount(blackPawns) * Evaluator.PAWN_VALUE + BitOperations.popCount(blackKnights) * Evaluator.KNIGHT_VALUE
-                + BitOperations.popCount(blackBishops) * Evaluator.BISHOP_VALUE + BitOperations.popCount(blackRooks) * Evaluator.ROOK_VALUE
-                + BitOperations.popCount(blackQueens) * Evaluator.QUEEN_VALUE);
+        material = Long.bitCount(whitePawns) * Evaluator.PAWN_VALUE + Long.bitCount(whiteKnights) * Evaluator.KNIGHT_VALUE
+                + Long.bitCount(whiteBishops) * Evaluator.BISHOP_VALUE + Long.bitCount(whiteRooks) * Evaluator.ROOK_VALUE
+                + Long.bitCount(whiteQueens) * Evaluator.QUEEN_VALUE;
+        material -= (Long.bitCount(blackPawns) * Evaluator.PAWN_VALUE + Long.bitCount(blackKnights) * Evaluator.KNIGHT_VALUE
+                + Long.bitCount(blackBishops) * Evaluator.BISHOP_VALUE + Long.bitCount(blackRooks) * Evaluator.ROOK_VALUE
+                + Long.bitCount(blackQueens) * Evaluator.QUEEN_VALUE);
 
     }
 

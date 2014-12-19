@@ -46,14 +46,14 @@ public class BitboardMagicAttacksAC extends BitboardAttacksAC {
         byte i = 0;
         while (square != 0) {
 
-            rookMask[i] = squareAttackedAuxSliderMask(square, +8, BitboardUtils.b_u) //
-                    | squareAttackedAuxSliderMask(square, -8, BitboardUtils.b_d) //
-                    | squareAttackedAuxSliderMask(square, -1, BitboardUtils.b_r) //
-                    | squareAttackedAuxSliderMask(square, +1, BitboardUtils.b_l);
-            bishopMask[i] = squareAttackedAuxSliderMask(square, +9, BitboardUtils.b_u | BitboardUtils.b_l) //
-                    | squareAttackedAuxSliderMask(square, +7, BitboardUtils.b_u | BitboardUtils.b_r) //
-                    | squareAttackedAuxSliderMask(square, -7, BitboardUtils.b_d | BitboardUtils.b_l) //
-                    | squareAttackedAuxSliderMask(square, -9, BitboardUtils.b_d | BitboardUtils.b_r);
+            rookMask[i] = squareAttackedAuxSliderMask(square, +8, BitboardUtilsAC.b_u) //
+                    | squareAttackedAuxSliderMask(square, -8, BitboardUtilsAC.b_d) //
+                    | squareAttackedAuxSliderMask(square, -1, BitboardUtilsAC.b_r) //
+                    | squareAttackedAuxSliderMask(square, +1, BitboardUtilsAC.b_l);
+            bishopMask[i] = squareAttackedAuxSliderMask(square, +9, BitboardUtilsAC.b_u | BitboardUtilsAC.b_l) //
+                    | squareAttackedAuxSliderMask(square, +7, BitboardUtilsAC.b_u | BitboardUtilsAC.b_r) //
+                    | squareAttackedAuxSliderMask(square, -7, BitboardUtilsAC.b_d | BitboardUtilsAC.b_l) //
+                    | squareAttackedAuxSliderMask(square, -9, BitboardUtilsAC.b_d | BitboardUtilsAC.b_r);
 
             // And now generate magics
             int rookPositions = (1 << magicNumberShiftsRook[i]);

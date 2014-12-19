@@ -1,5 +1,4 @@
 package bitboard;
-
 import board.Board;
 import board.BoardUtils;
 

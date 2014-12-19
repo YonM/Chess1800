@@ -1,9 +1,8 @@
 package evaluation;
 
-import bitboard.BitOperations;
+import bitboard.BitboardAttacks;
 import board.Board;
 import board.BoardUtils;
-
 /**
  * Created by Yonathan on 18/12/2014.
  * Evaluation class based on http://web.archive.org/web/20120112113825/http://www.sluijten.com/winglet/
@@ -12,7 +11,7 @@ import board.BoardUtils;
  * -Bonus for Bishop pair.
  * -Pawn position and structure (giving a bonus for passed pawns and penalizing doubled, isolated or backward pawns)
  * -Piece Square Tables including bonus for Rooking being on open file or behind a passed pawn.
- * -King protection by own pawns in the opening and midgame and away from enemy pieces.
+ * -King protection by own pawns in the opening and mid-game and away from enemy pieces.
  * -King positional bonus/penalty different in end game, must be central and near his own pawns.
  *
  * Scores calculated from white perspective and then returns the score from the perspective
@@ -33,7 +32,7 @@ public class Evaluator {
     private final static int PENALTY_ISOLATED_PAWN = 20;
     private final static int PENALTY_BACKWARD_PAWN = 8;
     private final static int BONUS_PASSED_PAWN = 20;
-    private final static int BONUS_BISHOP_PAIR = 10;
+    private final static int BONUS_BISHOP_PAIR = 50;
     private final static int BONUS_ROOK_BEHIND_PASSED_PAWN = 20;
     private final static int BONUS_ROOK_ON_OPEN_FILE = 20;
     private final static int BONUS_TWO_ROOKS_ON_OPEN_FILE = 20;
@@ -147,7 +146,11 @@ public class Evaluator {
     };
 
     //Pawn structure tables
-    public static final long[] PASSED_WHITE;
+    private static final long[] PASSED_WHITE;
+    private static final long[] ISOLATED_WHITE;
+    private static final long[] BACKWARD_WHITE;
+    private static final long[] STRONG_SAFE_WHITE;
+    private static final long[] WEAK_SAFE_WHITE;
 
     //Static initializer
     static {
@@ -185,8 +188,14 @@ public class Evaluator {
 
         //Pawn structures
         PASSED_WHITE = new long[64];
+        ISOLATED_WHITE = new long[64];
+        BACKWARD_WHITE = new long[64];
+        STRONG_SAFE_WHITE = new long[64];
+        WEAK_SAFE_WHITE = new long[64];
+
         int rank, file;
         for (i = 0; i < 64; i++) {
+            //Passed white pawns
             for (rank = BoardUtils.RANKS[i] + 1; rank < 7; rank++) {
                 file = BoardUtils.FILES[i];
                 if (file > 0)
@@ -195,9 +204,41 @@ public class Evaluator {
                 if (file < 7)
                     PASSED_WHITE[i] ^= BoardUtils.BITSET[BoardUtils.getIndex(rank, file + 1)];
             }
+            //Isolated white pawns
+            for (rank = 1; rank < 7; rank++) {
+                file = BoardUtils.FILES[i];
+                if (file > 0) ISOLATED_WHITE[i] ^= BoardUtils.BITSET[BoardUtils.getIndex(rank, file - 1)];
+                if (file < 7) ISOLATED_WHITE[i] ^= BoardUtils.BITSET[BoardUtils.getIndex(rank, file + 1)];
+            }
 
+            //Backward white pawns
+            for (rank = 1; rank < 7; rank++) {
+                file = BoardUtils.FILES[i];
+                if (file > 0) BACKWARD_WHITE[i] ^= BoardUtils.BITSET[BoardUtils.getIndex(rank, file - 1)];
+                if (file > 7) BACKWARD_WHITE[i] ^= BoardUtils.BITSET[BoardUtils.getIndex(rank, file + 1)];
+            }
 
         }
+
+        //Strong/Weak squares for white pawns, used for king safety. Only if the king is on the first 3 ranks.
+        for (i = 0; i < 24; i++) {
+            STRONG_SAFE_WHITE[i] ^= BoardUtils.BITSET[i + 8];
+            file = BoardUtils.FILES[i];
+            if (file > 0) {
+                STRONG_SAFE_WHITE[i] ^= BoardUtils.BITSET[i + 7];
+            } else {
+                STRONG_SAFE_WHITE[i] ^= BoardUtils.BITSET[i + 10];
+            }
+            if (file < 7) {
+                STRONG_SAFE_WHITE[i] ^= BoardUtils.BITSET[i + 9];
+            } else {
+                STRONG_SAFE_WHITE[i] ^= BoardUtils.BITSET[i + 6];
+            }
+            WEAK_SAFE_WHITE[i] = STRONG_SAFE_WHITE[i] << 8;
+        }
+
+
+
 
     }
 
@@ -212,22 +253,22 @@ public class Evaluator {
 
     public int eval(Board board) {
         score = board.material;
-        whiteKingSquare = (int) BitOperations.lsb(board.whiteKing);
-        blackKingSquare = (int) BitOperations.lsb(board.blackKing);
+        whiteKingSquare = (int) Long.lowestOneBit(board.whiteKing);
+        blackKingSquare = (int) Long.lowestOneBit(board.blackKing);
 
-        whitePawns = BitOperations.popCount(board.whitePawns);
-        whiteKnights = BitOperations.popCount(board.whiteKnights);
-        whiteBishops = BitOperations.popCount(board.whiteBishops);
-        whiteRooks = BitOperations.popCount(board.whiteRooks);
-        whiteQueens = BitOperations.popCount(board.whiteQueens);
+        whitePawns = Long.bitCount(board.whitePawns);
+        whiteKnights = Long.bitCount(board.whiteKnights);
+        whiteBishops = Long.bitCount(board.whiteBishops);
+        whiteRooks = Long.bitCount(board.whiteRooks);
+        whiteQueens = Long.bitCount(board.whiteQueens);
         whiteTotalMat = 3 * whiteKnights + 3 * whiteBishops + 5 * whiteRooks + 10 * whiteQueens;
         whiteTotal = whitePawns + whiteKnights + whiteBishops + whiteRooks + whiteQueens;
 
-        blackPawns = BitOperations.popCount(board.blackPawns);
-        blackKnights = BitOperations.popCount(board.blackKnights);
-        blackBishops = BitOperations.popCount(board.blackBishops);
-        blackRooks = BitOperations.popCount(board.blackRooks);
-        blackQueens = BitOperations.popCount(board.blackQueens);
+        blackPawns = Long.bitCount(board.blackPawns);
+        blackKnights = Long.bitCount(board.blackKnights);
+        blackBishops = Long.bitCount(board.blackBishops);
+        blackRooks = Long.bitCount(board.blackRooks);
+        blackQueens = Long.bitCount(board.blackQueens);
         blackTotalMat = 3 * blackKnights + 3 * blackBishops + 5 * blackRooks + 10 * blackQueens;
         blackTotal = blackPawns + blackKnights + blackBishops + blackRooks + blackQueens;
 
@@ -272,6 +313,8 @@ public class Evaluator {
 
     private void evaluateWhiteMaterial(Board board) {
         evaluateWhitePawns(board);
+        evaluateWhiteKnights(board);
+        evaluateWhiteBishops(board);
 
     }
 
@@ -279,13 +322,55 @@ public class Evaluator {
         whitePassedPawns = 0;
         temp = board.whitePawns;
         while (temp != 0) {
-            square = (int) BitOperations.lsb(temp);
+            square = (int) Long.lowestOneBit(temp);
 
             score += PAWN_POS_W[square];
             score += PAWN_OPPONENT_DISTANCE[DISTANCE[square][blackKingSquare]];
-            if (endGame) {
+            if (endGame)
                 score += PAWN_OWN_DISTANCE[DISTANCE[square][whiteKingSquare]];
+
+            //Passed pawn bonus
+            if ((PASSED_WHITE[square] * board.blackPawns) == 0) {
+                score += BONUS_PASSED_PAWN;
+                whitePassedPawns ^= BoardUtils.BITSET[square];
             }
+
+            //Doubled pawn penalty
+            if ((board.whitePawns ^ BoardUtils.BITSET[square] & BitboardAttacks.FILEMASK[square]) != 0)
+                score -= PENALTY_DOUBLED_PAWN;
+
+            //Isolated pawn penalty
+            if ((ISOLATED_WHITE[square] & board.whitePawns) == 0) {
+                score -= PENALTY_ISOLATED_PAWN;
+            } else {
+                /*  Not isolated but maybe backwards if:
+                 *  1. the next square is controlled by an enemy pawn - PAWN_ATTACKS board used to check. AND
+                 *  2. No pawns left that can defend the pawn.
+                */
+
+                if ((BitboardAttacks.WHITE_PAWN_ATTACKS[square + 8] & board.blackPawns) != 0)
+                    if ((BACKWARD_WHITE[square] & board.whitePawns) == 0)
+                        score -= PENALTY_BACKWARD_PAWN;
+            }
+            temp ^= BoardUtils.BITSET[square];
         }
+    }
+
+    private void evaluateWhiteKnights(Board board) {
+        temp = board.whiteKnights;
+        while (temp != 0) {
+            square = (int) Long.lowestOneBit(temp);
+            score += KNIGHT_POS_W[square];
+            score += KNIGHT_DISTANCE[DISTANCE[square][blackKingSquare]];
+            temp ^= BoardUtils.BITSET[square];
+        }
+
+    }
+
+    private void evaluateWhiteBishops(Board board) {
+        if (board.whiteBishops != 0)
+            if ((board.whiteBishops & (board.whiteBishops - 1)) != 0)
+                score += BONUS_BISHOP_PAIR;
+
     }
 }
