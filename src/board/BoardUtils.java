@@ -139,6 +139,13 @@ public class BoardUtils {
         return BOARDINDEX[rank][file];
     }
 
+    public static int getIndexFromBoard(long board) {
+        return (Long.numberOfTrailingZeros(Long.lowestOneBit(board)));
+    }
+
+    public static int getLastIndexFromBoard(long board) {
+        return (Long.numberOfTrailingZeros(Long.highestOneBit(board)));
+    }
     //public static
 
 

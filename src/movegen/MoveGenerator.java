@@ -339,7 +339,7 @@ public class MoveGenerator {
         int to;
         if (white_to_move) { //Test for attacks from WHITE to target;
             while (tempTarget != 0) {
-                to = (int) Long.lowestOneBit(tempTarget);
+                to = BoardUtils.getIndexFromBoard(tempTarget);
                 if ((board.whitePawns & BitboardAttacks.BLACK_PAWN_ATTACKS[to]) != 0 || (board.whiteKnights & BitboardAttacks.KNIGHT_ATTACKS[to]) != 0
                         || (board.whiteKing & BitboardAttacks.KING_ATTACKS[to]) != 0)
                     return true;
@@ -363,7 +363,7 @@ public class MoveGenerator {
 
         } else {            //test for attacks from BLACK to target;
             while (tempTarget != 0) {
-                to = (int) Long.lowestOneBit(tempTarget);
+                to = BoardUtils.getIndexFromBoard(tempTarget);
                 if ((board.blackPawns & BitboardAttacks.WHITE_PAWN_ATTACKS[to]) != 0 || (board.blackKnights & BitboardAttacks.KNIGHT_ATTACKS[to]) != 0
                         || (board.blackKing & BitboardAttacks.KING_ATTACKS[to]) != 0)
                     return true;
@@ -390,13 +390,13 @@ public class MoveGenerator {
     }
 
     private void setToAndCapture() {
-        to = (int) Long.lowestOneBit(from);
+        to = BoardUtils.getIndexFromBoard(from);
         move.setTo(to);
         move.setCapture(board.square[to]);
     }
 
     private void setFrom() {
-        from = (int) Long.lowestOneBit(tempPiece);
+        from = BoardUtils.getIndexFromBoard(tempPiece);
         move.setFrom(from);
     }
 
