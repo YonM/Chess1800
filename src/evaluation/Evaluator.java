@@ -146,6 +146,9 @@ public class Evaluator {
             0, 10, 20, 30, 30, 20, 10, 0
     };
 
+    //Pawn structure tables
+    public static final long[] PASSED_WHITE;
+
     //Static initializer
     static {
         //White Piece Square Tables
@@ -178,6 +181,22 @@ public class Evaluator {
                 else
                     DISTANCE[i][square] = Math.abs(BoardUtils.FILES[i] - BoardUtils.FILES[square]);
             }
+        }
+
+        //Pawn structures
+        PASSED_WHITE = new long[64];
+        int rank, file;
+        for (i = 0; i < 64; i++) {
+            for (rank = BoardUtils.RANKS[i] + 1; rank < 7; rank++) {
+                file = BoardUtils.FILES[i];
+                if (file > 0)
+                    PASSED_WHITE[i] ^= BoardUtils.BITSET[BoardUtils.getIndex(rank, file - 1)];
+                PASSED_WHITE[i] ^= BoardUtils.BITSET[BoardUtils.getIndex(rank, file)];
+                if (file < 7)
+                    PASSED_WHITE[i] ^= BoardUtils.BITSET[BoardUtils.getIndex(rank, file + 1)];
+            }
+
+
         }
 
     }
