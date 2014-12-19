@@ -224,20 +224,6 @@ public class Evaluator {
             }
 
         }
-        //Mirrored for black pawns
-        PASSED_BLACK = new long[64];
-        ISOLATED_BLACK = new long[64];
-        BACKWARD_BLACK = new long[64];
-        STRONG_SAFE_BLACK = new long[64];
-        WEAK_SAFE_BLACK = new long[64];
-        for (i = 0; i < 64; i++) {
-            for (square = 0; square < 64; square++) {
-                if ((PASSED_WHITE[i] & BoardUtils.BITSET[square]) != 0)
-                    PASSED_BLACK[MIRROR[i]] |= BoardUtils.BITSET[MIRROR[square]];
-                if ((ISOLATED_WHITE[i] & BoardUtils.BITSET[square]) != 0)
-                    ISOLATED_BLACK[MIRROR[i]] |= BoardUtils.BITSET[MIRROR[square]];
-            }
-        }
 
         //Strong/Weak squares for white pawns, used for king safety. Only if the king is on the first 3 ranks.
         for (i = 0; i < 24; i++) {
@@ -255,9 +241,31 @@ public class Evaluator {
             }
             WEAK_SAFE_WHITE[i] = STRONG_SAFE_WHITE[i] << 8;
         }
+        //Mirrored for black pawns
+        PASSED_BLACK = new long[64];
+        ISOLATED_BLACK = new long[64];
+        BACKWARD_BLACK = new long[64];
+        STRONG_SAFE_BLACK = new long[64];
+        WEAK_SAFE_BLACK = new long[64];
+        for (i = 0; i < 64; i++) {
+            for (square = 0; square < 64; square++) {
+                if ((PASSED_WHITE[i] & BoardUtils.BITSET[square]) != 0)
+                    PASSED_BLACK[MIRROR[i]] |= BoardUtils.BITSET[MIRROR[square]];
 
+                if ((ISOLATED_WHITE[i] & BoardUtils.BITSET[square]) != 0)
+                    ISOLATED_BLACK[MIRROR[i]] |= BoardUtils.BITSET[MIRROR[square]];
 
+                if ((BACKWARD_WHITE[i] & BoardUtils.BITSET[square]) != 0)
+                    BACKWARD_BLACK[MIRROR[i]] |= BoardUtils.BITSET[MIRROR[square]];
 
+                if ((STRONG_SAFE_WHITE[i] & BoardUtils.BITSET[square]) != 0)
+                    STRONG_SAFE_BLACK[MIRROR[i]] |= BoardUtils.BITSET[MIRROR[square]];
+
+                if ((WEAK_SAFE_WHITE[i] & BoardUtils.BITSET[square]) != 0)
+                    WEAK_SAFE_BLACK[MIRROR[i]] |= BoardUtils.BITSET[MIRROR[square]];
+
+            }
+        }
 
     }
 
@@ -395,7 +403,6 @@ public class Evaluator {
             score += KNIGHT_DISTANCE[DISTANCE[square][blackKingSquare]];
             temp ^= BoardUtils.BITSET[square];
         }
-
     }
 
     private void evaluateWhiteBishops(Board board) {
@@ -452,29 +459,29 @@ public class Evaluator {
     }
 
     private void evaluateBlackPawns(Board board) {
-        whitePassedPawns = 0;
-        temp = board.whitePawns;
+        blackPassedPawns = 0;
+        temp = board.blackPawns;
         while (temp != 0) {
             square = BoardUtils.getIndexFromBoard(temp);
 
-            score += PAWN_POS_W[square];
-            score += PAWN_OPPONENT_DISTANCE[DISTANCE[square][whiteKingSquare]];
+            score -= PAWN_POS_B[square];
+            score -= PAWN_OPPONENT_DISTANCE[DISTANCE[square][whiteKingSquare]];
             if (endGame)
-                score += PAWN_OWN_DISTANCE[DISTANCE[square][blackKingSquare]];
+                score -= PAWN_OWN_DISTANCE[DISTANCE[square][blackKingSquare]];
 
             //Passed pawn bonus
             if ((PASSED_BLACK[square] * board.blackPawns) == 0) {
-                score += BONUS_PASSED_PAWN;
+                score -= BONUS_PASSED_PAWN;
                 blackPassedPawns ^= BoardUtils.BITSET[square];
             }
 
             //Doubled pawn penalty
             if ((board.blackPawns ^ BoardUtils.BITSET[square] & BitboardAttacks.FILEMASK[square]) != 0)
-                score -= PENALTY_DOUBLED_PAWN;
+                score += PENALTY_DOUBLED_PAWN;
 
             //Isolated pawn penalty
             if ((ISOLATED_BLACK[square] & board.blackPawns) == 0) {
-                score -= PENALTY_ISOLATED_PAWN;
+                score += PENALTY_ISOLATED_PAWN;
             } else {
                 /*  Not isolated but maybe backwards if:
                  *  1. the next square is controlled by an enemy pawn - PAWN_ATTACKS board used to check. AND
@@ -483,30 +490,70 @@ public class Evaluator {
 
                 if ((BitboardAttacks.BLACK_PAWN_ATTACKS[square + 8] & board.blackPawns) != 0)
                     if ((BACKWARD_BLACK[square] & board.blackPawns) == 0)
-                        score -= PENALTY_BACKWARD_PAWN;
+                        score += PENALTY_BACKWARD_PAWN;
             }
             temp ^= BoardUtils.BITSET[square];
         }
     }
 
     private void evaluateBlackKnights(Board board) {
-
+        temp = board.blackKnights;
+        while (temp != 0) {
+            square = BoardUtils.getIndexFromBoard(temp);
+            score -= KNIGHT_POS_B[square];
+            score -= KNIGHT_DISTANCE[DISTANCE[square][whiteKingSquare]];
+            temp ^= BoardUtils.BITSET[square];
+        }
     }
 
     private void evaluateBlackBishops(Board board) {
-
+        if (board.blackBishops != 0)
+            if ((board.blackBishops & (board.blackBishops - 1)) != 0)
+                score -= BONUS_BISHOP_PAIR;
+        temp = board.blackBishops;
+        while (temp != 0) {
+            square = BoardUtils.getIndexFromBoard(temp);
+            score -= BISHOP_POS_B[square];
+            score -= BISHOP_DISTANCE[DISTANCE[square][whiteKingSquare]];
+            temp ^= BoardUtils.BITSET[square];
+        }
     }
 
     private void evaluateBlackRooks(Board board) {
-
+        temp = board.blackRooks;
+        while (temp != 0) {
+            square = BoardUtils.getIndexFromBoard(temp);
+            score -= ROOK_POS_B[square];
+            score -= ROOK_DISTANCE[DISTANCE[square][whiteKingSquare]];
+            if ((BitboardAttacks.FILEMASK[square] & blackPassedPawns) != 0)
+                if (square < BoardUtils.getLastIndexFromBoard((BitboardAttacks.FILEMASK[square] & blackPassedPawns)))
+                    score -= BONUS_ROOK_BEHIND_PASSED_PAWN;
+            temp ^= BoardUtils.BITSET[square];
+        }
     }
 
     private void evaluateBlackQueens(Board board) {
-
+        temp = board.blackQueens;
+        while (temp != 0) {
+            square = BoardUtils.getIndexFromBoard(temp);
+            score -= QUEEN_POS_B[square];
+            score -= QUEEN_DISTANCE[DISTANCE[square][whiteKingSquare]];
+            temp ^= BoardUtils.BITSET[square];
+        }
     }
 
     private void evaluateBlackKing(Board board) {
+        if (endGame) {
+            score -= KING_POS_ENDGAME_B[blackKingSquare];
+        } else {
+            score -= KING_POS_B[blackKingSquare];
+            //Not end-game so add pawn shield bonus
+            //Strong pawn shield bonus if pawns are close to the king
+            score -= BONUS_PAWN_SHIELD_STRONG * Long.bitCount((STRONG_SAFE_BLACK[blackKingSquare] & board.blackPawns));
 
+            //Weak pawn shield bonus if pawns are not very close to the king
+            score -= BONUS_PAWN_SHIELD_WEAK * Long.bitCount((WEAK_SAFE_WHITE[blackKingSquare] & board.blackPawns));
+        }
     }
 
 
