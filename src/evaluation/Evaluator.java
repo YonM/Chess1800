@@ -335,7 +335,8 @@ public class Evaluator {
         }
         evaluateWhiteMaterial(board);
         evaluateBlackMaterial(board);
-        return -1;
+        if (board.whiteToMove) return score;
+        return -score;
     }
 
     private void evaluateWhiteMaterial(Board board) {
