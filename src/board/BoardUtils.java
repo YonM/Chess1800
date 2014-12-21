@@ -76,8 +76,8 @@ public class BoardUtils {
 
     public BoardUtils() {
         initialize(null);
-        Board board = Board.getInstance();
-        board.initialize();
+        Board b = Board.getInstance();
+        b.initialize();
 
     }
 
@@ -124,11 +124,11 @@ public class BoardUtils {
         }
     }
     public static void initialize(String fen) {
-        Board board = Board.getInstance();
+        Board b = Board.getInstance();
         if (fen == null)
-            board.initialize();
+            b.initialize();
         else
-            board.initializeFromFEN(fen);
+            b.initializeFromFEN(fen);
 
         //Generate attack tables
         BitboardMagicAttacks magicAttacks = new BitboardMagicAttacks();

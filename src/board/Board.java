@@ -314,7 +314,7 @@ public class Board {
         return instance;
     }
 
-    public void doMove(Move move) {
+    public void makeMove(Move move) {
         from = move.getFrom();
         to = move.getTo();
         piece = move.getPiece();
@@ -371,7 +371,7 @@ public class Board {
         whiteToMove = !whiteToMove;
     }
 
-    public void undoMove(Move move) {
+    public void unmakeMove(Move move) {
         piece = move.getPiece();
         captured = move.getCapture();
         from = move.getFrom();
