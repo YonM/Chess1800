@@ -46,6 +46,7 @@ public class MoveGenerator {
 
         } else {
             //Black's move
+            targets = ~board.blackPieces;
             genBlackPawnMoves();
             genBlackKnightMoves();
             genBlackBishopMoves();

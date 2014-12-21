@@ -1,7 +1,9 @@
 package evaluation;
+
 import bitboard.BitboardAttacks;
 import board.Board;
 import board.BoardUtils;
+
 /**
  * Created by Yonathan on 18/12/2014.
  * Evaluation class based on http://web.archive.org/web/20120112113825/http://www.sluijten.com/winglet/
@@ -429,6 +431,12 @@ public class Evaluator {
             if ((BitboardAttacks.FILEMASK[square] & whitePassedPawns) != 0)
                 if (square < BoardUtils.getLastIndexFromBoard((BitboardAttacks.FILEMASK[square] & whitePassedPawns)))
                     score += BONUS_ROOK_BEHIND_PASSED_PAWN;
+
+/*            if((BitboardAttacks.FILEMASK[square]&board.blackPawns)==0) {
+                score += BONUS_ROOK_ON_OPEN_FILE;
+                if((BitboardAttacks.FILEMASK[square]& (board.whiteRooks & ~Long.lowestOneBit(temp)))!=0)
+                    score+=BONUS_TWO_ROOKS_ON_OPEN_FILE;
+            }*/
             temp ^= BoardUtils.BITSET[square];
         }
     }
@@ -529,6 +537,11 @@ public class Evaluator {
             if ((BitboardAttacks.FILEMASK[square] & blackPassedPawns) != 0)
                 if (square < BoardUtils.getLastIndexFromBoard((BitboardAttacks.FILEMASK[square] & blackPassedPawns)))
                     score -= BONUS_ROOK_BEHIND_PASSED_PAWN;
+/*            if ((BitboardAttacks.FILEMASK[square] & board.whitePawns) == 0) {
+                score += BONUS_ROOK_ON_OPEN_FILE;
+                if ((BitboardAttacks.FILEMASK[square] & (board.blackRooks & ~Long.lowestOneBit(temp))) != 0)
+                    score += BONUS_TWO_ROOKS_ON_OPEN_FILE;
+            }*/
             temp ^= BoardUtils.BITSET[square];
         }
     }
