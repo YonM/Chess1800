@@ -432,8 +432,7 @@ public class Board {
     }
 
     public int repetitionCount() {
-        int i, lastI, rep;
-        rep = 1;    // current position is at least 1 repetition
+        int i, lastI, rep = 1; // current position is at least 1 repetition
         lastI = endOfSearch - fiftyMove;          // we don't need to go back all the way
         for (i = endOfSearch - 2; i >= lastI; i -= 2)   // Only search for current side, skip opposite side
         {
