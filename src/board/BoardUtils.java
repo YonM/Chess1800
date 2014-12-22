@@ -40,6 +40,8 @@ public class BoardUtils {
             7, 7, 7, 7, 7, 7, 7, 7
     };
 
+    public final static char[] PIECENAMES = {' ', 'P', 'K', 'N', ' ', 'B', 'R', 'Q',
+            ' ', 'p', 'k', 'n', ' ', 'b', 'r', 'q'};
 //    public final static char WHITE_MOVE = 0;
 //    public final static char BLACK_MOVE = 1;
 

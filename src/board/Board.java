@@ -4,6 +4,7 @@ import fen.FENValidator;
 import move.Move;
 import movegen.MoveGenerator;
 import search.AlphaBetaPVS;
+import zobrist.Zobrist;
 
 import javax.swing.*;
 
@@ -61,6 +62,7 @@ public class Board {
     public boolean viewRotated;
     private static Board instance;
 
+    public long key;
 
     public Board() {
         moves = new Move[MAX_GAME_LENGTH * 4];
@@ -187,45 +189,58 @@ public class Board {
 
     public void initializeFromSquares(int[] input, boolean nextToMove, int fiftyMove, int castleWhiteSide, int castleBlackSide, int ePSquare) {
         clearBitboards();
+        key = 0;
         //setup the 12 boards
         for (int i = 0; i < 64; i++) {
             square[i] = input[i];
             switch (i) {
                 case BoardUtils.WHITE_KING:
                     whiteKing |= BoardUtils.BITSET[i];
+                    key ^= Zobrist.king[0][i];
                     break;
                 case BoardUtils.WHITE_QUEEN:
                     whiteQueens |= BoardUtils.BITSET[i];
+                    key ^= Zobrist.queen[0][i];
                     break;
                 case BoardUtils.WHITE_ROOK:
                     whiteRooks |= BoardUtils.BITSET[i];
+                    key ^= Zobrist.rook[0][i];
                     break;
                 case BoardUtils.WHITE_BISHOP:
                     whiteBishops |= BoardUtils.BITSET[i];
+                    key ^= Zobrist.bishop[0][i];
                     break;
                 case BoardUtils.WHITE_KNIGHT:
                     whiteKnights |= BoardUtils.BITSET[i];
+                    key ^= Zobrist.knight[0][i];
                     break;
                 case BoardUtils.WHITE_PAWN:
                     whitePawns |= BoardUtils.BITSET[i];
+                    key ^= Zobrist.pawn[0][i];
                     break;
                 case BoardUtils.BLACK_KING:
                     blackKing |= BoardUtils.BITSET[i];
+                    key ^= Zobrist.king[1][i];
                     break;
                 case BoardUtils.BLACK_QUEEN:
                     blackQueens |= BoardUtils.BITSET[i];
+                    key ^= Zobrist.queen[1][i];
                     break;
                 case BoardUtils.BLACK_ROOK:
                     blackRooks |= BoardUtils.BITSET[i];
+                    key ^= Zobrist.rook[1][i];
                     break;
                 case BoardUtils.BLACK_BISHOP:
                     blackBishops |= BoardUtils.BITSET[i];
+                    key ^= Zobrist.bishop[1][i];
                     break;
                 case BoardUtils.BLACK_KNIGHT:
                     blackKnights |= BoardUtils.BITSET[i];
+                    key ^= Zobrist.knight[1][i];
                     break;
                 case BoardUtils.BLACK_PAWN:
                     blackPawns |= BoardUtils.BITSET[i];
+                    key ^= Zobrist.pawn[1][i];
                     break;
             }
 
@@ -238,6 +253,17 @@ public class Board {
         castleBlack = castleBlackSide;
         this.ePSquare = ePSquare;
         this.fiftyMove = fiftyMove;
+
+        if ((castleWhite & CANCASTLEOO) != 0) key ^= Zobrist.whiteKingSideCastling;
+        if ((castleWhite & CANCASTLEOOO) != 0) key ^= Zobrist.whiteQueenSideCastling;
+        if ((castleBlack & CANCASTLEOO) != 0) key ^= Zobrist.blackKingSideCastling;
+        if ((castleBlack & CANCASTLEOOO) != 0) key ^= Zobrist.blackQueenSideCastling;
+
+        if (whiteToMove)
+            key ^= Zobrist.whiteMove;
+
+        if (this.ePSquare != 0)
+            key ^= Zobrist.passantColumn[BoardUtils.FILES[this.ePSquare]];
 
         material = Long.bitCount(whitePawns) * Evaluator.PAWN_VALUE + Long.bitCount(whiteKnights) * Evaluator.KNIGHT_VALUE
                 + Long.bitCount(whiteBishops) * Evaluator.BISHOP_VALUE + Long.bitCount(whiteRooks) * Evaluator.ROOK_VALUE
@@ -396,9 +422,27 @@ public class Board {
             return true;
         }
 
+        //Three fold repetition
+        if (repetitionCount() >= 3) {
+            JOptionPane.showMessageDialog(null, "0.5 - 0.5 Draw due to repetition");
+            return true;
+
+        }
         return false;
     }
 
+    public int repetitionCount() {
+        int i, lastI, rep;
+        rep = 1;    // current position is at least 1 repetition
+        lastI = endOfSearch - fiftyMove;          // we don't need to go back all the way
+        for (i = endOfSearch - 2; i >= lastI; i -= 2)   // Only search for current side, skip opposite side
+        {
+            if (gameLine[i].key == key) rep++;
+            if (rep >= 3) return 3;
+
+        }
+        return rep;
+    }
     public void makeMove(Move move) {
         from = move.getFrom();
         to = move.getTo();
@@ -412,7 +456,10 @@ public class Board {
         gameLine[endOfSearch].castleBlack = castleBlack;
         gameLine[endOfSearch].fiftyMove = fiftyMove;
         gameLine[endOfSearch].ePSquare = ePSquare;
-        endOfSearch++;
+        gameLine[endOfSearch].key = key;
+        key ^= Zobrist.getKeyPieceIndex(from, BoardUtils.PIECENAMES[piece]) ^ Zobrist.getKeyPieceIndex(to, BoardUtils.PIECENAMES[piece]);
+        if (ePSquare != 0)
+            key ^= Zobrist.passantColumn[BoardUtils.FILES[ePSquare]];
         switch (piece) {
             case 1:
                 makeWhitePawnMove(move);
@@ -453,7 +500,9 @@ public class Board {
             default:
                 throw new RuntimeException("Unreachable");
         }
+        endOfSearch++;
         whiteToMove = !whiteToMove;
+        key ^= Zobrist.whiteMove;
     }
 
     public void unmakeMove(Move move) {
@@ -463,7 +512,6 @@ public class Board {
         to = move.getTo();
         fromBoard = BoardUtils.BITSET[from];
         fromToBoard = fromBoard | BoardUtils.BITSET[to];
-
         switch (piece) {
             case 1:
                 unmakeWhitePawnMove(move);
@@ -505,11 +553,13 @@ public class Board {
                 throw new RuntimeException("Unreachable");
         }
         endOfSearch--;
+        whiteToMove = !whiteToMove;
         castleWhite = gameLine[endOfSearch].castleWhite;
         castleBlack = gameLine[endOfSearch].castleBlack;
         ePSquare = gameLine[endOfSearch].ePSquare;
         fiftyMove = gameLine[endOfSearch].fiftyMove;
-        whiteToMove = !whiteToMove;
+        key ^= gameLine[endOfSearch].key;
+
     }
 
     private void makeWhitePawnMove(Move move) {
@@ -520,8 +570,10 @@ public class Board {
         ePSquare = 0;
         fiftyMove = 0;
         if (BoardUtils.RANKS[from] == 1)
-            if (BoardUtils.RANKS[to] == 3)
+            if (BoardUtils.RANKS[to] == 3) {
                 ePSquare = from + 8;
+                key ^= Zobrist.passantColumn[BoardUtils.FILES[from + 8]];
+            }
         if (captured != 0) {
             if (move.isEnPassant()) {
                 blackPawns ^= BoardUtils.BITSET[to - 8];
@@ -529,6 +581,7 @@ public class Board {
                 allPieces ^= fromToBoard | BoardUtils.BITSET[to - 8];
                 square[to - 8] = BoardUtils.EMPTY;
                 material += Evaluator.PAWN_VALUE;
+                key ^= Zobrist.pawn[1][to - 8];
             } else {
                 makeCapture(captured, to);
                 allPieces ^= fromBoard;
@@ -549,6 +602,8 @@ public class Board {
         square[to] = BoardUtils.WHITE_KING;
         ePSquare = 0;
         fiftyMove++;
+        if ((castleWhite & CANCASTLEOO) != 0) key ^= Zobrist.whiteKingSideCastling;
+        if ((castleWhite & CANCASTLEOOO) != 0) key ^= Zobrist.whiteQueenSideCastling;
         castleWhite = 0;
         if (captured != 0) {
             makeCapture(captured, to);
@@ -563,14 +618,14 @@ public class Board {
                 allPieces ^= BoardUtils.BITSET[BoardUtils.H1] | BoardUtils.BITSET[BoardUtils.F1];
                 square[BoardUtils.H1] = BoardUtils.EMPTY;
                 square[BoardUtils.F1] = BoardUtils.WHITE_ROOK;
-
+                key ^= Zobrist.rook[0][BoardUtils.H1] ^ Zobrist.rook[0][BoardUtils.F1];
             } else {
                 whiteRooks ^= BoardUtils.BITSET[BoardUtils.A1] | BoardUtils.BITSET[BoardUtils.D1];
                 whitePieces ^= BoardUtils.BITSET[BoardUtils.A1] | BoardUtils.BITSET[BoardUtils.D1];
                 allPieces ^= BoardUtils.BITSET[BoardUtils.A1] | BoardUtils.BITSET[BoardUtils.D1];
                 square[BoardUtils.A1] = BoardUtils.EMPTY;
                 square[BoardUtils.D1] = BoardUtils.WHITE_ROOK;
-
+                key ^= Zobrist.rook[0][BoardUtils.A1] ^ Zobrist.rook[0][BoardUtils.D1];
             }
 
         }
@@ -616,11 +671,14 @@ public class Board {
         square[to] = BoardUtils.WHITE_ROOK;
         ePSquare = 0;
         fiftyMove++;
-        if (from == BoardUtils.A1)
+        if (from == BoardUtils.A1) {
+            if ((castleWhite & CANCASTLEOOO) != 0) key ^= Zobrist.whiteQueenSideCastling;
             castleWhite &= ~CANCASTLEOOO;
-        if (from == BoardUtils.H1)
+        }
+        if (from == BoardUtils.H1) {
+            if ((castleWhite & CANCASTLEOO) != 0) key ^= Zobrist.whiteKingSideCastling;
             castleWhite &= ~CANCASTLEOO;
-
+        }
         if (captured != 0) {
             makeCapture(captured, to);
             allPieces ^= fromBoard;
@@ -653,8 +711,10 @@ public class Board {
         ePSquare = 0;
         fiftyMove = 0;
         if (BoardUtils.RANKS[from] == 6)
-            if (BoardUtils.RANKS[to] == 4)
+            if (BoardUtils.RANKS[to] == 4) {
                 ePSquare = from - 8;
+                key ^= Zobrist.passantColumn[BoardUtils.FILES[from - 8]];
+            }
         if (captured != 0) {
             if (move.isEnPassant()) {
                 whitePawns ^= BoardUtils.BITSET[to + 8];
@@ -662,6 +722,7 @@ public class Board {
                 allPieces ^= fromToBoard | BoardUtils.BITSET[to + 8];
                 square[to + 8] = BoardUtils.EMPTY;
                 material -= Evaluator.PAWN_VALUE;
+                key ^= Zobrist.pawn[0][to + 8];
             } else {
                 makeCapture(captured, to);
                 allPieces ^= fromBoard;
@@ -683,6 +744,8 @@ public class Board {
         square[to] = BoardUtils.BLACK_KING;
         ePSquare = 0;
         fiftyMove++;
+        if ((castleBlack & CANCASTLEOO) != 0) key ^= Zobrist.blackKingSideCastling;
+        if ((castleBlack & CANCASTLEOOO) != 0) key ^= Zobrist.blackQueenSideCastling;
         castleWhite = 0;
         if (captured != 0) {
             makeCapture(captured, to);
@@ -697,14 +760,14 @@ public class Board {
                 allPieces ^= BoardUtils.BITSET[BoardUtils.H8] | BoardUtils.BITSET[BoardUtils.F8];
                 square[BoardUtils.H8] = BoardUtils.EMPTY;
                 square[BoardUtils.F8] = BoardUtils.BLACK_ROOK;
-
+                key ^= Zobrist.rook[1][BoardUtils.H8] ^ Zobrist.rook[1][BoardUtils.F8];
             } else {
                 blackRooks ^= BoardUtils.BITSET[BoardUtils.A8] | BoardUtils.BITSET[BoardUtils.D8];
                 blackPieces ^= BoardUtils.BITSET[BoardUtils.A8] | BoardUtils.BITSET[BoardUtils.D8];
                 allPieces ^= BoardUtils.BITSET[BoardUtils.A8] | BoardUtils.BITSET[BoardUtils.D8];
                 square[BoardUtils.A8] = BoardUtils.EMPTY;
                 square[BoardUtils.D8] = BoardUtils.BLACK_ROOK;
-
+                key ^= Zobrist.rook[1][BoardUtils.A8] ^ Zobrist.rook[1][BoardUtils.D8];
             }
 
         }
@@ -747,11 +810,14 @@ public class Board {
         square[to] = BoardUtils.BLACK_ROOK;
         ePSquare = 0;
         fiftyMove++;
-        if (from == BoardUtils.A8)
+        if (from == BoardUtils.A8) {
+            if ((castleBlack & CANCASTLEOOO) != 0) key ^= Zobrist.blackQueenSideCastling;
             castleBlack &= ~CANCASTLEOOO;
-        if (from == BoardUtils.H8)
+        }
+        if (from == BoardUtils.H8) {
+            if ((castleBlack & CANCASTLEOOO) != 0) key ^= Zobrist.blackKingSideCastling;
             castleBlack &= ~CANCASTLEOO;
-
+        }
         if (captured != 0) {
             makeCapture(captured, to);
             allPieces ^= fromBoard;
@@ -993,15 +1059,19 @@ public class Board {
         material -= Evaluator.PAWN_VALUE;
 
         if (promotion == 7) {
+            key ^= Zobrist.pawn[0][to] ^ Zobrist.queen[0][to];
             whiteQueens ^= toBoard;
             material += Evaluator.QUEEN_VALUE;
         } else if (promotion == 6) {
+            key ^= Zobrist.pawn[0][to] ^ Zobrist.rook[0][to];
             whiteRooks ^= toBoard;
             material += Evaluator.ROOK_VALUE;
         } else if (promotion == 5) {
+            key ^= Zobrist.pawn[0][to] ^ Zobrist.bishop[0][to];
             whiteBishops ^= toBoard;
             material += Evaluator.BISHOP_VALUE;
         } else if (promotion == 3) {
+            key ^= Zobrist.pawn[0][to] ^ Zobrist.knight[0][to];
             whiteKnights ^= toBoard;
             material += Evaluator.KNIGHT_VALUE;
         }
@@ -1013,15 +1083,19 @@ public class Board {
         material -= Evaluator.PAWN_VALUE;
 
         if (promotion == 15) {
+            key ^= Zobrist.pawn[1][to] ^ Zobrist.queen[1][to];
             blackQueens ^= toBoard;
             material -= Evaluator.QUEEN_VALUE;
         } else if (promotion == 14) {
+            key ^= Zobrist.pawn[1][to] ^ Zobrist.rook[1][to];
             blackRooks ^= toBoard;
             material -= Evaluator.ROOK_VALUE;
         } else if (promotion == 13) {
+            key ^= Zobrist.pawn[1][to] ^ Zobrist.bishop[1][to];
             blackBishops ^= toBoard;
             material -= Evaluator.BISHOP_VALUE;
         } else if (promotion == 11) {
+            key ^= Zobrist.pawn[1][to] ^ Zobrist.knight[1][to];
             blackKnights ^= toBoard;
             material -= Evaluator.KNIGHT_VALUE;
         }
@@ -1066,30 +1140,34 @@ public class Board {
         }
     }
 
-
     private void makeCapture(int captured, int to) {
         toBoard = BoardUtils.BITSET[to];
         switch (captured) {
             case 1:
+                key ^= Zobrist.pawn[0][to];
                 whitePawns ^= toBoard;
                 whitePieces ^= toBoard;
                 material -= Evaluator.PAWN_VALUE;
                 break;
             case 2:
+                key ^= Zobrist.king[0][to];
                 whiteKing ^= toBoard;
                 whitePieces ^= toBoard;
                 break;
             case 3:
+                key ^= Zobrist.knight[0][to];
                 whiteKnights ^= toBoard;
                 whitePieces ^= toBoard;
                 material -= Evaluator.KNIGHT_VALUE;
                 break;
             case 5:
+                key ^= Zobrist.bishop[0][to];
                 whiteBishops ^= toBoard;
                 whitePieces ^= toBoard;
                 material -= Evaluator.BISHOP_VALUE;
                 break;
             case 6:
+                key ^= Zobrist.rook[0][to];
                 whiteRooks ^= toBoard;
                 whitePieces ^= toBoard;
                 material -= Evaluator.ROOK_VALUE;
@@ -1099,30 +1177,36 @@ public class Board {
                     castleWhite &= ~CANCASTLEOO;
                 break;
             case 7:
+                key ^= Zobrist.queen[0][to];
                 whiteQueens ^= toBoard;
                 whitePieces ^= toBoard;
                 material -= Evaluator.QUEEN_VALUE;
                 break;
             case 9:
+                key ^= Zobrist.pawn[1][to];
                 blackPawns ^= toBoard;
                 blackPieces ^= toBoard;
                 material += Evaluator.PAWN_VALUE;
                 break;
             case 10:
+                key ^= Zobrist.king[1][to];
                 blackKing ^= toBoard;
                 blackPieces ^= toBoard;
                 break;
             case 11:
+                key ^= Zobrist.knight[1][to];
                 blackKnights ^= toBoard;
                 blackPieces ^= toBoard;
                 material += Evaluator.KNIGHT_VALUE;
                 break;
             case 13:
+                key ^= Zobrist.bishop[1][to];
                 blackBishops ^= toBoard;
                 blackPieces ^= toBoard;
                 material += Evaluator.BISHOP_VALUE;
                 break;
             case 14:
+                key ^= Zobrist.rook[1][to];
                 blackRooks ^= toBoard;
                 blackPieces ^= toBoard;
                 material += Evaluator.ROOK_VALUE;
@@ -1132,6 +1216,7 @@ public class Board {
                     castleBlack &= ~CANCASTLEOO;
                 break;
             case 15:
+                key ^= Zobrist.queen[1][to];
                 blackQueens ^= toBoard;
                 blackPieces ^= toBoard;
                 material += Evaluator.QUEEN_VALUE;
@@ -1238,6 +1323,7 @@ public class Board {
         private int castleBlack;
         private int ePSquare;
         private int fiftyMove;
+        private long key;
     }
 
 

@@ -45,6 +45,8 @@ public class AlphaBetaPVS {
         if (depth == 0)
             return evaluator.eval(b);
 
+        //Threefold repetition check
+        if (b.repetitionCount() >= 3) return Evaluator.DRAWSCORE;
         movesFound = 0;
         b.moveBufLen[ply + 1] = MoveGenerator.moveGen(b.moveBufLen[ply]);
 
