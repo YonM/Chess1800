@@ -32,9 +32,8 @@ public class AlphaBetaPVS {
         legalMoves = 0;
         if (b.isEndOfGame()) return Evaluator.nullMove;
 
-        if (legalMoves == 1) {
-            return singleMove;
-        }
+        if (legalMoves == 1) return singleMove;
+
         b.moveBufLen[0] = 0;
         val = alphaBetaPVS(b, 0, DEPTH, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
         return triangularArray[0][0];

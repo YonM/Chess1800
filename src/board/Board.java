@@ -60,12 +60,11 @@ public class Board {
 
     public boolean viewRotated;
     private static Board instance;
-    private MoveGenerator moveGen;
+
 
     public Board() {
         moves = new Move[MAX_GAME_LENGTH * 4];
         moveBufLen = new int[MAX_PLY];
-        moveGen = MoveGenerator.getInstance();
     }
 
     public void initialize() {
@@ -1223,14 +1222,14 @@ public class Board {
     }
 
     public boolean isOtherKingAttacked() {
-        if (whiteToMove) return moveGen.isAttacked(blackKing, whiteToMove);
-        return moveGen.isAttacked(whiteKing, whiteToMove);
+        if (whiteToMove) return MoveGenerator.isAttacked(blackKing, whiteToMove);
+        return MoveGenerator.isAttacked(whiteKing, whiteToMove);
 
     }
 
     public boolean isOwnKingAttacked() {
-        if (whiteToMove) return moveGen.isAttacked(whiteKing, !whiteToMove);
-        return moveGen.isAttacked(blackKing, !whiteToMove);
+        if (whiteToMove) return MoveGenerator.isAttacked(whiteKing, !whiteToMove);
+        return MoveGenerator.isAttacked(blackKing, !whiteToMove);
     }
 
     private class GameLineRecord {
