@@ -77,20 +77,19 @@ public class BoardUtils {
     public BoardUtils() {
         initialize(null);
         Board b = Board.getInstance();
-        b.initialize();
-
     }
 
     public BoardUtils(String fen) {
         initialize(fen);
         Board board = Board.getInstance();
-        board.initialize();
-
     }
 
-    public static BoardUtils getInstance() {
+    public static BoardUtils getInstance(String fen) {
         if (instance == null) {
-            instance = new BoardUtils();
+            if (fen != null)
+                instance = new BoardUtils(fen);
+            else
+                instance = new BoardUtils();
         }
         return instance;
     }

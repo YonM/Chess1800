@@ -3,6 +3,7 @@ package evaluation;
 import bitboard.BitboardAttacks;
 import board.Board;
 import board.BoardUtils;
+import move.Move;
 
 /**
  * Created by Yonathan on 18/12/2014.
@@ -27,6 +28,9 @@ public class Evaluator {
     public final static int QUEEN_VALUE = 975;
     public final static int KING_VALUE = 999999;
     public final static int CHECKMATE = KING_VALUE;
+    public final static int DRAWSCORE = 0;
+
+    public final static Move nullMove = new Move(0);
 
     //Bonus/Penalty constants
     private final static int PENALTY_DOUBLED_PAWN = 10;
