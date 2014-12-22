@@ -3,6 +3,9 @@ import evaluation.Evaluator;
 import fen.FENValidator;
 import move.Move;
 import movegen.MoveGenerator;
+import search.AlphaBetaPVS;
+
+import javax.swing.*;
 
 /**
  * Created by Yonathan on 08/12/2014.
@@ -312,6 +315,89 @@ public class Board {
             instance = new Board();
         }
         return instance;
+    }
+
+    public boolean isEndOfGame() {
+
+        // Checks if the current position is end-of-game due to:
+        // checkmate, stalemate, 50-move rule, or insufficient material
+        // Is the other king checkmated?
+        if (isOtherKingAttacked()) {
+            if (whiteToMove) JOptionPane.showMessageDialog(null, "1-0 White checkmates");
+            else JOptionPane.showMessageDialog(null, "1-0 Black checkmates");
+            return true;
+        }
+        int i;
+        AlphaBetaPVS.legalMoves = 0;
+        moveBufLen[0] = 0;
+        moveBufLen[1] = MoveGenerator.moveGen(moveBufLen[0]);
+        for (i = moveBufLen[0]; i < moveBufLen[1]; i++) {
+            makeMove(moves[i]);
+            if (!isOtherKingAttacked()) {
+                AlphaBetaPVS.legalMoves++;
+                AlphaBetaPVS.singleMove = moves[i];
+            }
+            unmakeMove(moves[i]);
+        }
+
+        //Stalemate/Checkmate check.
+        if (AlphaBetaPVS.legalMoves == 0) {
+            if (isOwnKingAttacked()) {
+                if (whiteToMove) JOptionPane.showMessageDialog(null, "1-0 Black checkmates");
+                else JOptionPane.showMessageDialog(null, "1-0 White checkmates");
+            } else JOptionPane.showMessageDialog(null, "0.5-0.5 Stalemate");
+            return true;
+        }
+
+        int whiteKnights, whiteBishops, whiteRooks, whiteQueens, whiteTotalMat;
+        int blackKnights, blackBishops, blackRooks, blackQueens, blackTotalMat;
+
+        //Check if it's a draw due to insufficient material.
+        if (whitePawns + blackPawns == 0) {
+            whiteKnights = Long.bitCount(this.whiteKnights);
+            whiteBishops = Long.bitCount(this.whiteBishops);
+            whiteRooks = Long.bitCount(this.whiteRooks);
+            whiteQueens = Long.bitCount(this.whiteQueens);
+            whiteTotalMat = 3 * whiteKnights + 3 * whiteBishops + 5 * whiteRooks + 10 * whiteQueens;
+            blackKnights = Long.bitCount(this.blackKnights);
+            blackBishops = Long.bitCount(this.blackBishops);
+            blackRooks = Long.bitCount(this.blackRooks);
+            blackQueens = Long.bitCount(this.blackQueens);
+            blackTotalMat = 3 * blackKnights + 3 * blackBishops + 5 * blackRooks + 10 * blackQueens;
+
+            //King vs king.
+            if (whiteTotalMat + blackTotalMat == 0) {
+                JOptionPane.showMessageDialog(null, "0.5-0.5 Draw due to insufficient material.");
+                return true;
+            }
+
+            //King and knight versus king.
+            if (((whiteTotalMat == 3) && (whiteKnights == 1) && (blackTotalMat == 0) ||
+                    ((blackTotalMat == 3)) && (blackKnights == 1) && (whiteTotalMat == 0))) {
+                JOptionPane.showMessageDialog(null, "0.5-0.5 Draw due to insufficient material.");
+                return true;
+            }
+            //Kings with one or more bishops, all bishops on the same colour.
+
+            if (whiteBishops + blackBishops > 0) {
+                if (whiteKnights + whiteRooks + whiteQueens + blackKnights + blackRooks + blackQueens == 0) {
+                    if (((whiteBishops | blackBishops) & BoardUtils.WHITE_SQUARES) != 0
+                            || ((whiteBishops | blackBishops) & BoardUtils.BLACK_SQUARES) != 0) {
+                        JOptionPane.showMessageDialog(null, "0.5-0.5 Draw due to insufficient material.");
+                        return true;
+                    }
+                }
+
+            }
+        }
+
+        //50Move rule
+        if (fiftyMove >= 100) {
+            JOptionPane.showMessageDialog(null, "0.5-0.5 Draw due 50-move rule");
+            return true;
+        }
+
+        return false;
     }
 
     public void makeMove(Move move) {

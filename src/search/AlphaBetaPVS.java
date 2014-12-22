@@ -1,5 +1,4 @@
 package search;
-
 import board.Board;
 import evaluation.Evaluator;
 import move.Move;
@@ -13,6 +12,9 @@ public class AlphaBetaPVS {
 
     private static Move[][] triangularArray;
     private static int[] triangularLength;
+    public static Integer legalMoves;
+    public static Move singleMove = new Move(0);
+    private static final int DEPTH = 4;
 
     private static Evaluator evaluator;
 
@@ -25,10 +27,18 @@ public class AlphaBetaPVS {
         evaluator = eval;
     }
 
-/*    public static Move findBestMove(Board b){
+    public static Move findBestMove(Board b) {
         int i,j,val;
+        legalMoves = 0;
+        if (b.isEndOfGame()) return Evaluator.nullMove;
 
-    }*/
+        if (legalMoves == 1) {
+            return singleMove;
+        }
+        b.moveBufLen[0] = 0;
+        val = alphaBetaPVS(b, 0, DEPTH, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
+        return triangularArray[0][0];
+    }
 
     public static int alphaBetaPVS(Board b, int ply, int depth, int alpha, int beta) {
         int i, j, movesFound, val;
@@ -66,6 +76,12 @@ public class AlphaBetaPVS {
                 b.unmakeMove(b.moves[i]);
             }
 
+        }
+        if (b.fiftyMove >= 100) return Evaluator.DRAWSCORE;                 //Fifty-move rule
+
+        if (movesFound == 0) {
+            if (b.isOwnKingAttacked()) return -Evaluator.CHECKMATE + ply - 1; //Checkmate
+            return Evaluator.DRAWSCORE;                                 //Stalemate
         }
 
         return alpha;
