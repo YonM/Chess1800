@@ -306,7 +306,7 @@ public class Evaluator {
         blackTotal = blackPawns + blackKnights + blackBishops + blackRooks + blackQueens;
 
         //Test for end game if white or black total material less than the value of a Rook+ Queen.
-        endGame = (whiteTotalMat < (QUEEN_VALUE + ROOK_VALUE) || blackTotalMat < (QUEEN_VALUE + ROOK_VALUE));
+        endGame = (whiteTotalMat < 15 || blackTotalMat < 15);
 
         //Evaluate for draw due to insufficient material
 
@@ -335,7 +335,6 @@ public class Evaluator {
 
         if (whiteTotalMat + whitePawns > blackTotalMat + blackPawns) {
             score += 45 + 3 * whiteTotal - 6 * blackTotal;
-
         } else if (whiteTotalMat + whitePawns < blackTotalMat + blackPawns) {
             score -= 45 + 3 * blackTotal - 6 * whiteTotal;
         }
