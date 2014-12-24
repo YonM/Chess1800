@@ -13,21 +13,14 @@ import move.Move;
 public class MoveGenerator {
     private static Board b;
     private static Move move;
-    private static MoveGenerator instance;
     private static long tempPiece, tempMove, targets, freeSquares;
 
     private static boolean oppSide;
     private static int from, to, index;
 
-    public MoveGenerator() {
+    static {
         move = new Move();
         b = Board.getInstance();
-    }
-
-    public static MoveGenerator getInstance() {
-        if (instance == null)
-            instance = new MoveGenerator();
-        return instance;
     }
 
     public static int moveGen(int index) {

@@ -1,14 +1,14 @@
 package bitboard;
 
 import board.BoardUtils;
-import move.Move;
+import definitions.Definitions;
 
 /**
  * Created by Yonathan on 15/12/2014.
  * Attack moves are pre-generated here.
  * Inspired by Stef Luijten's Winglet Chess @ http://web.archive.org/web/20120621100214/http://www.sluijten.com/winglet/
  */
-public abstract class BitboardAttacks {
+public abstract class BitboardAttacks implements Definitions {
 
     //6bit masks for move generation
     public static final long[] RANKMASK = new long[64];
@@ -22,28 +22,12 @@ public abstract class BitboardAttacks {
     public static final long[] MASKBD = new long[2];
     public static final long[] MASKCE = new long[2];
 
-    //Pre generated castling moves
-    public static final int WHITE_OOO_CASTLE = Move.generateMove(BoardUtils.E1, BoardUtils.G1, BoardUtils.WHITE_KING, BoardUtils.EMPTY, BoardUtils.WHITE_KING);
-    public static final int BLACK_OOO_CASTLE = Move.generateMove(BoardUtils.E8, BoardUtils.G8, BoardUtils.BLACK_KING, BoardUtils.EMPTY, BoardUtils.BLACK_KING);
-    ;
-    public static final int WHITE_OO_CASTLE = Move.generateMove(BoardUtils.E1, BoardUtils.C1, BoardUtils.WHITE_KING, BoardUtils.EMPTY, BoardUtils.WHITE_KING);
-    ;
-    public static final int BLACK_OO_CASTLE = Move.generateMove(BoardUtils.E8, BoardUtils.C8, BoardUtils.BLACK_KING, BoardUtils.EMPTY, BoardUtils.BLACK_KING);
-    ;
+
 
 
     //For generating attacks
     public static final short[][] GEN_SLIDING_ATTACKS = new short[8][64];
-    public static final int[] RANKSHIFT = {
-            1, 1, 1, 1, 1, 1, 1, 1,
-            9, 9, 9, 9, 9, 9, 9, 9,
-            17, 17, 17, 17, 17, 17, 17, 17,
-            25, 25, 25, 25, 25, 25, 25, 25,
-            33, 33, 33, 33, 33, 33, 33, 33,
-            41, 41, 41, 41, 41, 41, 41, 41,
-            49, 49, 49, 49, 49, 49, 49, 49,
-            57, 57, 57, 57, 57, 57, 57, 57
-    };
+
 
     //Attack bitboards
     public static final long[] KNIGHT_ATTACKS = new long[64];
@@ -63,12 +47,11 @@ public abstract class BitboardAttacks {
     ;
     short state6Bit;
 
-    public BitboardAttacks() {
+    protected BitboardAttacks() {
         initialize();
     }
 
     private void initialize() {
-
         clearMasks();
         setupMasks();
         generateAttacks();

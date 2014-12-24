@@ -1,6 +1,7 @@
 package board;
 
 import bitboard.BitboardMagicAttacks;
+import definitions.Definitions;
 
 /**
  * Created by Yonathan on 08/12/2014.
@@ -8,72 +9,17 @@ import bitboard.BitboardMagicAttacks;
  * evaluation etc.
  * Inspired by Stef Luijten's Winglet Chess @ http://web.archive.org/web/20120621100214/http://www.sluijten.com/winglet/
  */
-public class BoardUtils {
-    public final static int A1 = 0, B1 = 1, C1 = 2, D1 = 3, E1 = 4, F1 = 5, G1 = 6, H1 = 7;
-    public final static int A2 = 8, B2 = 9, C2 = 10, D2 = 11, E2 = 12, F2 = 13, G2 = 14, H2 = 15;
-    public final static int A3 = 16, B3 = 17, C3 = 18, D3 = 19, E3 = 20, F3 = 21, G3 = 22, H3 = 23;
-    public final static int A4 = 24, B4 = 25, C4 = 26, D4 = 27, E4 = 28, F4 = 29, G4 = 30, H4 = 31;
-    public final static int A5 = 32, B5 = 33, C5 = 34, D5 = 35, E5 = 36, F5 = 37, G5 = 38, H5 = 39;
-    public final static int A6 = 40, B6 = 41, C6 = 42, D6 = 43, E6 = 44, F6 = 45, G6 = 46, H6 = 47;
-    public final static int A7 = 48, B7 = 49, C7 = 50, D7 = 51, E7 = 52, F7 = 53, G7 = 54, H7 = 55;
-    public final static int A8 = 56, B8 = 571, C8 = 58, D8 = 59, E8 = 60, F8 = 61, G8 = 62, H8 = 63;
+public class BoardUtils implements Definitions {
 
-    public final static int FILES[] = {
-            0, 1, 2, 3, 4, 5, 6, 7,
-            0, 1, 2, 3, 4, 5, 6, 7,
-            0, 1, 2, 3, 4, 5, 6, 7,
-            0, 1, 2, 3, 4, 5, 6, 7,
-            0, 1, 2, 3, 4, 5, 6, 7,
-            0, 1, 2, 3, 4, 5, 6, 7,
-            0, 1, 2, 3, 4, 5, 6, 7,
-            0, 1, 2, 3, 4, 5, 6, 7
-    };
-
-    public final static int RANKS[] = {
-            0, 0, 0, 0, 0, 0, 0, 0,
-            1, 1, 1, 1, 1, 1, 1, 1,
-            2, 2, 2, 2, 2, 2, 2, 2,
-            3, 3, 3, 3, 3, 3, 3, 3,
-            4, 4, 4, 4, 4, 4, 4, 4,
-            5, 5, 5, 5, 5, 5, 5, 5,
-            6, 6, 6, 6, 6, 6, 6, 6,
-            7, 7, 7, 7, 7, 7, 7, 7
-    };
-
-    public final static char[] PIECENAMES = {' ', 'P', 'K', 'N', ' ', 'B', 'R', 'Q',
-            ' ', 'p', 'k', 'n', ' ', 'b', 'r', 'q'};
 //    public final static char WHITE_MOVE = 0;
 //    public final static char BLACK_MOVE = 1;
 
-    public final static int EMPTY = 0;
-    public final static int WHITE_PAWN = 1;
-    public final static int WHITE_KING = 2;
-    public final static int WHITE_KNIGHT = 3;
-    public final static int WHITE_BISHOP = 5;
-    public final static int WHITE_ROOK = 6;
-    public final static int WHITE_QUEEN = 7;
-    public final static int BLACK_PAWN = 9;
-    public final static int BLACK_KING = 10;
-    public final static int BLACK_KNIGHT = 11;
-    public final static int BLACK_BISHOP = 13;
-    public final static int BLACK_ROOK = 14;
-    public final static int BLACK_QUEEN = 15;
-
     //For evaluation
-
-
     public static final short[] CHARBITSET = new short[8];
     public static final long[] BITSET = new long[64];
     private static final int[][] BOARDINDEX = new int[8][8];
     public static final long BLACK_SQUARES;
     public static final long WHITE_SQUARES;
-
-
-    //For castling
-    public final static char CANCASTLEOO = 1;
-    public final static char CANCASTLEOOO = 2;
-
-
     private static BoardUtils instance;
 
     public BoardUtils() {

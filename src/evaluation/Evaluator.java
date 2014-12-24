@@ -3,7 +3,7 @@ package evaluation;
 import bitboard.BitboardAttacks;
 import board.Board;
 import board.BoardUtils;
-import move.Move;
+import definitions.Definitions;
 
 /**
  * Created by Yonathan on 18/12/2014.
@@ -19,18 +19,7 @@ import move.Move;
  * Scores calculated from white perspective and then returns the score from the perspective
  * of the side to move.
  */
-public class Evaluator {
-    //Material value
-    public final static int PAWN_VALUE = 100;
-    public final static int KNIGHT_VALUE = 325;
-    public final static int BISHOP_VALUE = 325;
-    public final static int ROOK_VALUE = 500;
-    public final static int QUEEN_VALUE = 975;
-    public final static int KING_VALUE = 999999;
-    public final static int CHECKMATE = KING_VALUE;
-    public final static int DRAWSCORE = 0;
-
-    public final static Move nullMove = new Move(0);
+public class Evaluator implements Definitions {
 
     //Bonus/Penalty constants
     private final static int PENALTY_DOUBLED_PAWN = 10;

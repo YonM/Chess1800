@@ -1,4 +1,5 @@
 package search;
+
 import board.Board;
 import evaluation.Evaluator;
 import move.Move;
@@ -23,7 +24,7 @@ public class AlphaBetaPVS {
     private static int[][] blackHeuristics;
     private static Move[] lastPV;
     private static boolean follow_pv;
-    private static int lastPVLength;
+    //private static int lastPVLength;
 
     private static Evaluator evaluator;
     private final static Board b;
@@ -50,7 +51,7 @@ public class AlphaBetaPVS {
         whiteHeuristics = new int[Board.MAX_PLY][Board.MAX_PLY];
         blackHeuristics = new int[Board.MAX_PLY][Board.MAX_PLY];
         lastPV = new Move[Board.MAX_PLY];
-        lastPVLength = 0;
+        //lastPVLength = 0;
 
         for (currentDepth = 1; currentDepth < MAX_DEPTH; currentDepth++) {
             Arrays.fill(b.moveBufLen, 0);
@@ -65,7 +66,7 @@ public class AlphaBetaPVS {
         return lastPV[0];
     }
 
-    public static int alphaBetaPVS(int ply, int depth, int alpha, int beta) {
+    private static int alphaBetaPVS(int ply, int depth, int alpha, int beta) {
         int i, j, movesFound, pvMovesFound, val;
         triangularLength[ply] = ply;
         if (depth == 0) {
@@ -177,7 +178,7 @@ public class AlphaBetaPVS {
 
     private static void rememberPV(Board b) {
         int i;
-        lastPVLength = triangularLength[0];
+        //lastPVLength = triangularLength[0];
         for (i = 0; i < triangularLength[0]; i++) {
             lastPV[i] = triangularArray[0][i];
         }
