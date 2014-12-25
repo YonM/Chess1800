@@ -93,5 +93,8 @@ public interface Definitions {
     public final static int DRAWSCORE = 0;
 
 
-    //public final static Move nullMove = new Move(0);
+    public final static Move nullMove = new Move(0);
+
+    public static final int MAX_GAME_LENGTH = 1024; // Maximum number of half-moves, if 50-move rule is obeyed.
+    public static final int MAX_MOVES = 256;
 }

@@ -3,6 +3,7 @@ import bitboard.BitboardAttacks;
 import bitboard.BitboardMagicAttacks;
 import board.Board;
 import board.BoardUtils;
+import definitions.Definitions;
 import move.Move;
 
 /**
@@ -10,7 +11,7 @@ import move.Move;
  * PseudoLegal move generator.
  * Inspired by Stef Luijten's Winglet Chess @ http://web.archive.org/web/20120621100214/http://www.sluijten.com/winglet/
  */
-public class MoveGenerator {
+public class MoveGenerator implements Definitions {
     private static Board b;
     private static Move move;
     private static long tempPiece, tempMove, targets, freeSquares;
@@ -51,26 +52,26 @@ public class MoveGenerator {
     }
 
     private static void genBlackPawnMoves() {
-        move.setPiece(BoardUtils.BLACK_PAWN);
+        move.setPiece(BLACK_PAWN);
         tempPiece = b.blackPawns;
-        while (tempPiece != BoardUtils.EMPTY) {
+        while (tempPiece != EMPTY) {
             setFrom();
             tempMove = BitboardAttacks.BLACK_PAWN_MOVES[from] & freeSquares; // Add normal moves
-            if (BoardUtils.RANKS[from] == 1 && tempMove != 0)
+            if (RANKS[from] == 1 && tempMove != 0)
                 tempMove |= BitboardAttacks.BLACK_PAWN_MOVES[from] & freeSquares; // Add double moves
             tempMove |= BitboardAttacks.BLACK_PAWN_ATTACKS[from] & b.blackPieces; // Add captures
             while (tempMove != 0) {
                 setToAndCapture();
-                if (BoardUtils.RANKS[to] == 7) { // Add promotions
-                    move.setPromotion(BoardUtils.BLACK_QUEEN);
+                if (RANKS[to] == 7) { // Add promotions
+                    move.setPromotion(BLACK_QUEEN);
                     b.moves[index++].moveInt = move.moveInt;
-                    move.setPromotion(BoardUtils.BLACK_ROOK);
+                    move.setPromotion(BLACK_ROOK);
                     b.moves[index++].moveInt = move.moveInt;
-                    move.setPromotion(BoardUtils.BLACK_BISHOP);
+                    move.setPromotion(BLACK_BISHOP);
                     b.moves[index++].moveInt = move.moveInt;
-                    move.setPromotion(BoardUtils.BLACK_KNIGHT);
+                    move.setPromotion(BLACK_KNIGHT);
                     b.moves[index++].moveInt = move.moveInt;
-                    move.setPromotion(BoardUtils.EMPTY);
+                    move.setPromotion(EMPTY);
                 } else {
                     b.moves[index++].moveInt = move.moveInt;
                 }
@@ -78,19 +79,19 @@ public class MoveGenerator {
             }
             if (b.ePSquare != 0)       // Add en-passant captures
                 if ((BitboardAttacks.BLACK_PAWN_ATTACKS[from] & BoardUtils.BITSET[b.ePSquare]) != 0) {
-                    move.setPromotion(BoardUtils.BLACK_PAWN);
-                    move.setCapture(BoardUtils.BLACK_PAWN);
+                    move.setPromotion(BLACK_PAWN);
+                    move.setCapture(BLACK_PAWN);
                     move.setTo(b.ePSquare);
                     b.moves[index++].moveInt = move.moveInt;
                 }
             tempPiece ^= BoardUtils.BITSET[from];
-            move.setPromotion(BoardUtils.EMPTY);
+            move.setPromotion(EMPTY);
         }
 
     }
 
     private static void genBlackKnightMoves() {
-        move.setPiece(BoardUtils.BLACK_KNIGHT);
+        move.setPiece(BLACK_KNIGHT);
         tempPiece = b.blackKnights;
         while (tempPiece != 0) {
             setFrom();
@@ -105,7 +106,7 @@ public class MoveGenerator {
     }
 
     private static void genBlackBishopMoves() {
-        move.setPiece(BoardUtils.BLACK_BISHOP);
+        move.setPiece(BLACK_BISHOP);
         tempPiece = b.blackBishops;
         while (tempPiece != 0) {
             setFrom();
@@ -121,7 +122,7 @@ public class MoveGenerator {
     }
 
     private static void genBlackRookMoves() {
-        move.setPiece(BoardUtils.BLACK_ROOK);
+        move.setPiece(BLACK_ROOK);
         tempPiece = b.blackRooks;
         while (tempPiece != 0) {
             setFrom();
@@ -137,7 +138,7 @@ public class MoveGenerator {
     }
 
     private static void genBlackQueenMoves() {
-        move.setPiece(BoardUtils.BLACK_QUEEN);
+        move.setPiece(BLACK_QUEEN);
         tempPiece = b.blackQueens;
         while (tempPiece != 0) {
             setFrom();
@@ -153,7 +154,7 @@ public class MoveGenerator {
     }
 
     private static void genBlackKingMoves() {
-        move.setPiece(BoardUtils.BLACK_KING);
+        move.setPiece(BLACK_KING);
         tempPiece = b.blackKing;
         while (tempPiece != 0) {
             setFrom();
@@ -164,7 +165,7 @@ public class MoveGenerator {
                 tempMove ^= BoardUtils.BITSET[to];
             }
             //00 Castling
-            if ((b.castleBlack & b.CANCASTLEOO) != 0) {
+            if ((b.castleBlack & CANCASTLEOO) != 0) {
                 if ((BitboardAttacks.MASKFG[1] & b.allPieces) == 0) {
                     if (!isAttacked(BitboardAttacks.MASKEG[1], true)) {
                         b.moves[index++].moveInt = BitboardAttacks.BLACK_OO_CASTLE; //Pre generated castle move
@@ -173,7 +174,7 @@ public class MoveGenerator {
             }
 
             //OOO Castling
-            if ((b.castleBlack & b.CANCASTLEOOO) != 0) {
+            if ((b.castleBlack & CANCASTLEOOO) != 0) {
                 if ((BitboardAttacks.MASKBD[1] & b.allPieces) == 0) {
                     if (!isAttacked(BitboardAttacks.MASKCE[1], true)) {
                         b.moves[index++].moveInt = BitboardAttacks.BLACK_OOO_CASTLE; //Pre generated castle move
@@ -181,33 +182,33 @@ public class MoveGenerator {
                 }
             }
             tempPiece ^= BoardUtils.BITSET[from];
-            move.setPromotion(BoardUtils.EMPTY);
+            move.setPromotion(EMPTY);
         }
 
     }
 
 
     private static void genWhitePawnMoves() {
-        move.setPiece(BoardUtils.WHITE_PAWN);
+        move.setPiece(WHITE_PAWN);
         tempPiece = b.whitePawns;
-        while (tempPiece != BoardUtils.EMPTY) {
+        while (tempPiece != EMPTY) {
             setFrom();
             tempMove = BitboardAttacks.WHITE_PAWN_MOVES[from] & freeSquares; // Add normal moves
-            if (BoardUtils.RANKS[from] == 1 && tempMove != 0)
+            if (RANKS[from] == 1 && tempMove != 0)
                 tempMove |= BitboardAttacks.WHITE_PAWN_MOVES[from] & freeSquares; // Add double moves
             tempMove |= BitboardAttacks.WHITE_PAWN_ATTACKS[from] & b.blackPieces; // Add captures
             while (tempMove != 0) {
                 setToAndCapture();
-                if (BoardUtils.RANKS[to] == 7) { // Add promotions
-                    move.setPromotion(BoardUtils.WHITE_QUEEN);
+                if (RANKS[to] == 7) { // Add promotions
+                    move.setPromotion(WHITE_QUEEN);
                     b.moves[index++].moveInt = move.moveInt;
-                    move.setPromotion(BoardUtils.WHITE_ROOK);
+                    move.setPromotion(WHITE_ROOK);
                     b.moves[index++].moveInt = move.moveInt;
-                    move.setPromotion(BoardUtils.WHITE_BISHOP);
+                    move.setPromotion(WHITE_BISHOP);
                     b.moves[index++].moveInt = move.moveInt;
-                    move.setPromotion(BoardUtils.WHITE_KNIGHT);
+                    move.setPromotion(WHITE_KNIGHT);
                     b.moves[index++].moveInt = move.moveInt;
-                    move.setPromotion(BoardUtils.EMPTY);
+                    move.setPromotion(EMPTY);
                 } else {
                     b.moves[index++].moveInt = move.moveInt;
                 }
@@ -215,18 +216,18 @@ public class MoveGenerator {
             }
             if (b.ePSquare != 0)       // Add en-passant captures
                 if ((BitboardAttacks.WHITE_PAWN_ATTACKS[from] & BoardUtils.BITSET[b.ePSquare]) != 0) {
-                    move.setPromotion(BoardUtils.WHITE_PAWN);
-                    move.setCapture(BoardUtils.BLACK_PAWN);
+                    move.setPromotion(WHITE_PAWN);
+                    move.setCapture(BLACK_PAWN);
                     move.setTo(b.ePSquare);
                     b.moves[index++].moveInt = move.moveInt;
                 }
             tempPiece ^= BoardUtils.BITSET[from];
-            move.setPromotion(BoardUtils.EMPTY);
+            move.setPromotion(EMPTY);
         }
     }
 
     private static void genWhiteKnightMoves() {
-        move.setPiece(BoardUtils.WHITE_KNIGHT);
+        move.setPiece(WHITE_KNIGHT);
         tempPiece = b.whiteKnights;
         while (tempPiece != 0) {
             setFrom();
@@ -241,7 +242,7 @@ public class MoveGenerator {
     }
 
     private static void genWhiteBishopMoves() {
-        move.setPiece(BoardUtils.WHITE_BISHOP);
+        move.setPiece(WHITE_BISHOP);
         tempPiece = b.whiteBishops;
         while (tempPiece != 0) {
             setFrom();
@@ -256,7 +257,7 @@ public class MoveGenerator {
     }
 
     private static void genWhiteRookMoves() {
-        move.setPiece(BoardUtils.WHITE_ROOK);
+        move.setPiece(WHITE_ROOK);
         tempPiece = b.whiteRooks;
         while (tempPiece != 0) {
             setFrom();
@@ -272,7 +273,7 @@ public class MoveGenerator {
     }
 
     private static void genWhiteQueenMoves() {
-        move.setPiece(BoardUtils.WHITE_QUEEN);
+        move.setPiece(WHITE_QUEEN);
         tempPiece = b.whiteQueens;
         while (tempPiece != 0) {
             setFrom();
@@ -287,7 +288,7 @@ public class MoveGenerator {
     }
 
     private static void genWhiteKingMoves() {
-        move.setPiece(BoardUtils.WHITE_KING);
+        move.setPiece(WHITE_KING);
         tempPiece = b.whiteKing;
         while (tempPiece != 0) {
             setFrom();
@@ -298,7 +299,7 @@ public class MoveGenerator {
                 tempMove ^= BoardUtils.BITSET[to];
             }
             //00 Castling
-            if ((b.castleWhite & b.CANCASTLEOO) != 0) {
+            if ((b.castleWhite & CANCASTLEOO) != 0) {
                 if ((BitboardAttacks.MASKFG[0] & b.allPieces) == 0) {
                     if (!isAttacked(BitboardAttacks.MASKEG[0], false)) {
                         b.moves[index++].moveInt = BitboardAttacks.WHITE_OO_CASTLE; //Pre generated castle move
@@ -307,7 +308,7 @@ public class MoveGenerator {
             }
 
             //OOO Castling
-            if ((b.castleWhite & b.CANCASTLEOOO) != 0) {
+            if ((b.castleWhite & CANCASTLEOOO) != 0) {
                 if ((BitboardAttacks.MASKBD[0] & b.allPieces) == 0) {
                     if (!isAttacked(BitboardAttacks.MASKCE[0], false)) {
                         b.moves[index++].moveInt = BitboardAttacks.WHITE_OOO_CASTLE; //Pre generated castle move
@@ -315,7 +316,7 @@ public class MoveGenerator {
                 }
             }
             tempPiece ^= BoardUtils.BITSET[from];
-            move.setPromotion(BoardUtils.EMPTY);
+            move.setPromotion(EMPTY);
         }
     }
 

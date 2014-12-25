@@ -1,6 +1,7 @@
 package search;
 
 import board.Board;
+import definitions.Definitions;
 import evaluation.Evaluator;
 import move.Move;
 import movegen.MoveGenerator;
@@ -13,7 +14,7 @@ import java.util.Arrays;
  * Based on Winglet by Stef Luijten's Winglet Chess @
  * http://web.archive.org/web/20120621100214/http://www.sluijten.com/winglet/
  */
-public class AlphaBetaPVS {
+public class AlphaBetaPVS implements Definitions {
 
     private static Move[][] triangularArray;
     private static int[] triangularLength;
@@ -44,7 +45,7 @@ public class AlphaBetaPVS {
         int currentDepth, score;
         legalMoves = 0;
 
-        if (b.isEndOfGame()) return Evaluator.nullMove;
+        if (b.isEndOfGame()) return nullMove;
 
         if (legalMoves == 1) return singleMove;
 
@@ -55,9 +56,9 @@ public class AlphaBetaPVS {
 
         for (currentDepth = 1; currentDepth < MAX_DEPTH; currentDepth++) {
             Arrays.fill(b.moveBufLen, 0);
-            Arrays.fill(b.moves, Evaluator.nullMove);
-            triangularArray = new Move[Board.MAX_GAME_LENGTH][Board.MAX_GAME_LENGTH];
-            triangularLength = new int[Board.MAX_GAME_LENGTH];
+            Arrays.fill(b.moves, nullMove);
+            triangularArray = new Move[MAX_GAME_LENGTH][MAX_GAME_LENGTH];
+            triangularLength = new int[MAX_GAME_LENGTH];
             follow_pv = true;
             score = alphaBetaPVS(0, currentDepth, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
             if ((score > (Evaluator.CHECKMATE - currentDepth)) || (score < -(Evaluator.CHECKMATE - currentDepth)))
@@ -83,7 +84,8 @@ public class AlphaBetaPVS {
             selectBestMoveFirst(ply, depth, i, b.whiteToMove);
             b.makeMove(b.moves[i]);
             if (!b.isOtherKingAttacked()) {
-                if (movesFound != 0) {
+                movesFound++;
+                if (pvMovesFound != 0) {
                     val = -alphaBetaPVS(ply + 1, depth - 1, -alpha - 1, -alpha);
                     if ((val > alpha) && (val < beta))
                         val = -alphaBetaPVS(ply + 1, depth - 1, -beta, -alpha); //Better move found, normal alpha-beta.
@@ -100,7 +102,7 @@ public class AlphaBetaPVS {
                 }
                 if (val > alpha) {
                     alpha = val;
-                    movesFound++;
+                    pvMovesFound++;
                     triangularArray[ply][ply] = b.moves[i];    //save the move
                     for (j = ply + 1; j < triangularLength[ply + 1]; j++)
                         triangularArray[ply][j] = triangularArray[ply + 1][j];  //appends latest best PV from deeper plies
