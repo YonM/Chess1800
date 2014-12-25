@@ -320,6 +320,14 @@ public class MoveGenerator implements Definitions {
         }
     }
 
+    public static long attacksTo(int target) {
+        return 0;
+    }
+
+    public static long revealXrayAttackers(long attackers, long nonRemoved, int target, int heading) {
+        return 0;
+    }
+
     //     ===========================================================================
 //     isAttacked is used mainly as a move legality test to see if targetBitmap is
 //     attacked by white or black.

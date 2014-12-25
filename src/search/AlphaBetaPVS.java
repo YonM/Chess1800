@@ -72,7 +72,7 @@ public class AlphaBetaPVS implements Definitions {
         triangularLength[ply] = ply;
         if (depth == 0) {
             follow_pv = false;
-            return evaluator.eval(b);
+            return quiescenceSearch(ply, alpha, beta);
         }
         //Threefold repetition check
         if (b.repetitionCount() >= 3) return Evaluator.DRAWSCORE;
@@ -178,7 +178,12 @@ public class AlphaBetaPVS implements Definitions {
         }
     }
 
-    private static void rememberPV(Board b) {
+    private static int quiescenceSearch(int ply, int alpha, int beta) {
+        return 0;
+    }
+
+
+    private static void rememberPV() {
         int i;
         //lastPVLength = triangularLength[0];
         for (i = 0; i < triangularLength[0]; i++) {

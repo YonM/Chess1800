@@ -1314,6 +1314,10 @@ public class Board implements Definitions {
         return MoveGenerator.isAttacked(blackKing, !whiteToMove);
     }
 
+    public int see(Move move) {
+        return 0;
+    }
+
     private class GameLineRecord {
         private Move move;
         private int castleWhite;
