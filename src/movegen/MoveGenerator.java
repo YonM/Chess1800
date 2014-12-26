@@ -740,7 +740,26 @@ public class MoveGenerator implements Definitions {
     }
 
     private static void addCaptureScore() {
+        int pos, val;
+        Move capt;
 
+        capt = b.moves[index];
+
+        val = b.see(capt);
+
+        if (val < MINCAPTVAL) {
+            index--;
+            return;
+        }
+
+        //Insert move into the sorted list, into the correct position.
+        pos = index - 1;
+        while (pos > oldIndex - 1 && val > b.moves[pos + OFFSET].moveInt) pos--;  //find the correct position
+        System.arraycopy(b.moves, pos + 1, b.moves, pos + 2, (index - pos - 1));
+        System.arraycopy(b.moves, pos + 1 + OFFSET, b.moves, pos + 2, (index - pos - 1));
+        b.moves[pos + 1].moveInt = capt.moveInt;
+        b.moves[pos + 1 + OFFSET].moveInt = val;
+        return;
     }
 
     /*     ===========================================================================
