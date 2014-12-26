@@ -19,6 +19,8 @@ public class MoveGenerator implements Definitions {
     private static boolean oppSide;
     private static int from, to, index;
 
+    private static int oldIndex;
+
     static {
         move = new Move();
         b = Board.getInstance();
@@ -26,7 +28,7 @@ public class MoveGenerator implements Definitions {
 
     public static int moveGen(int index) {
         MoveGenerator.index = index;
-        oppSide = b.whiteToMove ? false : true;
+        oppSide = !b.whiteToMove;
         freeSquares = ~b.allPieces;
         if (b.whiteToMove) {
             //White's move
@@ -48,7 +50,7 @@ public class MoveGenerator implements Definitions {
             genBlackQueenMoves();
             genBlackKingMoves();
         }
-        return index;
+        return MoveGenerator.index;
     }
 
     private static void genBlackPawnMoves() {
@@ -323,7 +325,7 @@ public class MoveGenerator implements Definitions {
     /* Gets a bitboard of front-line attackers(both colours) for SEE.
     *  Does not include xray attackers.
     */
-    public static long attacksTo(int target) {
+    public static long getAttacksTo(int target) {
         long attacks, attackBoard;
 
         //Rank & File attacks for Rooks & Queens
@@ -352,81 +354,80 @@ public class MoveGenerator implements Definitions {
 
         return attacks;
     }
-    // revealXrayAttackers returns xray attackers after an attacker has been removed.
+    // getXrayAttackers returns X-ray attackers after an attacker has been removed.
 
-    public static long revealXrayAttackers(long attackers, long nonRemoved, int target, int heading) {
+    public static long getXrayAttackers(long attackers, long nonRemoved, int target, int heading) {
         int state;
-        long targetBoard = 0;
         switch (heading) {
             case EAST:
-                targetBoard = BoardUtils.RAY_E[target] & ((b.whiteRooks | b.whiteQueens | b.blackRooks | b.blackQueens) & nonRemoved);
-                if (targetBoard != 0) {
+                targets = BoardUtils.RAY_E[target] & ((b.whiteRooks | b.whiteQueens | b.blackRooks | b.blackQueens) & nonRemoved);
+                if (targets != 0) {
                     state = (int) ((b.allPieces & nonRemoved & BitboardAttacks.RANKMASK[target]) >> RANKSHIFT[target]);
-                    targetBoard = BitboardMagicAttacks.RANK_ATTACKS[target][state] & targetBoard;
-                    return (attackers | targetBoard);
+                    targets = BitboardMagicAttacks.RANK_ATTACKS[target][state] & targets;
+                    return (attackers | targets);
                 }
                 return attackers;
 
             case NORTHWEST:
-                targetBoard = BoardUtils.RAY_NW[target] & ((b.whiteBishops | b.whiteQueens | b.blackBishops | b.blackQueens) & nonRemoved);
-                if (targetBoard != 0) {
+                targets = BoardUtils.RAY_NW[target] & ((b.whiteBishops | b.whiteQueens | b.blackBishops | b.blackQueens) & nonRemoved);
+                if (targets != 0) {
                     state = (int) ((b.allPieces & nonRemoved & BitboardAttacks.DIAGA8H1MASK[target]) * BitboardMagicAttacks.DIAGA8H1MAGIC[target]) >> 57;
-                    targetBoard = BitboardMagicAttacks.DIAGA8H1_ATTACKS[target][state] & targetBoard;
-                    return (attackers | targetBoard);
+                    targets = BitboardMagicAttacks.DIAGA8H1_ATTACKS[target][state] & targets;
+                    return (attackers | targets);
                 }
                 return attackers;
 
             case NORTH:
-                targetBoard = BoardUtils.RAY_N[target] & ((b.whiteRooks | b.whiteQueens | b.blackRooks | b.blackQueens) & nonRemoved);
-                if (targetBoard != 0) {
+                targets = BoardUtils.RAY_N[target] & ((b.whiteRooks | b.whiteQueens | b.blackRooks | b.blackQueens) & nonRemoved);
+                if (targets != 0) {
                     state = (int) ((b.allPieces & nonRemoved & BitboardAttacks.FILEMASK[target]) * BitboardMagicAttacks.FILEMAGIC[target]) >> 57;
-                    targetBoard = BitboardMagicAttacks.FILE_ATTACKS[target][state] & targetBoard;
-                    return (attackers | targetBoard);
+                    targets = BitboardMagicAttacks.FILE_ATTACKS[target][state] & targets;
+                    return (attackers | targets);
                 }
                 return attackers;
 
             case NORTHEAST:
-                targetBoard = BoardUtils.RAY_NE[target] & ((b.whiteBishops | b.whiteQueens | b.blackBishops | b.blackQueens) & nonRemoved);
-                if (targetBoard != 0) {
+                targets = BoardUtils.RAY_NE[target] & ((b.whiteBishops | b.whiteQueens | b.blackBishops | b.blackQueens) & nonRemoved);
+                if (targets != 0) {
                     state = (int) ((b.allPieces & nonRemoved & BitboardAttacks.DIAGA1H8MASK[target]) * BitboardMagicAttacks.DIAGA1H8MAGIC[target]) >> 57;
-                    targetBoard = BitboardMagicAttacks.DIAGA1H8_ATTACKS[target][state] & targetBoard;
-                    return (attackers | targetBoard);
+                    targets = BitboardMagicAttacks.DIAGA1H8_ATTACKS[target][state] & targets;
+                    return (attackers | targets);
                 }
                 return attackers;
 
             case WEST:
-                targetBoard = BoardUtils.RAY_W[target] & ((b.whiteRooks | b.whiteQueens | b.blackRooks | b.blackQueens) & nonRemoved);
-                if (targetBoard != 0) {
+                targets = BoardUtils.RAY_W[target] & ((b.whiteRooks | b.whiteQueens | b.blackRooks | b.blackQueens) & nonRemoved);
+                if (targets != 0) {
                     state = (int) ((b.allPieces & nonRemoved & BitboardAttacks.RANKMASK[target]) >> RANKSHIFT[target]);
-                    targetBoard = BitboardMagicAttacks.RANK_ATTACKS[target][state] & targetBoard;
-                    return (attackers | targetBoard);
+                    targets = BitboardMagicAttacks.RANK_ATTACKS[target][state] & targets;
+                    return (attackers | targets);
                 }
                 return attackers;
 
             case SOUTHEAST:
-                targetBoard = BoardUtils.RAY_SE[target] & ((b.whiteBishops | b.whiteQueens | b.blackBishops | b.blackQueens) & nonRemoved);
-                if (targetBoard != 0) {
+                targets = BoardUtils.RAY_SE[target] & ((b.whiteBishops | b.whiteQueens | b.blackBishops | b.blackQueens) & nonRemoved);
+                if (targets != 0) {
                     state = (int) ((b.allPieces & nonRemoved & BitboardAttacks.DIAGA8H1MASK[target]) * BitboardMagicAttacks.DIAGA8H1MAGIC[target]) >> 57;
-                    targetBoard = BitboardMagicAttacks.DIAGA8H1_ATTACKS[target][state] & targetBoard;
-                    return (attackers | targetBoard);
+                    targets = BitboardMagicAttacks.DIAGA8H1_ATTACKS[target][state] & targets;
+                    return (attackers | targets);
                 }
                 return attackers;
 
             case SOUTH:
-                targetBoard = BoardUtils.RAY_S[target] & ((b.whiteRooks | b.whiteQueens | b.blackRooks | b.blackQueens) & nonRemoved);
-                if (targetBoard != 0) {
+                targets = BoardUtils.RAY_S[target] & ((b.whiteRooks | b.whiteQueens | b.blackRooks | b.blackQueens) & nonRemoved);
+                if (targets != 0) {
                     state = (int) ((b.allPieces & nonRemoved & BitboardAttacks.FILEMASK[target]) * BitboardMagicAttacks.FILEMAGIC[target]) >> 57;
-                    targetBoard = BitboardMagicAttacks.FILE_ATTACKS[target][state] & targetBoard;
-                    return (attackers | targetBoard);
+                    targets = BitboardMagicAttacks.FILE_ATTACKS[target][state] & targets;
+                    return (attackers | targets);
                 }
                 return attackers;
 
             case SOUTHWEST:
-                targetBoard = BoardUtils.RAY_SW[target] & ((b.whiteBishops | b.whiteQueens | b.blackBishops | b.blackQueens) & nonRemoved);
-                if (targetBoard != 0) {
+                targets = BoardUtils.RAY_SW[target] & ((b.whiteBishops | b.whiteQueens | b.blackBishops | b.blackQueens) & nonRemoved);
+                if (targets != 0) {
                     state = (int) ((b.allPieces & nonRemoved & BitboardAttacks.DIAGA1H8MASK[target]) * BitboardMagicAttacks.DIAGA1H8MAGIC[target]) >> 57;
-                    targetBoard = BitboardMagicAttacks.DIAGA1H8_ATTACKS[target][state] & targetBoard;
-                    return (attackers | targetBoard);
+                    targets = BitboardMagicAttacks.DIAGA1H8_ATTACKS[target][state] & targets;
+                    return (attackers | targets);
                 }
                 return attackers;
 
@@ -441,18 +442,125 @@ public class MoveGenerator implements Definitions {
     */
 
     public static int genCaptures(int i) {
+        oldIndex = i;
+        MoveGenerator.index = i;
+        move = new Move(0);
+        oppSide = !b.whiteToMove;
+        freeSquares = ~b.allPieces;
+
+        if (b.whiteToMove) {
+            //White's move
+            targets = b.blackPieces; //Ensures only captures
+            genWhitePawnCaps();
+            genWhiteKnightCaps();
+            genWhiteBishopCaps();
+            genWhiteRookCaps();
+        }
         return 0;
     }
 
-    //     ===========================================================================
-//     isAttacked is used mainly as a move legality test to see if targetBitmap is
-//     attacked by white or black.
-//  Returns true at the first attack found, and returns false if no attack is found.
-//  It can be used for:
-//   - check detection, and
-//   - castling legality: test to see if the king passes through, or ends up on,
-//     a square that is attacked
-//     ============================================================================
+    private static void genWhitePawnCaps() {
+        move.setPiece(WHITE_PAWN);
+        tempPiece = b.whitePawns;
+        while (tempPiece != EMPTY) {
+            setFrom();
+            tempMove = BitboardAttacks.WHITE_PAWN_ATTACKS[from] & targets; // Add captures
+            if (RANKS[from] == 6)
+                tempMove |= BitboardAttacks.WHITE_PAWN_MOVES[from] & freeSquares; // Add double moves
+            while (tempMove != 0) {
+                setToAndCapture();
+                if (RANKS[to] == 7) { // Add promotions
+                    move.setPromotion(WHITE_QUEEN);
+                    b.moves[index].moveInt = move.moveInt;
+                    addCaptureScore();
+                    index++;
+                    move.setPromotion(WHITE_ROOK);
+                    b.moves[index].moveInt = move.moveInt;
+                    addCaptureScore();
+                    index++;
+                    move.setPromotion(WHITE_BISHOP);
+                    b.moves[index].moveInt = move.moveInt;
+                    addCaptureScore();
+                    index++;
+                    move.setPromotion(WHITE_KNIGHT);
+                    b.moves[index].moveInt = move.moveInt;
+                    addCaptureScore();
+                    index++;
+                    move.setPromotion(EMPTY);
+                } else {
+                    b.moves[index].moveInt = move.moveInt;
+                    addCaptureScore();
+                    index++;
+                }
+                tempMove ^= BoardUtils.BITSET[to];
+            }
+            if (b.ePSquare != 0)       // Add en-passant captures
+                if ((BitboardAttacks.WHITE_PAWN_ATTACKS[from] & BoardUtils.BITSET[b.ePSquare]) != 0) {
+                    move.setPromotion(WHITE_PAWN);
+                    move.setCapture(BLACK_PAWN);
+                    move.setTo(b.ePSquare);
+                    b.moves[index].moveInt = move.moveInt;
+                    addCaptureScore();
+                    index++;
+                }
+            tempPiece ^= BoardUtils.BITSET[from];
+            move.setPromotion(EMPTY);
+        }
+    }
+
+    private static void genWhiteKnightCaps() {
+        move.setPiece(WHITE_KNIGHT);
+        tempPiece = b.whiteKnights;
+        while (tempPiece != 0) {
+            setFrom();
+            tempMove = BitboardAttacks.KNIGHT_ATTACKS[from] & targets;
+            while (tempMove != 0) {
+                setToAndCapture();
+                b.moves[index].moveInt = move.moveInt;
+                addCaptureScore();
+                index++;
+                tempMove ^= BoardUtils.BITSET[to];
+            }
+            tempPiece ^= BoardUtils.BITSET[from];
+        }
+    }
+
+    private static void genWhiteBishopCaps() {
+        move.setPiece(WHITE_BISHOP);
+        tempPiece = b.whiteBishops;
+        while (tempPiece != 0) {
+            setFrom();
+            tempMove = BitboardMagicAttacks.bishopMoves(from);
+            while (tempMove != 0) {
+                setToAndCapture();
+                b.moves[index].moveInt = move.moveInt;
+                addCaptureScore();
+                index++;
+                tempMove ^= BoardUtils.BITSET[to];
+            }
+            tempPiece ^= BoardUtils.BITSET[from];
+        }
+    }
+
+
+    private static void genWhiteRookCaps() {
+
+    }
+
+    private static void addCaptureScore() {
+
+    }
+
+    /*     ===========================================================================
+    *     isAttacked is used mainly as a move legality test to see if targetBitmap is
+    *     attacked by white or black.
+    *      Returns true at the first attack found, and returns false if no attack is found.
+    *      It can be used for:
+    *      - check detection, and
+    *      - castling legality: test to see if the king passes through, or ends up on,
+    *      a square that is attacked
+    *     ============================================================================
+    */
     public static boolean isAttacked(long target, boolean white_to_move) {
         long tempTarget = target, slidingAttackers;
         int to;

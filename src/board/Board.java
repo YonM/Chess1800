@@ -1325,7 +1325,7 @@ public class Board implements Definitions {
         int heading;
         int attackedPieceEval;
         int[] materialGains = new int[32];
-        long attackers = MoveGenerator.attacksTo(target);
+        long attackers = MoveGenerator.getAttacksTo(target);
         long nonRemoved = ~0;
 
         boolean stm = whiteToMove;
@@ -1353,7 +1353,7 @@ public class Board implements Definitions {
 
         //what direction did the attack come from
         heading = BoardUtils.HEADINGS[from][to];
-        if (heading != 0) attackers = MoveGenerator.revealXrayAttackers(attackers, nonRemoved, target, heading);
+        if (heading != 0) attackers = MoveGenerator.getXrayAttackers(attackers, nonRemoved, target, heading);
 
         //switch side to move
         stm = !stm;
@@ -1428,7 +1428,7 @@ public class Board implements Definitions {
 
             //what direction did the attack come from. If heading!=0, add xray Attackers.
             heading = BoardUtils.HEADINGS[target][from];
-            if (heading != 0) attackers = MoveGenerator.revealXrayAttackers(attackers, nonRemoved, target, heading);
+            if (heading != 0) attackers = MoveGenerator.getXrayAttackers(attackers, nonRemoved, target, heading);
 
             //switch side to move
             stm = !stm;
