@@ -58,8 +58,14 @@ public class BitboardMagicAttacks extends BitboardAttacks {
             0x0L,
             0x0L
     };
+    private static final Board b;
     private static long targets;
 
+    //Static Initializer
+    static {
+        b = Board.getInstance();
+    }
+    
     public static BitboardMagicAttacks getInstance() {
         if (instance == null) {
             instance = new BitboardMagicAttacks();
@@ -101,15 +107,15 @@ public class BitboardMagicAttacks extends BitboardAttacks {
     }
 
     private static long rankMoves(int from) {
-        Board board = Board.getInstance();
+
         setTargets();
-        return RANK_ATTACKS[from][(int) ((board.allPieces & RANKMASK[from]) >>> RANKSHIFT[from])] & targets;
+        return RANK_ATTACKS[from][(int) ((b.allPieces & RANKMASK[from]) >>> RANKSHIFT[from])] & targets;
     }
 
     private static long fileMoves(int from) {
-        Board board = Board.getInstance();
+
         setTargets();
-        return FILE_ATTACKS[from][(int) (((board.allPieces & FILEMASK[from]) * FILEMAGIC[from]) >>> 57)] & targets;
+        return FILE_ATTACKS[from][(int) (((b.allPieces & FILEMASK[from]) * FILEMAGIC[from]) >>> 57)] & targets;
     }
 
     public static long bishopMoves(int from) {
@@ -121,19 +127,18 @@ public class BitboardMagicAttacks extends BitboardAttacks {
     }
 
     private static long diagA8H1Moves(int from) {
-        Board board = Board.getInstance();
+
         setTargets();
-        return DIAGA8H1_ATTACKS[from][(int) (((board.allPieces & DIAGA8H1MASK[from]) * DIAGA8H1MAGIC[from]) >>> 57)] & targets;
+        return DIAGA8H1_ATTACKS[from][(int) (((b.allPieces & DIAGA8H1MASK[from]) * DIAGA8H1MAGIC[from]) >>> 57)] & targets;
     }
 
     private static long diagA1H8Moves(int from) {
-        Board board = Board.getInstance();
+
         setTargets();
-        return DIAGA1H8_ATTACKS[from][(int) (((board.allPieces & DIAGA1H8MASK[from]) * DIAGA1H8MAGIC[from]) >>> 57)] & targets;
+        return DIAGA1H8_ATTACKS[from][(int) (((b.allPieces & DIAGA1H8MASK[from]) * DIAGA1H8MAGIC[from]) >>> 57)] & targets;
     }
 
     private static void setTargets() {
-        Board board = Board.getInstance();
-        targets = board.whiteToMove ? ~board.whitePieces : ~board.blackPieces;
+        targets = b.whiteToMove ? ~b.whitePieces : ~b.blackPieces;
     }
 }

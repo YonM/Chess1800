@@ -90,7 +90,7 @@ public abstract class BitboardAttacks implements Definitions {
         clearAttackBoards();
         generatePawnAttacksAndMoves();
         generateKnightAttacks();
-        genereateKingAttacks();
+        generateKingAttacks();
         generateRankAttacks();
         generateFileAttacks();
         generateDiagA8H1Attacks();
@@ -186,7 +186,7 @@ public abstract class BitboardAttacks implements Definitions {
         }
     }
 
-    private void genereateKingAttacks() {
+    private void generateKingAttacks() {
         for (square = 0; square < 64; square++) {
             file = BoardUtils.FILES[square];
             rank = BoardUtils.RANKS[square];
