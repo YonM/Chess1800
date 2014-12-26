@@ -271,7 +271,6 @@ public class MoveGenerator implements Definitions {
             }
             tempPiece ^= BoardUtils.BITSET[from];
         }
-
     }
 
     private static void genWhiteQueenMoves() {
@@ -455,8 +454,153 @@ public class MoveGenerator implements Definitions {
             genWhiteKnightCaps();
             genWhiteBishopCaps();
             genWhiteRookCaps();
+            genWhiteQueenCaps();
+            genWhiteKingCaps();
+        } else {
+            targets = b.whitePieces;
+            genBlackPawnCaps();
+            genBlackKnightCaps();
+            genBlackBishopCaps();
+            genBlackRookCaps();
+            genBlackQueenCaps();
+            genBlackKingCaps();
         }
         return 0;
+    }
+
+    private static void genBlackPawnCaps() {
+        move.setPiece(BLACK_PAWN);
+        tempPiece = b.blackPawns;
+        while (tempPiece != EMPTY) {
+            setFrom();
+            tempMove = BitboardAttacks.BLACK_PAWN_ATTACKS[from] & targets; // Add captures
+            if (RANKS[from] == 1)
+                tempMove |= BitboardAttacks.BLACK_PAWN_MOVES[from] & freeSquares; // Add double moves
+            while (tempMove != 0) {
+                setToAndCapture();
+                if (RANKS[to] == 0) { // Add promotions
+                    move.setPromotion(BLACK_QUEEN);
+                    b.moves[index].moveInt = move.moveInt;
+                    addCaptureScore();
+                    index++;
+                    move.setPromotion(BLACK_ROOK);
+                    b.moves[index].moveInt = move.moveInt;
+                    addCaptureScore();
+                    index++;
+                    move.setPromotion(BLACK_BISHOP);
+                    b.moves[index].moveInt = move.moveInt;
+                    addCaptureScore();
+                    index++;
+                    move.setPromotion(BLACK_KNIGHT);
+                    b.moves[index].moveInt = move.moveInt;
+                    addCaptureScore();
+                    index++;
+                    move.setPromotion(EMPTY);
+                } else {
+                    b.moves[index].moveInt = move.moveInt;
+                    addCaptureScore();
+                    index++;
+                }
+                tempMove ^= BoardUtils.BITSET[to];
+            }
+            if (b.ePSquare != 0)       // Add en-passant captures
+                if ((BitboardAttacks.BLACK_PAWN_ATTACKS[from] & BoardUtils.BITSET[b.ePSquare]) != 0) {
+                    move.setPromotion(BLACK_PAWN);
+                    move.setCapture(WHITE_PAWN);
+                    move.setTo(b.ePSquare);
+                    b.moves[index].moveInt = move.moveInt;
+                    addCaptureScore();
+                    index++;
+                }
+            tempPiece ^= BoardUtils.BITSET[from];
+            move.setPromotion(EMPTY);
+        }
+    }
+
+    private static void genBlackKnightCaps() {
+        move.setPiece(BLACK_KNIGHT);
+        tempPiece = b.blackKnights;
+        while (tempPiece != 0) {
+            setFrom();
+            tempMove = BitboardAttacks.KNIGHT_ATTACKS[from] & targets;
+            while (tempMove != 0) {
+                setToAndCapture();
+                b.moves[index].moveInt = move.moveInt;
+                addCaptureScore();
+                index++;
+                tempMove ^= BoardUtils.BITSET[to];
+            }
+            tempPiece ^= BoardUtils.BITSET[from];
+        }
+    }
+
+    private static void genBlackBishopCaps() {
+        move.setPiece(BLACK_BISHOP);
+        tempPiece = b.blackBishops;
+        while (tempPiece != 0) {
+            setFrom();
+            tempMove = BitboardMagicAttacks.bishopMoves(from);
+            while (tempMove != 0) {
+                setToAndCapture();
+                b.moves[index].moveInt = move.moveInt;
+                addCaptureScore();
+                index++;
+                tempMove ^= BoardUtils.BITSET[to];
+            }
+            tempPiece ^= BoardUtils.BITSET[from];
+        }
+    }
+
+    private static void genBlackRookCaps() {
+        move.setPiece(BLACK_ROOK);
+        tempPiece = b.blackRooks;
+        while (tempPiece != 0) {
+            setFrom();
+            tempMove = BitboardMagicAttacks.rookMoves(from);
+            while (tempMove != 0) {
+                setToAndCapture();
+                b.moves[index].moveInt = move.moveInt;
+                addCaptureScore();
+                index++;
+                tempMove ^= BoardUtils.BITSET[to];
+            }
+            tempPiece ^= BoardUtils.BITSET[from];
+        }
+    }
+
+    private static void genBlackQueenCaps() {
+        move.setPiece(BLACK_QUEEN);
+        tempPiece = b.blackQueens;
+        while (tempPiece != 0) {
+            setFrom();
+            tempMove = BitboardMagicAttacks.QueenMoves(from);
+            while (tempMove != 0) {
+                setToAndCapture();
+                b.moves[index].moveInt = move.moveInt;
+                addCaptureScore();
+                index++;
+                tempMove ^= BoardUtils.BITSET[to];
+            }
+            tempPiece ^= BoardUtils.BITSET[from];
+        }
+    }
+
+    private static void genBlackKingCaps() {
+        move.setPiece(BLACK_KING);
+        tempPiece = b.blackKing;
+        while (tempPiece != 0) {
+            setFrom();
+            tempMove = BitboardAttacks.KING_ATTACKS[from] & targets;
+            while (tempMove != 0) {
+                setToAndCapture();
+                b.moves[index].moveInt = move.moveInt;
+                addCaptureScore();
+                index++;
+                tempMove ^= BoardUtils.BITSET[to];
+            }
+            tempPiece ^= BoardUtils.BITSET[from];
+            move.setPromotion(EMPTY);
+        }
     }
 
     private static void genWhitePawnCaps() {
@@ -544,7 +688,55 @@ public class MoveGenerator implements Definitions {
 
 
     private static void genWhiteRookCaps() {
+        move.setPiece(WHITE_ROOK);
+        tempPiece = b.whiteRooks;
+        while (tempPiece != 0) {
+            setFrom();
+            tempMove = BitboardMagicAttacks.rookMoves(from);
+            while (tempMove != 0) {
+                setToAndCapture();
+                b.moves[index].moveInt = move.moveInt;
+                addCaptureScore();
+                index++;
+                tempMove ^= BoardUtils.BITSET[to];
+            }
+            tempPiece ^= BoardUtils.BITSET[from];
+        }
+    }
 
+    private static void genWhiteQueenCaps() {
+        move.setPiece(WHITE_QUEEN);
+        tempPiece = b.whiteQueens;
+        while (tempPiece != 0) {
+            setFrom();
+            tempMove = BitboardMagicAttacks.QueenMoves(from);
+            while (tempMove != 0) {
+                setToAndCapture();
+                b.moves[index].moveInt = move.moveInt;
+                addCaptureScore();
+                index++;
+                tempMove ^= BoardUtils.BITSET[to];
+            }
+            tempPiece ^= BoardUtils.BITSET[from];
+        }
+    }
+
+    private static void genWhiteKingCaps() {
+        move.setPiece(WHITE_KING);
+        tempPiece = b.whiteKing;
+        while (tempPiece != 0) {
+            setFrom();
+            tempMove = BitboardAttacks.KING_ATTACKS[from] & targets;
+            while (tempMove != 0) {
+                setToAndCapture();
+                b.moves[index].moveInt = move.moveInt;
+                addCaptureScore();
+                index++;
+                tempMove ^= BoardUtils.BITSET[to];
+            }
+            tempPiece ^= BoardUtils.BITSET[from];
+            move.setPromotion(EMPTY);
+        }
     }
 
     private static void addCaptureScore() {
