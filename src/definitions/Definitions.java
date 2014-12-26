@@ -92,6 +92,18 @@ public interface Definitions {
     public final static int CHECKMATE = KING_VALUE;
     public final static int DRAWSCORE = 0;
 
+    //For SEE & Quiescence Search
+    public static final int OFFSET = 128;
+    public static final int MINCAPTVAL = 1;
+    public static final int WEST = -1;
+    public static final int NORTHWEST = +7;
+    public static final int NORTH = +8;
+    public static final int NORTHEAST = +9;
+    public static final int EAST = +1;
+    public static final int SOUTHEAST = -7;
+    public static final int SOUTH = -8;
+    public static final int SOUTHWEST = -9;
+
 
     public final static Move nullMove = new Move(0);
 

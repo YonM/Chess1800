@@ -179,7 +179,43 @@ public class AlphaBetaPVS implements Definitions {
     }
 
     private static int quiescenceSearch(int ply, int alpha, int beta) {
-        return 0;
+        triangularLength[ply] = ply;
+
+        //Check if we are in check.
+        if (b.isOwnKingAttacked()) return alphaBetaPVS(ply, 1, alpha, beta);
+
+        //Standing pat
+        int val;
+        val = evaluator.eval(b);
+        if (val >= beta) return val;
+        if (val > alpha) alpha = val;
+
+        // generate captures & promotions:
+        // genCaptures returns a sorted move list
+        b.moveBufLen[ply + 1] = MoveGenerator.genCaptures(b.moveBufLen[ply]);
+
+        for (int i = b.moveBufLen[ply]; i < b.moveBufLen[ply + 1]; i++) {
+            b.makeMove(b.moves[i]);
+            {
+                if (!b.isOtherKingAttacked()) {
+                    val = -quiescenceSearch(ply + 1, -beta, -alpha);
+                    b.unmakeMove(b.moves[i]);
+
+                    if (val >= beta) return val;
+
+                    if (val > alpha) {
+                        alpha = val;
+                        triangularArray[ply][ply] = b.moves[i];
+                        for (int j = ply + 1; j < triangularLength[ply + 1]; j++) {
+                            triangularArray[ply][j] = triangularArray[ply + 1][j];
+                        }
+                        triangularLength[ply] = triangularLength[ply + 1];
+                    }
+                } else
+                    b.unmakeMove(b.moves[i]);
+            }
+        }
+        return alpha;
     }
 
 

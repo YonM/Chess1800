@@ -320,11 +320,26 @@ public class MoveGenerator implements Definitions {
         }
     }
 
+    /* Gets a bitboard of front-line attackers(both colours) for SEE.
+    *  Does not include xray attackers.
+    */
     public static long attacksTo(int target) {
+        long attacks, attackBoard;
+
+        //Rank & File attacks for Rooks & Queens
+        attackBoard = BitboardMagicAttacks.rookMoves(target);
+        attacks = (attackBoard & (b.blackQueens | b.whiteQueens | b.blackRooks | b.whiteRooks));
+
+
         return 0;
     }
 
     public static long revealXrayAttackers(long attackers, long nonRemoved, int target, int heading) {
+        return 0;
+    }
+
+
+    public static int genCaptures(int i) {
         return 0;
     }
 
@@ -392,6 +407,7 @@ public class MoveGenerator implements Definitions {
         return false;
     }
 
+
     private static void setToAndCapture() {
         to = BoardUtils.getIndexFromBoard(from);
         move.setTo(to);
@@ -402,5 +418,6 @@ public class MoveGenerator implements Definitions {
         from = BoardUtils.getIndexFromBoard(tempPiece);
         move.setFrom(from);
     }
+
 
 }

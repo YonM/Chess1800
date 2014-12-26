@@ -60,7 +60,9 @@ public class Board implements Definitions {
     public boolean viewRotated;
     private static Board instance;
 
-    public long key;
+    public long key; //Zobrist key
+
+    private static final int[] SEE_PIECE_VALUES = {0, 100, 999999, 325, 0, 325, 500, 975, 0, 100, 999999, 325, 0, 325, 500, 975};
 
     public Board() {
         moves = new Move[MAX_GAME_LENGTH * 4];
@@ -1315,7 +1317,131 @@ public class Board implements Definitions {
     }
 
     public int see(Move move) {
-        return 0;
+        //Static Exchange Evaluator
+        int numOfCaptures = 0;
+        int from;
+        int target = move.getTo();
+        ;
+        int heading;
+        int attackedPieceEval;
+        int[] materialGains = new int[32];
+        long attackers = MoveGenerator.attacksTo(target);
+        long nonRemoved = ~0;
+
+        boolean stm = whiteToMove;
+        boolean isPromoRank = ((RANKS[target] == 7) || (RANKS[target] == 0));
+
+        //First capture done before the loop.
+        // Take first attacker from the (capture) move.
+        from = move.getFrom();
+
+        materialGains[0] = SEE_PIECE_VALUES[square[target]];
+
+        attackedPieceEval = SEE_PIECE_VALUES[square[from]];
+
+        //if promotion, add this info into materialGains & attackedPieceEval
+
+        if (isPromoRank && (square[from] & 6) == 1) {
+            materialGains[0] += SEE_PIECE_VALUES[move.getPromotion()] - SEE_PIECE_VALUES[WHITE_PAWN];
+            attackedPieceEval += SEE_PIECE_VALUES[move.getPromotion()] - SEE_PIECE_VALUES[WHITE_PAWN];
+        }
+        numOfCaptures++;
+
+        //remove last attacker
+        attackers ^= BoardUtils.BITSET[from];
+        nonRemoved ^= BoardUtils.BITSET[from];
+
+        //what direction did the attack come from
+        heading = BoardUtils.HEADINGS[from][to];
+        if (heading != 0) attackers = MoveGenerator.revealXrayAttackers(attackers, nonRemoved, target, heading);
+
+        //switch side to move
+        stm = !stm;
+
+        while (attackers != 0) {
+            //Select the least valuable attacker
+            //Order is: Non-Promoting Pawn, Knight, Bishop, Rook, Promotion Pawn, Queen.
+            if (stm) {
+                if (RANKS[target] != 0 && (whitePawns & attackers) != 0)
+                    from = BoardUtils.getIndexFromBoard((whitePawns & attackers));
+
+                else if ((whiteKnights & attackers) != 0)
+                    from = BoardUtils.getIndexFromBoard((whiteKnights & attackers));
+
+                else if ((whiteBishops & attackers) != 0)
+                    from = BoardUtils.getIndexFromBoard((whiteBishops & attackers));
+
+                else if ((whiteRooks & attackers) != 0) from = BoardUtils.getIndexFromBoard((whiteRooks & attackers));
+
+                else if (RANKS[target] == 0 && (whitePawns & attackers) != 0)
+                    from = BoardUtils.getIndexFromBoard(whitePawns & attackers);
+
+                else if ((whiteQueens & attackers) != 0) from = BoardUtils.getIndexFromBoard((whiteQueens & attackers));
+
+                    //king can only capture if no opponent attackers are left
+                else if ((attackers & blackPieces) == 0 && (whiteKing & attackers) != 0)
+                    from = BoardUtils.getIndexFromBoard(whiteKing);
+
+                else break;
+
+            } else {
+                if (RANKS[target] != 7 && (blackPawns & attackers) != 0)
+                    from = BoardUtils.getIndexFromBoard((blackPawns & attackers));
+
+                else if ((blackKnights & attackers) != 0)
+                    from = BoardUtils.getIndexFromBoard((blackKnights & attackers));
+
+                else if ((blackBishops & attackers) != 0)
+                    from = BoardUtils.getIndexFromBoard((blackBishops & attackers));
+
+                else if ((blackRooks & attackers) != 0) from = BoardUtils.getIndexFromBoard((blackRooks & attackers));
+
+                else if (RANKS[target] == 7 && (blackPawns & attackers) != 0)
+                    from = BoardUtils.getIndexFromBoard(blackPawns & attackers);
+
+                else if ((blackQueens & attackers) != 0) from = BoardUtils.getIndexFromBoard((blackQueens & attackers));
+
+                    //king can only capture if no opponent attackers are left
+                else if ((attackers & whitePieces) == 0 && (blackKing & attackers) != 0)
+                    from = BoardUtils.getIndexFromBoard(blackKing);
+
+                else break;
+            }
+
+            // update the materialGains array:
+            materialGains[numOfCaptures] = -materialGains[numOfCaptures - 1] + attackedPieceEval;
+
+            //Update the value of the attacking piece, it will be the next piece captured.
+            attackedPieceEval = SEE_PIECE_VALUES[square[from]];
+
+            //if it was a promotion, add into materialGains & attackedPieceEval.
+            if (isPromoRank && (square[from] & 6) == 1) {
+                materialGains[numOfCaptures] += SEE_PIECE_VALUES[WHITE_QUEEN] - SEE_PIECE_VALUES[WHITE_PAWN];
+                attackedPieceEval = SEE_PIECE_VALUES[WHITE_QUEEN] - SEE_PIECE_VALUES[WHITE_PAWN];
+            }
+
+            numOfCaptures++;
+
+            //remove last attacker
+            attackers ^= BoardUtils.BITSET[from];
+            nonRemoved ^= BoardUtils.BITSET[from];
+
+            //what direction did the attack come from. If heading!=0, add xray Attackers.
+            heading = BoardUtils.HEADINGS[target][from];
+            if (heading != 0) attackers = MoveGenerator.revealXrayAttackers(attackers, nonRemoved, target, heading);
+
+            //switch side to move
+            stm = !stm;
+        }
+
+        //work backwards, using a Minimax-type sequence to calculate the SEE value of the first capture
+
+        while (--numOfCaptures > 0) {
+            if (materialGains[numOfCaptures] > -materialGains[numOfCaptures - 1])
+                materialGains[numOfCaptures - 1] = -materialGains[numOfCaptures];
+        }
+
+        return materialGains[0];
     }
 
     private class GameLineRecord {
