@@ -69,8 +69,15 @@ public class Board implements Definitions {
     public int totalWhitePieces;
     public int totalBlackPieces;
 
-    public Board() {
+    private Board() {
         moves = new Move[MAX_GAME_LENGTH * 4];
+        for (int i = 0; i < moves.length; i++) {
+            moves[i] = new Move();
+        }
+        for (int i = 0; i < MAX_GAME_LENGTH; i++) {
+            gameLine[i] = new GameLineRecord();
+        }
+
         moveBufLen = new int[MAX_PLY];
     }
 
@@ -98,8 +105,7 @@ public class Board implements Definitions {
             int file = 0;
             for (char c : board.toCharArray()) {
                 if (Character.isDigit(c)) {
-                    for (int j = 0; j < Character.digit(c, 10); j++)
-                        file++;
+                    for (int j = 0; j < Character.digit(c, 10); j++) file++;
 
                 } else {
                     switch (c) {
@@ -166,7 +172,8 @@ public class Board implements Definitions {
                 }
                 if (tokens.length > 3) {
                     char[] enPassant = tokens[3].toCharArray();
-                    if (!enPassant.equals("-")) {
+
+                    if (enPassant[0] != ('-')) {
                         ePSquare = BoardUtils.getIndex(enPassant[0] - 96, enPassant[1]);
                     }
                 }
@@ -180,7 +187,13 @@ public class Board implements Definitions {
 
 
             }
-
+            /*for(int s: fenSquares)
+            System.out.println(s);
+            System.out.println("Turn: "+ nextToMove);
+            System.out.println("50-Move: "+temp50Move);
+            System.out.println("White castling: " +tempWhiteCastle);
+            System.out.println("Black castling: " + tempBlackCastle);
+            System.out.println("ePSquare: " + ePSquare);*/
             initializeFromSquares(fenSquares, nextToMove, temp50Move, tempWhiteCastle, tempBlackCastle, ePSquare);
             return true;
         } else {
@@ -198,7 +211,7 @@ public class Board implements Definitions {
         //setup the 12 boards
         for (int i = 0; i < 64; i++) {
             square[i] = input[i];
-            switch (i) {
+            switch (square[i]) {
                 case WHITE_KING:
                     whiteKing |= BoardUtils.BITSET[i];
                     key ^= Zobrist.king[0][i];
@@ -248,7 +261,6 @@ public class Board implements Definitions {
                     key ^= Zobrist.pawn[1][i];
                     break;
             }
-
 
         }
         updateAggregateBitboards();
@@ -360,7 +372,7 @@ public class Board implements Definitions {
         int i;
         AlphaBetaPVS.legalMoves = 0;
         moveBufLen[0] = 0;
-        moveBufLen[1] = MoveGenerator.moveGen(moveBufLen[0]);
+        moveBufLen[1] = MoveGenerator.moveGen(this, moveBufLen[0]);
         for (i = moveBufLen[0]; i < moveBufLen[1]; i++) {
             makeMove(moves[i]);
             if (!isOtherKingAttacked()) {
@@ -1355,14 +1367,14 @@ public class Board implements Definitions {
     }
 
     public boolean isOtherKingAttacked() {
-        if (whiteToMove) return MoveGenerator.isAttacked(blackKing, whiteToMove);
-        return MoveGenerator.isAttacked(whiteKing, whiteToMove);
+        if (whiteToMove) return MoveGenerator.isAttacked(this, blackKing, whiteToMove);
+        return MoveGenerator.isAttacked(this, whiteKing, whiteToMove);
 
     }
 
     public boolean isOwnKingAttacked() {
-        if (whiteToMove) return MoveGenerator.isAttacked(whiteKing, !whiteToMove);
-        return MoveGenerator.isAttacked(blackKing, !whiteToMove);
+        if (whiteToMove) return MoveGenerator.isAttacked(this, whiteKing, !whiteToMove);
+        return MoveGenerator.isAttacked(this, blackKing, !whiteToMove);
     }
 
     public int see(Move move) {
@@ -1374,7 +1386,7 @@ public class Board implements Definitions {
         int heading;
         int attackedPieceEval;
         int[] materialGains = new int[32];
-        long attackers = MoveGenerator.getAttacksTo(target);
+        long attackers = MoveGenerator.getAttacksTo(this, target);
         long nonRemoved = ~0;
 
         boolean stm = whiteToMove;
@@ -1402,7 +1414,7 @@ public class Board implements Definitions {
 
         //what direction did the attack come from
         heading = BoardUtils.HEADINGS[from][to];
-        if (heading != 0) attackers = MoveGenerator.getXrayAttackers(attackers, nonRemoved, target, heading);
+        if (heading != 0) attackers = MoveGenerator.getXrayAttackers(this, attackers, nonRemoved, target, heading);
 
         //switch side to move
         stm = !stm;
@@ -1477,7 +1489,7 @@ public class Board implements Definitions {
 
             //what direction did the attack come from. If heading!=0, add xray Attackers.
             heading = BoardUtils.HEADINGS[target][from];
-            if (heading != 0) attackers = MoveGenerator.getXrayAttackers(attackers, nonRemoved, target, heading);
+            if (heading != 0) attackers = MoveGenerator.getXrayAttackers(this, attackers, nonRemoved, target, heading);
 
             //switch side to move
             stm = !stm;
@@ -1494,12 +1506,13 @@ public class Board implements Definitions {
     }
 
     private class GameLineRecord {
-        private Move move;
-        private int castleWhite;
-        private int castleBlack;
-        private int ePSquare;
-        private int fiftyMove;
-        private long key;
+        public Move move = new Move();
+        public int castleWhite;
+        public int castleBlack;
+        public int ePSquare;
+        public int fiftyMove;
+        public long key;
+
     }
 
 

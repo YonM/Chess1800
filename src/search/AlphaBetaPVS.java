@@ -99,7 +99,7 @@ public class AlphaBetaPVS implements Definitions {
         null_allowed = true;
         movesFound = 0;
         pvMovesFound = 0;
-        b.moveBufLen[ply + 1] = MoveGenerator.moveGen(b.moveBufLen[ply]);
+        b.moveBufLen[ply + 1] = MoveGenerator.moveGen(b, b.moveBufLen[ply]);
 
         for (i = b.moveBufLen[ply]; i < b.moveBufLen[ply + 1]; i++) {
             selectBestMoveFirst(ply, depth, i, b.whiteToMove);
@@ -213,7 +213,7 @@ public class AlphaBetaPVS implements Definitions {
 
         // generate captures & promotions:
         // genCaptures returns a sorted move list
-        b.moveBufLen[ply + 1] = MoveGenerator.genCaptures(b.moveBufLen[ply]);
+        b.moveBufLen[ply + 1] = MoveGenerator.genCaptures(b, b.moveBufLen[ply]);
 
         for (int i = b.moveBufLen[ply]; i < b.moveBufLen[ply + 1]; i++) {
             b.makeMove(b.moves[i]);

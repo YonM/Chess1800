@@ -8,7 +8,7 @@ import board.BoardUtils;
  * Inspired by Stef Luijten's Winglet Chess @ http://web.archive.org/web/20120621100214/http://www.sluijten.com/winglet/
  */
 public class BitboardMagicAttacks extends BitboardAttacks {
-    private static BitboardMagicAttacks instance;
+    //    private static BitboardMagicAttacks instance;
     public static final long[] FILEMAGIC = new long[64];
     public static final long[] DIAGA8H1MAGIC = new long[64];
     public static final long[] DIAGA1H8MAGIC = new long[64];
@@ -58,33 +58,35 @@ public class BitboardMagicAttacks extends BitboardAttacks {
             0x0L,
             0x0L
     };
-    private static final Board b;
+    //private static final Board b;
     private static long targets;
 
     //Static Initializer
     static {
-        b = Board.getInstance();
+        //b = Board.getInstance();
+        clearMasks();
+        setupMasks();
     }
     
-    public static BitboardMagicAttacks getInstance() {
+/*    public static BitboardMagicAttacks getInstance() {
         if (instance == null) {
             instance = new BitboardMagicAttacks();
         }
         return instance;
-    }
+    }*/
 
-    public BitboardMagicAttacks() {
+/*    public BitboardMagicAttacks() {
         super();
         initialize();
-    }
+    }*/
 
-    private void initialize() {
+    private static void initialize() {
         clearMasks();
         setupMasks();
 
     }
 
-    private void setupMasks() {
+    private static void setupMasks() {
         for (rank = 0; rank < 8; rank++) {
             for (file = 0; file < 8; file++) {
                 FILEMAGIC[BoardUtils.getIndex(rank, file)] = FILEMAGICS[file];
@@ -94,7 +96,7 @@ public class BitboardMagicAttacks extends BitboardAttacks {
         }
     }
 
-    private void clearMasks() {
+    private static void clearMasks() {
         for (square = 0; square < 64; square++) {
             FILEMAGIC[square] = 0x0;
             DIAGA8H1MAGIC[square] = 0x0;
@@ -102,43 +104,43 @@ public class BitboardMagicAttacks extends BitboardAttacks {
         }
     }
 
-    public static long rookMoves(int from) {
-        return rankMoves(from) | fileMoves(from);
+    public static long rookMoves(Board b, int from) {
+        return (rankMoves(b, from) | fileMoves(b, from));
     }
 
-    private static long rankMoves(int from) {
-
-        setTargets();
+    private static long rankMoves(Board b, int from) {
+        setTargets(b);
+        System.out.println("Rook Move: " + Long.toBinaryString(RANK_ATTACKS[from][(int) ((b.allPieces & RANKMASK[from]) >>> RANKSHIFT[from])] & targets));
         return RANK_ATTACKS[from][(int) ((b.allPieces & RANKMASK[from]) >>> RANKSHIFT[from])] & targets;
     }
 
-    private static long fileMoves(int from) {
-
-        setTargets();
+    private static long fileMoves(Board b, int from) {
+        setTargets(b);
+        System.out.println("File Move: " + Long.toBinaryString(FILE_ATTACKS[from][(int) (((b.allPieces & FILEMASK[from]) * FILEMAGIC[from]) >>> 57)] & targets));
         return FILE_ATTACKS[from][(int) (((b.allPieces & FILEMASK[from]) * FILEMAGIC[from]) >>> 57)] & targets;
     }
 
-    public static long bishopMoves(int from) {
-        return diagA8H1Moves(from) | diagA1H8Moves(from);
+    public static long bishopMoves(Board b, int from) {
+        return diagA8H1Moves(b, from) | diagA1H8Moves(b, from);
     }
 
-    public static long QueenMoves(int from) {
-        return bishopMoves(from) | rookMoves(from);
+    public static long QueenMoves(Board b, int from) {
+        return bishopMoves(b, from) | rookMoves(b, from);
     }
 
-    private static long diagA8H1Moves(int from) {
+    private static long diagA8H1Moves(Board b, int from) {
 
-        setTargets();
+        setTargets(b);
         return DIAGA8H1_ATTACKS[from][(int) (((b.allPieces & DIAGA8H1MASK[from]) * DIAGA8H1MAGIC[from]) >>> 57)] & targets;
     }
 
-    private static long diagA1H8Moves(int from) {
+    private static long diagA1H8Moves(Board b, int from) {
 
-        setTargets();
+        setTargets(b);
         return DIAGA1H8_ATTACKS[from][(int) (((b.allPieces & DIAGA1H8MASK[from]) * DIAGA1H8MAGIC[from]) >>> 57)] & targets;
     }
 
-    private static void setTargets() {
+    private static void setTargets(Board b) {
         targets = b.whiteToMove ? ~b.whitePieces : ~b.blackPieces;
     }
 }

@@ -15,7 +15,7 @@ public interface Definitions {
     public final static int A5 = 32, B5 = 33, C5 = 34, D5 = 35, E5 = 36, F5 = 37, G5 = 38, H5 = 39;
     public final static int A6 = 40, B6 = 41, C6 = 42, D6 = 43, E6 = 44, F6 = 45, G6 = 46, H6 = 47;
     public final static int A7 = 48, B7 = 49, C7 = 50, D7 = 51, E7 = 52, F7 = 53, G7 = 54, H7 = 55;
-    public final static int A8 = 56, B8 = 571, C8 = 58, D8 = 59, E8 = 60, F8 = 61, G8 = 62, H8 = 63;
+    public final static int A8 = 56, B8 = 57, C8 = 58, D8 = 59, E8 = 60, F8 = 61, G8 = 62, H8 = 63;
 
     //For Attack generation
     public static final int[] RANKSHIFT = {

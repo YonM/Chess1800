@@ -15,7 +15,7 @@ public class BoardUtils implements Definitions {
 //    public final static char BLACK_MOVE = 1;
 
     //For evaluation
-    public static final short[] CHARBITSET = new short[8];
+    public static final short[] SHORTBITSET = new short[8];
     public static final long[] BITSET = new long[64];
     private static final int[][] BOARDINDEX = new int[8][8];
     public static final long BLACK_SQUARES;
@@ -69,9 +69,9 @@ public class BoardUtils implements Definitions {
         BLACK_SQUARES = tempBlackSquares;
         WHITE_SQUARES = ~BLACK_SQUARES;
 
-        CHARBITSET[0] = 1;
+        SHORTBITSET[0] = 1;
         for (square = 1; square < 8; square++)
-            CHARBITSET[square] = (short) (CHARBITSET[square - 1] << 1);
+            SHORTBITSET[square] = (short) (SHORTBITSET[square - 1] << 1);
 
         //BOARDINDEX is used to convert rank&file to a square.
         for (rank = 0; rank < 8; rank++) {

@@ -12,7 +12,6 @@ import move.Move;
  * Inspired by Stef Luijten's Winglet Chess @ http://web.archive.org/web/20120621100214/http://www.sluijten.com/winglet/
  */
 public class MoveGenerator implements Definitions {
-    private static Board b;
     private static Move move;
     private static long tempPiece, tempMove, targets, freeSquares;
 
@@ -23,47 +22,46 @@ public class MoveGenerator implements Definitions {
 
     static {
         move = new Move();
-        b = Board.getInstance();
     }
 
-    public static int moveGen(int index) {
+    public static int moveGen(Board b, int index) {
         MoveGenerator.index = index;
         oppSide = !b.whiteToMove;
         freeSquares = ~b.allPieces;
         if (b.whiteToMove) {
             //White's move
             targets = ~b.whitePieces;
-            genWhitePawnMoves();
-            genWhiteKnightMoves();
-            genWhiteBishopMoves();
-            genWhiteRookMoves();
-            genWhiteQueenMoves();
-            genWhiteKingMoves();
+            genWhitePawnMoves(b);
+            genWhiteKnightMoves(b);
+            genWhiteBishopMoves(b);
+            genWhiteRookMoves(b);
+            genWhiteQueenMoves(b);
+            genWhiteKingMoves(b);
 
         } else {
             //Black's move
             targets = ~b.blackPieces;
-            genBlackPawnMoves();
-            genBlackKnightMoves();
-            genBlackBishopMoves();
-            genBlackRookMoves();
-            genBlackQueenMoves();
-            genBlackKingMoves();
+            genBlackPawnMoves(b);
+            genBlackKnightMoves(b);
+            genBlackBishopMoves(b);
+            genBlackRookMoves(b);
+            genBlackQueenMoves(b);
+            genBlackKingMoves(b);
         }
         return MoveGenerator.index;
     }
 
-    private static void genBlackPawnMoves() {
+    private static void genBlackPawnMoves(Board b) {
         move.setPiece(BLACK_PAWN);
         tempPiece = b.blackPawns;
         while (tempPiece != EMPTY) {
             setFrom();
             tempMove = BitboardAttacks.BLACK_PAWN_MOVES[from] & freeSquares; // Add normal moves
             if (RANKS[from] == 1 && tempMove != 0)
-                tempMove |= BitboardAttacks.BLACK_PAWN_MOVES[from] & freeSquares; // Add double moves
+                tempMove |= BitboardAttacks.BLACK_PAWN_DOUBLE_MOVES[from] & freeSquares; // Add double moves
             tempMove |= BitboardAttacks.BLACK_PAWN_ATTACKS[from] & b.blackPieces; // Add captures
             while (tempMove != 0) {
-                setToAndCapture();
+                setToAndCapture(b);
                 if (RANKS[to] == 7) { // Add promotions
                     move.setPromotion(BLACK_QUEEN);
                     b.moves[index++].moveInt = move.moveInt;
@@ -94,14 +92,14 @@ public class MoveGenerator implements Definitions {
 
     }
 
-    private static void genBlackKnightMoves() {
+    private static void genBlackKnightMoves(Board b) {
         move.setPiece(BLACK_KNIGHT);
         tempPiece = b.blackKnights;
         while (tempPiece != 0) {
             setFrom();
             tempMove = BitboardAttacks.KNIGHT_ATTACKS[from] & targets;
             while (tempMove != 0) {
-                setToAndCapture();
+                setToAndCapture(b);
                 b.moves[index++].moveInt = move.moveInt;
                 tempMove ^= BoardUtils.BITSET[to];
             }
@@ -109,14 +107,14 @@ public class MoveGenerator implements Definitions {
         }
     }
 
-    private static void genBlackBishopMoves() {
+    private static void genBlackBishopMoves(Board b) {
         move.setPiece(BLACK_BISHOP);
         tempPiece = b.blackBishops;
         while (tempPiece != 0) {
             setFrom();
-            tempMove = BitboardMagicAttacks.bishopMoves(from);
+            tempMove = BitboardMagicAttacks.bishopMoves(b, from);
             while (tempMove != 0) {
-                setToAndCapture();
+                setToAndCapture(b);
                 b.moves[index++].moveInt = move.moveInt;
                 tempMove ^= BoardUtils.BITSET[to];
             }
@@ -125,14 +123,14 @@ public class MoveGenerator implements Definitions {
 
     }
 
-    private static void genBlackRookMoves() {
+    private static void genBlackRookMoves(Board b) {
         move.setPiece(BLACK_ROOK);
         tempPiece = b.blackRooks;
         while (tempPiece != 0) {
             setFrom();
-            tempMove = BitboardMagicAttacks.rookMoves(from);
+            tempMove = BitboardMagicAttacks.rookMoves(b, from);
             while (tempMove != 0) {
-                setToAndCapture();
+                setToAndCapture(b);
                 b.moves[index++].moveInt = move.moveInt;
                 tempMove ^= BoardUtils.BITSET[to];
             }
@@ -141,14 +139,14 @@ public class MoveGenerator implements Definitions {
 
     }
 
-    private static void genBlackQueenMoves() {
+    private static void genBlackQueenMoves(Board b) {
         move.setPiece(BLACK_QUEEN);
         tempPiece = b.blackQueens;
         while (tempPiece != 0) {
             setFrom();
-            tempMove = BitboardMagicAttacks.QueenMoves(from);
+            tempMove = BitboardMagicAttacks.QueenMoves(b, from);
             while (tempMove != 0) {
-                setToAndCapture();
+                setToAndCapture(b);
                 b.moves[index++].moveInt = move.moveInt;
                 tempMove ^= BoardUtils.BITSET[to];
             }
@@ -157,21 +155,21 @@ public class MoveGenerator implements Definitions {
 
     }
 
-    private static void genBlackKingMoves() {
+    private static void genBlackKingMoves(Board b) {
         move.setPiece(BLACK_KING);
         tempPiece = b.blackKing;
         while (tempPiece != 0) {
             setFrom();
             tempMove = BitboardAttacks.KING_ATTACKS[from] & targets;
             while (tempMove != 0) {
-                setToAndCapture();
+                setToAndCapture(b);
                 b.moves[index++].moveInt = move.moveInt;
                 tempMove ^= BoardUtils.BITSET[to];
             }
             //00 Castling
             if ((b.castleBlack & CANCASTLEOO) != 0) {
                 if ((BitboardAttacks.MASKFG[1] & b.allPieces) == 0) {
-                    if (!isAttacked(BitboardAttacks.MASKEG[1], true)) {
+                    if (!isAttacked(b, BitboardAttacks.MASKEG[1], true)) {
                         b.moves[index++].moveInt = BitboardAttacks.BLACK_OO_CASTLE; //Pre generated castle move
                     }
                 }
@@ -180,7 +178,7 @@ public class MoveGenerator implements Definitions {
             //OOO Castling
             if ((b.castleBlack & CANCASTLEOOO) != 0) {
                 if ((BitboardAttacks.MASKBD[1] & b.allPieces) == 0) {
-                    if (!isAttacked(BitboardAttacks.MASKCE[1], true)) {
+                    if (!isAttacked(b, BitboardAttacks.MASKCE[1], true)) {
                         b.moves[index++].moveInt = BitboardAttacks.BLACK_OOO_CASTLE; //Pre generated castle move
                     }
                 }
@@ -192,17 +190,18 @@ public class MoveGenerator implements Definitions {
     }
 
 
-    private static void genWhitePawnMoves() {
+    private static void genWhitePawnMoves(Board b) {
         move.setPiece(WHITE_PAWN);
         tempPiece = b.whitePawns;
         while (tempPiece != EMPTY) {
             setFrom();
             tempMove = BitboardAttacks.WHITE_PAWN_MOVES[from] & freeSquares; // Add normal moves
+//            System.out.println(tempMove + " <=temp Moves");
             if (RANKS[from] == 1 && tempMove != 0)
-                tempMove |= BitboardAttacks.WHITE_PAWN_MOVES[from] & freeSquares; // Add double moves
+                tempMove |= BitboardAttacks.WHITE_PAWN_DOUBLE_MOVES[from] & freeSquares; // Add double moves
             tempMove |= BitboardAttacks.WHITE_PAWN_ATTACKS[from] & b.blackPieces; // Add captures
             while (tempMove != 0) {
-                setToAndCapture();
+                setToAndCapture(b);
                 if (RANKS[to] == 7) { // Add promotions
                     move.setPromotion(WHITE_QUEEN);
                     b.moves[index++].moveInt = move.moveInt;
@@ -232,14 +231,14 @@ public class MoveGenerator implements Definitions {
         }
     }
 
-    private static void genWhiteKnightMoves() {
+    private static void genWhiteKnightMoves(Board b) {
         move.setPiece(WHITE_KNIGHT);
         tempPiece = b.whiteKnights;
         while (tempPiece != 0) {
             setFrom();
             tempMove = BitboardAttacks.KNIGHT_ATTACKS[from] & targets;
             while (tempMove != 0) {
-                setToAndCapture();
+                setToAndCapture(b);
                 b.moves[index++].moveInt = move.moveInt;
                 tempMove ^= BoardUtils.BITSET[to];
             }
@@ -247,14 +246,14 @@ public class MoveGenerator implements Definitions {
         }
     }
 
-    private static void genWhiteBishopMoves() {
+    private static void genWhiteBishopMoves(Board b) {
         move.setPiece(WHITE_BISHOP);
         tempPiece = b.whiteBishops;
         while (tempPiece != 0) {
             setFrom();
-            tempMove = BitboardMagicAttacks.bishopMoves(from);
+            tempMove = BitboardMagicAttacks.bishopMoves(b, from);
             while (tempMove != 0) {
-                setToAndCapture();
+                setToAndCapture(b);
                 b.moves[index++].moveInt = move.moveInt;
                 tempMove ^= BoardUtils.BITSET[to];
             }
@@ -262,14 +261,14 @@ public class MoveGenerator implements Definitions {
         }
     }
 
-    private static void genWhiteRookMoves() {
+    private static void genWhiteRookMoves(Board b) {
         move.setPiece(WHITE_ROOK);
         tempPiece = b.whiteRooks;
         while (tempPiece != 0) {
             setFrom();
-            tempMove = BitboardMagicAttacks.rookMoves(from);
+            tempMove = BitboardMagicAttacks.rookMoves(b, from);
             while (tempMove != 0) {
-                setToAndCapture();
+                setToAndCapture(b);
                 b.moves[index++].moveInt = move.moveInt;
                 tempMove ^= BoardUtils.BITSET[to];
             }
@@ -277,14 +276,14 @@ public class MoveGenerator implements Definitions {
         }
     }
 
-    private static void genWhiteQueenMoves() {
+    private static void genWhiteQueenMoves(Board b) {
         move.setPiece(WHITE_QUEEN);
         tempPiece = b.whiteQueens;
         while (tempPiece != 0) {
             setFrom();
-            tempMove = BitboardMagicAttacks.QueenMoves(from);
+            tempMove = BitboardMagicAttacks.QueenMoves(b, from);
             while (tempMove != 0) {
-                setToAndCapture();
+                setToAndCapture(b);
                 b.moves[index++].moveInt = move.moveInt;
                 tempMove ^= BoardUtils.BITSET[to];
             }
@@ -292,21 +291,21 @@ public class MoveGenerator implements Definitions {
         }
     }
 
-    private static void genWhiteKingMoves() {
+    private static void genWhiteKingMoves(Board b) {
         move.setPiece(WHITE_KING);
         tempPiece = b.whiteKing;
         while (tempPiece != 0) {
             setFrom();
             tempMove = BitboardAttacks.KING_ATTACKS[from] & targets;
             while (tempMove != 0) {
-                setToAndCapture();
+                setToAndCapture(b);
                 b.moves[index++].moveInt = move.moveInt;
                 tempMove ^= BoardUtils.BITSET[to];
             }
             //00 Castling
             if ((b.castleWhite & CANCASTLEOO) != 0) {
                 if ((BitboardAttacks.MASKFG[0] & b.allPieces) == 0) {
-                    if (!isAttacked(BitboardAttacks.MASKEG[0], false)) {
+                    if (!isAttacked(b, BitboardAttacks.MASKEG[0], false)) {
                         b.moves[index++].moveInt = BitboardAttacks.WHITE_OO_CASTLE; //Pre generated castle move
                     }
                 }
@@ -315,7 +314,7 @@ public class MoveGenerator implements Definitions {
             //OOO Castling
             if ((b.castleWhite & CANCASTLEOOO) != 0) {
                 if ((BitboardAttacks.MASKBD[0] & b.allPieces) == 0) {
-                    if (!isAttacked(BitboardAttacks.MASKCE[0], false)) {
+                    if (!isAttacked(b, BitboardAttacks.MASKCE[0], false)) {
                         b.moves[index++].moveInt = BitboardAttacks.WHITE_OOO_CASTLE; //Pre generated castle move
                     }
                 }
@@ -328,15 +327,15 @@ public class MoveGenerator implements Definitions {
     /* Gets a bitboard of front-line attackers(both colours) for SEE.
     *  Does not include xray attackers.
     */
-    public static long getAttacksTo(int target) {
+    public static long getAttacksTo(Board b, int target) {
         long attacks, attackBoard;
 
         //Rank & File attacks for Rooks & Queens
-        attackBoard = BitboardMagicAttacks.rookMoves(target);
+        attackBoard = BitboardMagicAttacks.rookMoves(b, target);
         attacks = (attackBoard & (b.blackQueens | b.whiteQueens | b.blackRooks | b.whiteRooks));
 
         //Diagonal attacks for Bishops & Queens
-        attackBoard = BitboardMagicAttacks.bishopMoves(target);
+        attackBoard = BitboardMagicAttacks.bishopMoves(b, target);
         attacks |= (attackBoard & (b.blackQueens | b.whiteQueens | b.blackBishops | b.whiteBishops));
 
         //Knight attacks
@@ -359,7 +358,7 @@ public class MoveGenerator implements Definitions {
     }
     // getXrayAttackers returns X-ray attackers after an attacker has been removed.
 
-    public static long getXrayAttackers(long attackers, long nonRemoved, int target, int heading) {
+    public static long getXrayAttackers(Board b, long attackers, long nonRemoved, int target, int heading) {
         int state;
         switch (heading) {
             case EAST:
@@ -444,7 +443,7 @@ public class MoveGenerator implements Definitions {
     *   Used for SEE, sorts the move list (by SEE) and removes bad captures.
     */
 
-    public static int genCaptures(int i) {
+    public static int genCaptures(Board b, int i) {
         oldIndex = i;
         MoveGenerator.index = i;
         move = new Move(0);
@@ -454,25 +453,25 @@ public class MoveGenerator implements Definitions {
         if (b.whiteToMove) {
             //White's move
             targets = b.blackPieces; //Ensures only captures
-            genWhitePawnCaps();
-            genWhiteKnightCaps();
-            genWhiteBishopCaps();
-            genWhiteRookCaps();
-            genWhiteQueenCaps();
-            genWhiteKingCaps();
+            genWhitePawnCaps(b);
+            genWhiteKnightCaps(b);
+            genWhiteBishopCaps(b);
+            genWhiteRookCaps(b);
+            genWhiteQueenCaps(b);
+            genWhiteKingCaps(b);
         } else {
             targets = b.whitePieces;
-            genBlackPawnCaps();
-            genBlackKnightCaps();
-            genBlackBishopCaps();
-            genBlackRookCaps();
-            genBlackQueenCaps();
-            genBlackKingCaps();
+            genBlackPawnCaps(b);
+            genBlackKnightCaps(b);
+            genBlackBishopCaps(b);
+            genBlackRookCaps(b);
+            genBlackQueenCaps(b);
+            genBlackKingCaps(b);
         }
         return 0;
     }
 
-    private static void genBlackPawnCaps() {
+    private static void genBlackPawnCaps(Board b) {
         move.setPiece(BLACK_PAWN);
         tempPiece = b.blackPawns;
         while (tempPiece != EMPTY) {
@@ -481,28 +480,28 @@ public class MoveGenerator implements Definitions {
             if (RANKS[from] == 1)
                 tempMove |= BitboardAttacks.BLACK_PAWN_MOVES[from] & freeSquares; // Add double moves
             while (tempMove != 0) {
-                setToAndCapture();
+                setToAndCapture(b);
                 if (RANKS[to] == 0) { // Add promotions
                     move.setPromotion(BLACK_QUEEN);
                     b.moves[index].moveInt = move.moveInt;
-                    addCaptureScore();
+                    addCaptureScore(b);
                     index++;
                     move.setPromotion(BLACK_ROOK);
                     b.moves[index].moveInt = move.moveInt;
-                    addCaptureScore();
+                    addCaptureScore(b);
                     index++;
                     move.setPromotion(BLACK_BISHOP);
                     b.moves[index].moveInt = move.moveInt;
-                    addCaptureScore();
+                    addCaptureScore(b);
                     index++;
                     move.setPromotion(BLACK_KNIGHT);
                     b.moves[index].moveInt = move.moveInt;
-                    addCaptureScore();
+                    addCaptureScore(b);
                     index++;
                     move.setPromotion(EMPTY);
                 } else {
                     b.moves[index].moveInt = move.moveInt;
-                    addCaptureScore();
+                    addCaptureScore(b);
                     index++;
                 }
                 tempMove ^= BoardUtils.BITSET[to];
@@ -513,7 +512,7 @@ public class MoveGenerator implements Definitions {
                     move.setCapture(WHITE_PAWN);
                     move.setTo(b.ePSquare);
                     b.moves[index].moveInt = move.moveInt;
-                    addCaptureScore();
+                    addCaptureScore(b);
                     index++;
                 }
             tempPiece ^= BoardUtils.BITSET[from];
@@ -521,16 +520,16 @@ public class MoveGenerator implements Definitions {
         }
     }
 
-    private static void genBlackKnightCaps() {
+    private static void genBlackKnightCaps(Board b) {
         move.setPiece(BLACK_KNIGHT);
         tempPiece = b.blackKnights;
         while (tempPiece != 0) {
             setFrom();
             tempMove = BitboardAttacks.KNIGHT_ATTACKS[from] & targets;
             while (tempMove != 0) {
-                setToAndCapture();
+                setToAndCapture(b);
                 b.moves[index].moveInt = move.moveInt;
-                addCaptureScore();
+                addCaptureScore(b);
                 index++;
                 tempMove ^= BoardUtils.BITSET[to];
             }
@@ -538,16 +537,16 @@ public class MoveGenerator implements Definitions {
         }
     }
 
-    private static void genBlackBishopCaps() {
+    private static void genBlackBishopCaps(Board b) {
         move.setPiece(BLACK_BISHOP);
         tempPiece = b.blackBishops;
         while (tempPiece != 0) {
             setFrom();
-            tempMove = BitboardMagicAttacks.bishopMoves(from);
+            tempMove = BitboardMagicAttacks.bishopMoves(b, from);
             while (tempMove != 0) {
-                setToAndCapture();
+                setToAndCapture(b);
                 b.moves[index].moveInt = move.moveInt;
-                addCaptureScore();
+                addCaptureScore(b);
                 index++;
                 tempMove ^= BoardUtils.BITSET[to];
             }
@@ -555,16 +554,16 @@ public class MoveGenerator implements Definitions {
         }
     }
 
-    private static void genBlackRookCaps() {
+    private static void genBlackRookCaps(Board b) {
         move.setPiece(BLACK_ROOK);
         tempPiece = b.blackRooks;
         while (tempPiece != 0) {
             setFrom();
-            tempMove = BitboardMagicAttacks.rookMoves(from);
+            tempMove = BitboardMagicAttacks.rookMoves(b, from);
             while (tempMove != 0) {
-                setToAndCapture();
+                setToAndCapture(b);
                 b.moves[index].moveInt = move.moveInt;
-                addCaptureScore();
+                addCaptureScore(b);
                 index++;
                 tempMove ^= BoardUtils.BITSET[to];
             }
@@ -572,16 +571,16 @@ public class MoveGenerator implements Definitions {
         }
     }
 
-    private static void genBlackQueenCaps() {
+    private static void genBlackQueenCaps(Board b) {
         move.setPiece(BLACK_QUEEN);
         tempPiece = b.blackQueens;
         while (tempPiece != 0) {
             setFrom();
-            tempMove = BitboardMagicAttacks.QueenMoves(from);
+            tempMove = BitboardMagicAttacks.QueenMoves(b, from);
             while (tempMove != 0) {
-                setToAndCapture();
+                setToAndCapture(b);
                 b.moves[index].moveInt = move.moveInt;
-                addCaptureScore();
+                addCaptureScore(b);
                 index++;
                 tempMove ^= BoardUtils.BITSET[to];
             }
@@ -589,16 +588,16 @@ public class MoveGenerator implements Definitions {
         }
     }
 
-    private static void genBlackKingCaps() {
+    private static void genBlackKingCaps(Board b) {
         move.setPiece(BLACK_KING);
         tempPiece = b.blackKing;
         while (tempPiece != 0) {
             setFrom();
             tempMove = BitboardAttacks.KING_ATTACKS[from] & targets;
             while (tempMove != 0) {
-                setToAndCapture();
+                setToAndCapture(b);
                 b.moves[index].moveInt = move.moveInt;
-                addCaptureScore();
+                addCaptureScore(b);
                 index++;
                 tempMove ^= BoardUtils.BITSET[to];
             }
@@ -607,7 +606,7 @@ public class MoveGenerator implements Definitions {
         }
     }
 
-    private static void genWhitePawnCaps() {
+    private static void genWhitePawnCaps(Board b) {
         move.setPiece(WHITE_PAWN);
         tempPiece = b.whitePawns;
         while (tempPiece != EMPTY) {
@@ -616,28 +615,28 @@ public class MoveGenerator implements Definitions {
             if (RANKS[from] == 6)
                 tempMove |= BitboardAttacks.WHITE_PAWN_MOVES[from] & freeSquares; // Add double moves
             while (tempMove != 0) {
-                setToAndCapture();
+                setToAndCapture(b);
                 if (RANKS[to] == 7) { // Add promotions
                     move.setPromotion(WHITE_QUEEN);
                     b.moves[index].moveInt = move.moveInt;
-                    addCaptureScore();
+                    addCaptureScore(b);
                     index++;
                     move.setPromotion(WHITE_ROOK);
                     b.moves[index].moveInt = move.moveInt;
-                    addCaptureScore();
+                    addCaptureScore(b);
                     index++;
                     move.setPromotion(WHITE_BISHOP);
                     b.moves[index].moveInt = move.moveInt;
-                    addCaptureScore();
+                    addCaptureScore(b);
                     index++;
                     move.setPromotion(WHITE_KNIGHT);
                     b.moves[index].moveInt = move.moveInt;
-                    addCaptureScore();
+                    addCaptureScore(b);
                     index++;
                     move.setPromotion(EMPTY);
                 } else {
                     b.moves[index].moveInt = move.moveInt;
-                    addCaptureScore();
+                    addCaptureScore(b);
                     index++;
                 }
                 tempMove ^= BoardUtils.BITSET[to];
@@ -648,7 +647,7 @@ public class MoveGenerator implements Definitions {
                     move.setCapture(BLACK_PAWN);
                     move.setTo(b.ePSquare);
                     b.moves[index].moveInt = move.moveInt;
-                    addCaptureScore();
+                    addCaptureScore(b);
                     index++;
                 }
             tempPiece ^= BoardUtils.BITSET[from];
@@ -656,16 +655,16 @@ public class MoveGenerator implements Definitions {
         }
     }
 
-    private static void genWhiteKnightCaps() {
+    private static void genWhiteKnightCaps(Board b) {
         move.setPiece(WHITE_KNIGHT);
         tempPiece = b.whiteKnights;
         while (tempPiece != 0) {
             setFrom();
             tempMove = BitboardAttacks.KNIGHT_ATTACKS[from] & targets;
             while (tempMove != 0) {
-                setToAndCapture();
+                setToAndCapture(b);
                 b.moves[index].moveInt = move.moveInt;
-                addCaptureScore();
+                addCaptureScore(b);
                 index++;
                 tempMove ^= BoardUtils.BITSET[to];
             }
@@ -673,16 +672,16 @@ public class MoveGenerator implements Definitions {
         }
     }
 
-    private static void genWhiteBishopCaps() {
+    private static void genWhiteBishopCaps(Board b) {
         move.setPiece(WHITE_BISHOP);
         tempPiece = b.whiteBishops;
         while (tempPiece != 0) {
             setFrom();
-            tempMove = BitboardMagicAttacks.bishopMoves(from);
+            tempMove = BitboardMagicAttacks.bishopMoves(b, from);
             while (tempMove != 0) {
-                setToAndCapture();
+                setToAndCapture(b);
                 b.moves[index].moveInt = move.moveInt;
-                addCaptureScore();
+                addCaptureScore(b);
                 index++;
                 tempMove ^= BoardUtils.BITSET[to];
             }
@@ -691,16 +690,16 @@ public class MoveGenerator implements Definitions {
     }
 
 
-    private static void genWhiteRookCaps() {
+    private static void genWhiteRookCaps(Board b) {
         move.setPiece(WHITE_ROOK);
         tempPiece = b.whiteRooks;
         while (tempPiece != 0) {
             setFrom();
-            tempMove = BitboardMagicAttacks.rookMoves(from);
+            tempMove = BitboardMagicAttacks.rookMoves(b, from);
             while (tempMove != 0) {
-                setToAndCapture();
+                setToAndCapture(b);
                 b.moves[index].moveInt = move.moveInt;
-                addCaptureScore();
+                addCaptureScore(b);
                 index++;
                 tempMove ^= BoardUtils.BITSET[to];
             }
@@ -708,16 +707,16 @@ public class MoveGenerator implements Definitions {
         }
     }
 
-    private static void genWhiteQueenCaps() {
+    private static void genWhiteQueenCaps(Board b) {
         move.setPiece(WHITE_QUEEN);
         tempPiece = b.whiteQueens;
         while (tempPiece != 0) {
             setFrom();
-            tempMove = BitboardMagicAttacks.QueenMoves(from);
+            tempMove = BitboardMagicAttacks.QueenMoves(b, from);
             while (tempMove != 0) {
-                setToAndCapture();
+                setToAndCapture(b);
                 b.moves[index].moveInt = move.moveInt;
-                addCaptureScore();
+                addCaptureScore(b);
                 index++;
                 tempMove ^= BoardUtils.BITSET[to];
             }
@@ -725,16 +724,16 @@ public class MoveGenerator implements Definitions {
         }
     }
 
-    private static void genWhiteKingCaps() {
+    private static void genWhiteKingCaps(Board b) {
         move.setPiece(WHITE_KING);
         tempPiece = b.whiteKing;
         while (tempPiece != 0) {
             setFrom();
             tempMove = BitboardAttacks.KING_ATTACKS[from] & targets;
             while (tempMove != 0) {
-                setToAndCapture();
+                setToAndCapture(b);
                 b.moves[index].moveInt = move.moveInt;
-                addCaptureScore();
+                addCaptureScore(b);
                 index++;
                 tempMove ^= BoardUtils.BITSET[to];
             }
@@ -743,7 +742,7 @@ public class MoveGenerator implements Definitions {
         }
     }
 
-    private static void addCaptureScore() {
+    private static void addCaptureScore(Board b) {
         int pos, val;
         Move capt;
 
@@ -776,7 +775,7 @@ public class MoveGenerator implements Definitions {
     *      a square that is attacked
     *     ============================================================================
     */
-    public static boolean isAttacked(long target, boolean white_to_move) {
+    public static boolean isAttacked(Board b, long target, boolean white_to_move) {
         long tempTarget = target, slidingAttackers;
         int to;
         if (white_to_move) { //Test for attacks from WHITE to target;
@@ -832,8 +831,8 @@ public class MoveGenerator implements Definitions {
     }
 
 
-    private static void setToAndCapture() {
-        to = BoardUtils.getIndexFromBoard(from);
+    private static void setToAndCapture(Board b) {
+        to = BoardUtils.getIndexFromBoard(tempMove);
         move.setTo(to);
         move.setCapture(b.square[to]);
     }

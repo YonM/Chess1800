@@ -97,15 +97,7 @@ public class Move {
     }
 
 
-
-
-
-
-
-
-
-
-/*    public static int getFrom(int move) {
+    public static int getFrom(int move) {
         return (move & SQUARE_MASK);
     }
 
@@ -123,7 +115,7 @@ public class Move {
 
     public static int getPromotion(int move) {
         return (move >>> 20) & PIECE_TYPE_MASK;
-    }*/
+    }
 
 
 }
