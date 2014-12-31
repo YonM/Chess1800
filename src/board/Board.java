@@ -57,12 +57,17 @@ public class Board implements Definitions {
     private int from, to, piece, captured;
     private long fromBoard, toBoard, fromToBoard;
 
-    public boolean viewRotated;
+    //public boolean viewRotated;
     private static Board instance;
 
     public long key; //Zobrist key
 
     private static final int[] SEE_PIECE_VALUES = {0, 100, 999999, 325, 0, 325, 500, 975, 0, 100, 999999, 325, 0, 325, 500, 975};
+
+    public int totalWhitePawns;
+    public int totalBlackPawns;
+    public int totalWhitePieces;
+    public int totalBlackPieces;
 
     public Board() {
         moves = new Move[MAX_GAME_LENGTH * 4];
@@ -579,6 +584,7 @@ public class Board implements Definitions {
                 blackPieces ^= BoardUtils.BITSET[to - 8];
                 allPieces ^= fromToBoard | BoardUtils.BITSET[to - 8];
                 square[to - 8] = EMPTY;
+                totalBlackPawns -= PAWN_VALUE;
                 material += PAWN_VALUE;
                 key ^= Zobrist.pawn[1][to - 8];
             } else {
@@ -720,6 +726,7 @@ public class Board implements Definitions {
                 whitePieces ^= BoardUtils.BITSET[to + 8];
                 allPieces ^= fromToBoard | BoardUtils.BITSET[to + 8];
                 square[to + 8] = EMPTY;
+                totalWhitePawns -= PAWN_VALUE;
                 material -= PAWN_VALUE;
                 key ^= Zobrist.pawn[0][to + 8];
             } else {
@@ -851,6 +858,7 @@ public class Board implements Definitions {
                 blackPieces ^= BoardUtils.BITSET[to - 8];
                 allPieces ^= fromToBoard | BoardUtils.BITSET[to - 8];
                 square[to - 8] = BLACK_PAWN;
+                totalBlackPawns += PAWN_VALUE;
                 material -= PAWN_VALUE;
             } else {
                 unmakeCapture(captured, to);
@@ -957,6 +965,7 @@ public class Board implements Definitions {
                 whitePieces ^= BoardUtils.BITSET[to + 8];
                 allPieces ^= fromToBoard | BoardUtils.BITSET[to + 8];
                 square[to + 8] = EMPTY;
+                totalWhitePawns += PAWN_VALUE;
                 material += PAWN_VALUE;
             } else {
                 unmakeCapture(captured, to);
@@ -1056,22 +1065,27 @@ public class Board implements Definitions {
         toBoard = BoardUtils.BITSET[to];
         whitePawns ^= toBoard;
         material -= PAWN_VALUE;
+        totalWhitePawns -= PAWN_VALUE;
 
         if (promotion == 7) {
             key ^= Zobrist.pawn[0][to] ^ Zobrist.queen[0][to];
             whiteQueens ^= toBoard;
+            totalWhitePieces += QUEEN_VALUE;
             material += QUEEN_VALUE;
         } else if (promotion == 6) {
             key ^= Zobrist.pawn[0][to] ^ Zobrist.rook[0][to];
             whiteRooks ^= toBoard;
+            totalWhitePieces += ROOK_VALUE;
             material += ROOK_VALUE;
         } else if (promotion == 5) {
             key ^= Zobrist.pawn[0][to] ^ Zobrist.bishop[0][to];
             whiteBishops ^= toBoard;
+            totalWhitePieces += BISHOP_VALUE;
             material += BISHOP_VALUE;
         } else if (promotion == 3) {
             key ^= Zobrist.pawn[0][to] ^ Zobrist.knight[0][to];
             whiteKnights ^= toBoard;
+            totalWhitePieces += KNIGHT_VALUE;
             material += KNIGHT_VALUE;
         }
     }
@@ -1080,22 +1094,27 @@ public class Board implements Definitions {
         toBoard = BoardUtils.BITSET[to];
         blackPawns ^= toBoard;
         material -= PAWN_VALUE;
+        totalBlackPawns -= PAWN_VALUE;
 
         if (promotion == 15) {
             key ^= Zobrist.pawn[1][to] ^ Zobrist.queen[1][to];
             blackQueens ^= toBoard;
+            totalBlackPieces += QUEEN_VALUE;
             material -= QUEEN_VALUE;
         } else if (promotion == 14) {
             key ^= Zobrist.pawn[1][to] ^ Zobrist.rook[1][to];
             blackRooks ^= toBoard;
+            totalBlackPieces += ROOK_VALUE;
             material -= ROOK_VALUE;
         } else if (promotion == 13) {
             key ^= Zobrist.pawn[1][to] ^ Zobrist.bishop[1][to];
             blackBishops ^= toBoard;
+            totalBlackPieces += BISHOP_VALUE;
             material -= BISHOP_VALUE;
         } else if (promotion == 11) {
             key ^= Zobrist.pawn[1][to] ^ Zobrist.knight[1][to];
             blackKnights ^= toBoard;
+            totalBlackPieces += KNIGHT_VALUE;
             material -= KNIGHT_VALUE;
         }
 
@@ -1105,17 +1124,22 @@ public class Board implements Definitions {
         toBoard = BoardUtils.BITSET[to];
         whitePawns ^= toBoard;
         material += PAWN_VALUE;
+        totalWhitePawns += PAWN_VALUE;
         if (promotion == 7) {
             whiteQueens ^= toBoard;
+            totalWhitePieces -= QUEEN_VALUE;
             material -= QUEEN_VALUE;
         } else if (promotion == 6) {
             whiteRooks ^= toBoard;
+            totalWhitePieces -= ROOK_VALUE;
             material -= ROOK_VALUE;
         } else if (promotion == 5) {
             whiteBishops ^= toBoard;
+            totalWhitePieces -= BISHOP_VALUE;
             material -= BISHOP_VALUE;
         } else if (promotion == 3) {
             whiteKnights ^= toBoard;
+            totalWhitePieces -= KNIGHT_VALUE;
             material -= KNIGHT_VALUE;
         }
     }
@@ -1124,17 +1148,22 @@ public class Board implements Definitions {
         toBoard = BoardUtils.BITSET[to];
         blackPawns ^= toBoard;
         material += PAWN_VALUE;
+        totalBlackPawns += PAWN_VALUE;
         if (promotion == 15) {
             blackQueens ^= toBoard;
+            totalBlackPieces -= QUEEN_VALUE;
             material += QUEEN_VALUE;
         } else if (promotion == 14) {
             blackRooks ^= toBoard;
+            totalBlackPieces -= ROOK_VALUE;
             material += ROOK_VALUE;
         } else if (promotion == 13) {
             blackBishops ^= toBoard;
+            totalBlackPieces -= BISHOP_VALUE;
             material += BISHOP_VALUE;
         } else if (promotion == 11) {
             blackKnights ^= toBoard;
+            totalBlackPieces -= KNIGHT_VALUE;
             material += KNIGHT_VALUE;
         }
     }
@@ -1146,6 +1175,7 @@ public class Board implements Definitions {
                 key ^= Zobrist.pawn[0][to];
                 whitePawns ^= toBoard;
                 whitePieces ^= toBoard;
+                totalWhitePawns -= PAWN_VALUE;
                 material -= PAWN_VALUE;
                 break;
             case 2:
@@ -1157,18 +1187,21 @@ public class Board implements Definitions {
                 key ^= Zobrist.knight[0][to];
                 whiteKnights ^= toBoard;
                 whitePieces ^= toBoard;
+                totalWhitePieces -= KNIGHT_VALUE;
                 material -= KNIGHT_VALUE;
                 break;
             case 5:
                 key ^= Zobrist.bishop[0][to];
                 whiteBishops ^= toBoard;
                 whitePieces ^= toBoard;
+                totalWhitePieces -= BISHOP_VALUE;
                 material -= BISHOP_VALUE;
                 break;
             case 6:
                 key ^= Zobrist.rook[0][to];
                 whiteRooks ^= toBoard;
                 whitePieces ^= toBoard;
+                totalWhitePieces -= ROOK_VALUE;
                 material -= ROOK_VALUE;
                 if (to == A1)
                     castleWhite &= ~CANCASTLEOOO;
@@ -1179,12 +1212,14 @@ public class Board implements Definitions {
                 key ^= Zobrist.queen[0][to];
                 whiteQueens ^= toBoard;
                 whitePieces ^= toBoard;
+                totalWhitePieces -= QUEEN_VALUE;
                 material -= QUEEN_VALUE;
                 break;
             case 9:
                 key ^= Zobrist.pawn[1][to];
                 blackPawns ^= toBoard;
                 blackPieces ^= toBoard;
+                totalBlackPawns -= PAWN_VALUE;
                 material += PAWN_VALUE;
                 break;
             case 10:
@@ -1196,12 +1231,14 @@ public class Board implements Definitions {
                 key ^= Zobrist.knight[1][to];
                 blackKnights ^= toBoard;
                 blackPieces ^= toBoard;
+                totalBlackPieces -= KNIGHT_VALUE;
                 material += KNIGHT_VALUE;
                 break;
             case 13:
                 key ^= Zobrist.bishop[1][to];
                 blackBishops ^= toBoard;
                 blackPieces ^= toBoard;
+                totalBlackPieces -= BISHOP_VALUE;
                 material += BISHOP_VALUE;
                 break;
             case 14:
@@ -1209,6 +1246,7 @@ public class Board implements Definitions {
                 blackRooks ^= toBoard;
                 blackPieces ^= toBoard;
                 material += ROOK_VALUE;
+                totalBlackPieces -= ROOK_VALUE;
                 if (to == A8)
                     castleBlack &= ~CANCASTLEOOO;
                 if (to == H8)
@@ -1218,6 +1256,7 @@ public class Board implements Definitions {
                 key ^= Zobrist.queen[1][to];
                 blackQueens ^= toBoard;
                 blackPieces ^= toBoard;
+                totalBlackPieces -= QUEEN_VALUE;
                 material += QUEEN_VALUE;
                 break;
             default:
@@ -1234,6 +1273,7 @@ public class Board implements Definitions {
                 whitePawns ^= toBoard;
                 whitePieces ^= toBoard;
                 square[to] = WHITE_PAWN;
+                totalWhitePawns += PAWN_VALUE;
                 material += PAWN_VALUE;
                 break;
             case 2:
@@ -1245,30 +1285,35 @@ public class Board implements Definitions {
                 whiteKnights ^= toBoard;
                 whitePieces ^= toBoard;
                 square[to] = WHITE_KNIGHT;
+                totalWhitePieces += KNIGHT_VALUE;
                 material += KNIGHT_VALUE;
                 break;
             case 5:
                 whiteBishops ^= toBoard;
                 whitePieces ^= toBoard;
                 square[to] = WHITE_BISHOP;
+                totalWhitePieces += BISHOP_VALUE;
                 material += BISHOP_VALUE;
                 break;
             case 6:
                 whiteRooks ^= toBoard;
                 whitePieces ^= toBoard;
                 square[to] = WHITE_ROOK;
+                totalWhitePieces += ROOK_VALUE;
                 material += ROOK_VALUE;
                 break;
             case 7:
                 whiteQueens ^= toBoard;
                 whitePieces ^= toBoard;
                 square[to] = WHITE_QUEEN;
+                totalWhitePieces += QUEEN_VALUE;
                 material += QUEEN_VALUE;
                 break;
             case 9:
                 blackPawns ^= toBoard;
                 blackPieces ^= toBoard;
                 square[to] = BLACK_PAWN;
+                totalBlackPawns += PAWN_VALUE;
                 material -= PAWN_VALUE;
                 break;
             case 10:
@@ -1280,24 +1325,28 @@ public class Board implements Definitions {
                 blackKnights ^= toBoard;
                 blackPieces ^= toBoard;
                 square[to] = BLACK_KNIGHT;
+                totalBlackPieces += KNIGHT_VALUE;
                 material -= KNIGHT_VALUE;
                 break;
             case 13:
                 blackBishops ^= toBoard;
                 blackPieces ^= toBoard;
                 square[to] = BLACK_BISHOP;
-                material -= BISHOP_VALUE;
+                totalBlackPieces += BISHOP_VALUE;
+                material += BISHOP_VALUE;
                 break;
             case 14:
                 blackRooks ^= toBoard;
                 blackPieces ^= toBoard;
                 square[to] = BLACK_ROOK;
+                totalBlackPieces += ROOK_VALUE;
                 material -= ROOK_VALUE;
                 break;
             case 15:
                 blackQueens ^= toBoard;
                 blackPieces ^= toBoard;
                 square[to] = BLACK_QUEEN;
+                totalBlackPieces += QUEEN_VALUE;
                 material -= QUEEN_VALUE;
                 break;
             default:

@@ -104,9 +104,15 @@ public interface Definitions {
     public static final int SOUTH = -8;
     public static final int SOUTHWEST = -9;
 
+    //Null move related
+    public final static Move NULLMOVE = new Move(0);
+    public final static int NULLMOVE_REDUCTION = 4;
+    public final static int NULLMOVE_LIMIT = KNIGHT_VALUE - 1; //Only do null move when material value(excluding pawn & king)
+    // is below the value of a Knight.
 
-    public final static Move nullMove = new Move(0);
-
+    //Maximum moves per position and max game length.
     public static final int MAX_GAME_LENGTH = 1024; // Maximum number of half-moves, if 50-move rule is obeyed.
     public static final int MAX_MOVES = 256;
+
+
 }

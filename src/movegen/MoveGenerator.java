@@ -81,10 +81,12 @@ public class MoveGenerator implements Definitions {
             }
             if (b.ePSquare != 0)       // Add en-passant captures
                 if ((BitboardAttacks.BLACK_PAWN_ATTACKS[from] & BoardUtils.BITSET[b.ePSquare]) != 0) {
-                    move.setPromotion(BLACK_PAWN);
-                    move.setCapture(BLACK_PAWN);
-                    move.setTo(b.ePSquare);
-                    b.moves[index++].moveInt = move.moveInt;
+                    if ((b.whitePawns & BoardUtils.BITSET[b.ePSquare + 8]) != 0) {
+                        move.setPromotion(BLACK_PAWN);
+                        move.setCapture(BLACK_PAWN);
+                        move.setTo(b.ePSquare);
+                        b.moves[index++].moveInt = move.moveInt;
+                    }
                 }
             tempPiece ^= BoardUtils.BITSET[from];
             move.setPromotion(EMPTY);
@@ -218,10 +220,12 @@ public class MoveGenerator implements Definitions {
             }
             if (b.ePSquare != 0)       // Add en-passant captures
                 if ((BitboardAttacks.WHITE_PAWN_ATTACKS[from] & BoardUtils.BITSET[b.ePSquare]) != 0) {
-                    move.setPromotion(WHITE_PAWN);
-                    move.setCapture(BLACK_PAWN);
-                    move.setTo(b.ePSquare);
-                    b.moves[index++].moveInt = move.moveInt;
+                    if ((b.blackPawns & BoardUtils.BITSET[b.ePSquare + 8]) != 0) {
+                        move.setPromotion(WHITE_PAWN);
+                        move.setCapture(BLACK_PAWN);
+                        move.setTo(b.ePSquare);
+                        b.moves[index++].moveInt = move.moveInt;
+                    }
                 }
             tempPiece ^= BoardUtils.BITSET[from];
             move.setPromotion(EMPTY);

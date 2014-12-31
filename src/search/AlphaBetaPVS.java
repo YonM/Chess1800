@@ -5,6 +5,7 @@ import definitions.Definitions;
 import evaluation.Evaluator;
 import move.Move;
 import movegen.MoveGenerator;
+import zobrist.Zobrist;
 
 import java.util.Arrays;
 
@@ -25,6 +26,7 @@ public class AlphaBetaPVS implements Definitions {
     private static int[][] blackHeuristics;
     private static Move[] lastPV;
     private static boolean follow_pv;
+    private static boolean null_allowed;
     //private static int lastPVLength;
 
     private static Evaluator evaluator;
@@ -45,7 +47,7 @@ public class AlphaBetaPVS implements Definitions {
         int currentDepth, score;
         legalMoves = 0;
 
-        if (b.isEndOfGame()) return nullMove;
+        if (b.isEndOfGame()) return NULLMOVE;
 
         if (legalMoves == 1) return singleMove;
 
@@ -56,10 +58,11 @@ public class AlphaBetaPVS implements Definitions {
 
         for (currentDepth = 1; currentDepth < MAX_DEPTH; currentDepth++) {
             Arrays.fill(b.moveBufLen, 0);
-            Arrays.fill(b.moves, nullMove);
+            Arrays.fill(b.moves, NULLMOVE);
             triangularArray = new Move[MAX_GAME_LENGTH][MAX_GAME_LENGTH];
             triangularLength = new int[MAX_GAME_LENGTH];
             follow_pv = true;
+            null_allowed = true;
             score = alphaBetaPVS(0, currentDepth, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
             if ((score > (Evaluator.CHECKMATE - currentDepth)) || (score < -(Evaluator.CHECKMATE - currentDepth)))
                 currentDepth = MAX_DEPTH;
@@ -70,12 +73,30 @@ public class AlphaBetaPVS implements Definitions {
     private static int alphaBetaPVS(int ply, int depth, int alpha, int beta) {
         int i, j, movesFound, pvMovesFound, val;
         triangularLength[ply] = ply;
-        if (depth == 0) {
+        if (depth <= 0) {
             follow_pv = false;
             return quiescenceSearch(ply, alpha, beta);
         }
         //Threefold repetition check
         if (b.repetitionCount() >= 3) return Evaluator.DRAWSCORE;
+
+        //Try Null move
+        if (!follow_pv && null_allowed) {
+            if ((!b.whiteToMove && b.totalBlackPieces > NULLMOVE_LIMIT) || (b.whiteToMove && (b.totalWhitePieces > NULLMOVE_LIMIT))) {
+                if (b.isOwnKingAttacked()) {
+                    null_allowed = false;
+                    b.whiteToMove = !b.whiteToMove;
+                    val = -alphaBetaPVS(ply, depth - NULLMOVE_REDUCTION, -beta, -beta + 1);
+                    b.key ^= Zobrist.whiteMove;
+                    null_allowed = true;
+                    if (val >= beta) {
+                        return val;
+                    }
+                }
+            }
+        }
+
+        null_allowed = true;
         movesFound = 0;
         pvMovesFound = 0;
         b.moveBufLen[ply + 1] = MoveGenerator.moveGen(b.moveBufLen[ply]);
