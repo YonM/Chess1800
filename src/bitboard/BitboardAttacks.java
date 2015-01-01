@@ -112,9 +112,6 @@ public abstract class BitboardAttacks implements Definitions {
 
         MASKCE[0] = BoardUtils.BITSET[C1] | BoardUtils.BITSET[D1] | BoardUtils.BITSET[E1];
         MASKCE[1] = BoardUtils.BITSET[C8] | BoardUtils.BITSET[D8] | BoardUtils.BITSET[E8];
-
-
-
     }
 
     //For Bishops & Queens
@@ -140,7 +137,6 @@ public abstract class BitboardAttacks implements Definitions {
                 }
             }
         }
-
     }
 
     //For Bishops & Queens

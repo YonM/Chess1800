@@ -59,7 +59,7 @@ public class MoveGenerator implements Definitions {
             tempMove = BitboardAttacks.BLACK_PAWN_MOVES[from] & freeSquares; // Add normal moves
             if (RANKS[from] == 6 && tempMove != 0)
                 tempMove |= BitboardAttacks.BLACK_PAWN_DOUBLE_MOVES[from] & freeSquares; // Add double moves
-            tempMove |= BitboardAttacks.BLACK_PAWN_ATTACKS[from] & b.blackPieces; // Add captures
+            tempMove |= BitboardAttacks.BLACK_PAWN_ATTACKS[from] & b.whitePieces; // Add captures
             while (tempMove != 0) {
                 setToAndCapture(b);
                 if (RANKS[to] == 1) { // Add promotions
@@ -81,7 +81,7 @@ public class MoveGenerator implements Definitions {
                 if ((BitboardAttacks.BLACK_PAWN_ATTACKS[from] & BoardUtils.BITSET[b.ePSquare]) != 0) {
                     if ((b.whitePawns & BoardUtils.BITSET[b.ePSquare + 8]) != 0) {
                         move.setPromotion(BLACK_PAWN);
-                        move.setCapture(BLACK_PAWN);
+                        move.setCapture(WHITE_PAWN);
                         move.setTo(b.ePSquare);
                         b.moves[index++].moveInt = move.moveInt;
                     }
@@ -170,7 +170,7 @@ public class MoveGenerator implements Definitions {
             if ((b.castleBlack & CANCASTLEOO) != 0) {
                 if ((BitboardAttacks.MASKFG[1] & b.allPieces) == 0) {
                     if (!isAttacked(b, BitboardAttacks.MASKEG[1], true)) {
-                        b.moves[index++].moveInt = BitboardAttacks.BLACK_OO_CASTLE; //Pre generated castle move
+                        b.moves[index++].moveInt = BLACK_OO_CASTLE; //Pre generated castle move
                     }
                 }
             }
@@ -179,7 +179,7 @@ public class MoveGenerator implements Definitions {
             if ((b.castleBlack & CANCASTLEOOO) != 0) {
                 if ((BitboardAttacks.MASKBD[1] & b.allPieces) == 0) {
                     if (!isAttacked(b, BitboardAttacks.MASKCE[1], true)) {
-                        b.moves[index++].moveInt = BitboardAttacks.BLACK_OOO_CASTLE; //Pre generated castle move
+                        b.moves[index++].moveInt = BLACK_OOO_CASTLE; //Pre generated castle move
                     }
                 }
             }

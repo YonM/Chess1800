@@ -764,7 +764,7 @@ public class Board implements Definitions {
         fiftyMove++;
         if ((castleBlack & CANCASTLEOO) != 0) key ^= Zobrist.blackKingSideCastling;
         if ((castleBlack & CANCASTLEOOO) != 0) key ^= Zobrist.blackQueenSideCastling;
-        castleWhite = 0;
+        castleBlack = 0;
         if (captured != 0) {
             makeCapture(captured, to);
             allPieces ^= fromBoard;
@@ -1280,7 +1280,6 @@ public class Board implements Definitions {
     private void unmakeCapture(int captured, int to) {
         toBoard = BoardUtils.BITSET[to];
         switch (captured) {
-
             case 1:
                 whitePawns ^= toBoard;
                 whitePieces ^= toBoard;
