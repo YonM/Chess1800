@@ -57,12 +57,12 @@ public class MoveGenerator implements Definitions {
         while (tempPiece != EMPTY) {
             setFrom();
             tempMove = BitboardAttacks.BLACK_PAWN_MOVES[from] & freeSquares; // Add normal moves
-            if (RANKS[from] == 1 && tempMove != 0)
+            if (RANKS[from] == 6 && tempMove != 0)
                 tempMove |= BitboardAttacks.BLACK_PAWN_DOUBLE_MOVES[from] & freeSquares; // Add double moves
             tempMove |= BitboardAttacks.BLACK_PAWN_ATTACKS[from] & b.blackPieces; // Add captures
             while (tempMove != 0) {
                 setToAndCapture(b);
-                if (RANKS[to] == 7) { // Add promotions
+                if (RANKS[to] == 1) { // Add promotions
                     move.setPromotion(BLACK_QUEEN);
                     b.moves[index++].moveInt = move.moveInt;
                     move.setPromotion(BLACK_ROOK);
@@ -219,7 +219,7 @@ public class MoveGenerator implements Definitions {
             }
             if (b.ePSquare != 0)       // Add en-passant captures
                 if ((BitboardAttacks.WHITE_PAWN_ATTACKS[from] & BoardUtils.BITSET[b.ePSquare]) != 0) {
-                    if ((b.blackPawns & BoardUtils.BITSET[b.ePSquare + 8]) != 0) {
+                    if ((b.blackPawns & BoardUtils.BITSET[b.ePSquare - 8]) != 0) {
                         move.setPromotion(WHITE_PAWN);
                         move.setCapture(BLACK_PAWN);
                         move.setTo(b.ePSquare);

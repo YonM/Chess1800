@@ -110,13 +110,13 @@ public class BitboardMagicAttacks extends BitboardAttacks {
 
     private static long rankMoves(Board b, int from) {
         setTargets(b);
-        System.out.println("Rook Move: " + Long.toBinaryString(RANK_ATTACKS[from][(int) ((b.allPieces & RANKMASK[from]) >>> RANKSHIFT[from])] & targets));
+//        System.out.println("Rook Move: " + Long.toBinaryString(RANK_ATTACKS[from][(int) ((b.allPieces & RANKMASK[from]) >>> RANKSHIFT[from])] & targets));
         return RANK_ATTACKS[from][(int) ((b.allPieces & RANKMASK[from]) >>> RANKSHIFT[from])] & targets;
     }
 
     private static long fileMoves(Board b, int from) {
         setTargets(b);
-        System.out.println("File Move: " + Long.toBinaryString(FILE_ATTACKS[from][(int) (((b.allPieces & FILEMASK[from]) * FILEMAGIC[from]) >>> 57)] & targets));
+//        System.out.println("File Move: " + Long.toBinaryString(FILE_ATTACKS[from][(int) (((b.allPieces & FILEMASK[from]) * FILEMAGIC[from]) >>> 57)] & targets));
         return FILE_ATTACKS[from][(int) (((b.allPieces & FILEMASK[from]) * FILEMAGIC[from]) >>> 57)] & targets;
     }
 

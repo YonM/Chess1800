@@ -38,7 +38,7 @@ public class Perft implements Definitions {
         if (loaded) {
             //System.out.println("true");
             long start = System.currentTimeMillis();
-            i = perft(b, 1);
+            i = perft(b, 2);
             long stop = System.currentTimeMillis();
             System.out.println("Found " + i + " nodes in " + (stop - start) + " ms.");
         } else {
@@ -48,8 +48,8 @@ public class Perft implements Definitions {
     }
 
     private static int perft(Board b, int depth) {
-        if (depth == 0)
-            return 1;
+        if (depth == 0) return 1;
+
 
         //Move[] moves = new Move [MAX_MOVES];
         int num_moves = MoveGenerator.moveGen(b, 0);
@@ -57,8 +57,11 @@ public class Perft implements Definitions {
 
         for (int i = 0; i < num_moves; i++) {
             b.makeMove(b.moves[i]);
-            System.out.println("piece moved: " + Move.getPiece(b.moves[i].moveInt));
             if (!b.isOtherKingAttacked()) {
+                if (Move.getPiece(b.moves[i].moveInt) <= 7)
+                    System.out.println("White piece moved: " + Move.getPiece(b.moves[i].moveInt));
+                else
+                    System.out.println("Black piece moved: " + Move.getPiece(b.moves[i].moveInt));
                 count += perft(b, depth - 1);
             }
             b.unmakeMove(b.moves[i]);

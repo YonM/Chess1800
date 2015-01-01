@@ -358,10 +358,10 @@ public abstract class BitboardAttacks implements Definitions {
         for (int rank = 0; rank < 8; rank++) {
             for (int file = 0; file < 8; file++) {
                 RANKMASK[BoardUtils.getIndex(rank, file)] = BoardUtils.BITSET[BoardUtils.getIndex(rank, 1)] | BoardUtils.BITSET[BoardUtils.getIndex(rank, 2)] | BoardUtils.BITSET[BoardUtils.getIndex(rank, 3)];
-                RANKMASK[BoardUtils.getIndex(rank, file)] = BoardUtils.BITSET[BoardUtils.getIndex(rank, 4)] | BoardUtils.BITSET[BoardUtils.getIndex(rank, 5)] | BoardUtils.BITSET[BoardUtils.getIndex(rank, 6)];
+                RANKMASK[BoardUtils.getIndex(rank, file)] |= BoardUtils.BITSET[BoardUtils.getIndex(rank, 4)] | BoardUtils.BITSET[BoardUtils.getIndex(rank, 5)] | BoardUtils.BITSET[BoardUtils.getIndex(rank, 6)];
 
                 FILEMASK[BoardUtils.getIndex(rank, file)] = BoardUtils.BITSET[BoardUtils.getIndex(1, file)] | BoardUtils.BITSET[BoardUtils.getIndex(2, file)] | BoardUtils.BITSET[BoardUtils.getIndex(3, file)];
-                FILEMASK[BoardUtils.getIndex(rank, file)] = BoardUtils.BITSET[BoardUtils.getIndex(4, file)] | BoardUtils.BITSET[BoardUtils.getIndex(5, file)] | BoardUtils.BITSET[BoardUtils.getIndex(6, file)];
+                FILEMASK[BoardUtils.getIndex(rank, file)] |= BoardUtils.BITSET[BoardUtils.getIndex(4, file)] | BoardUtils.BITSET[BoardUtils.getIndex(5, file)] | BoardUtils.BITSET[BoardUtils.getIndex(6, file)];
 
                 diaga8h1 = file + rank; // 0 to 14 & longest = 7
                 DIAGA8H1MASK[BoardUtils.getIndex(rank, file)] = 0x0;
