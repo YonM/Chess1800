@@ -730,7 +730,7 @@ public class Board implements Definitions {
         if (RANKS[from] == 6)
             if (RANKS[to] == 4) {
                 ePSquare = from - 8;
-                key ^= Zobrist.passantColumn[FILES[from - 8]];
+                key ^= Zobrist.passantColumn[FILES[from]];
             }
         if (captured != 0) {
             if (move.isEnPassant()) {
