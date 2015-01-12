@@ -976,7 +976,7 @@ public class Board implements Definitions {
                 whitePawns ^= BoardUtils.BITSET[to + 8];
                 whitePieces ^= BoardUtils.BITSET[to + 8];
                 allPieces ^= fromToBoard | BoardUtils.BITSET[to + 8];
-                square[to + 8] = EMPTY;
+                square[to + 8] = WHITE_PAWN;
                 totalWhitePawns += PAWN_VALUE;
                 material += PAWN_VALUE;
             } else {
