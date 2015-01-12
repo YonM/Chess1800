@@ -574,7 +574,7 @@ public class Board implements Definitions {
         castleBlack = gameLine[endOfSearch].castleBlack;
         ePSquare = gameLine[endOfSearch].ePSquare;
         fiftyMove = gameLine[endOfSearch].fiftyMove;
-        key ^= gameLine[endOfSearch].key;
+        key = gameLine[endOfSearch].key;
 
     }
 
