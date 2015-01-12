@@ -588,7 +588,7 @@ public class Board implements Definitions {
         if (RANKS[from] == 1)
             if (RANKS[to] == 3) {
                 ePSquare = from + 8;
-                key ^= Zobrist.passantColumn[FILES[from + 8]];
+                key ^= Zobrist.passantColumn[FILES[from]];
             }
         if (captured != 0) {
             if (move.isEnPassant()) {

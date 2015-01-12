@@ -56,7 +56,6 @@ public abstract class BitboardAttacks implements Definitions {
         clearMasks();
         setupMasks();
         generateAttacks();
-
     }
 
     static {
@@ -108,7 +107,7 @@ public abstract class BitboardAttacks implements Definitions {
         MASKFG[1] = BoardUtils.BITSET[F8] | BoardUtils.BITSET[G8];
 
         MASKBD[0] = BoardUtils.BITSET[B1] | BoardUtils.BITSET[C1] | BoardUtils.BITSET[D1];
-        MASKBD[1] = BoardUtils.BITSET[BoardUtils.B8] | BoardUtils.BITSET[C8] | BoardUtils.BITSET[D8];
+        MASKBD[1] = BoardUtils.BITSET[B8] | BoardUtils.BITSET[C8] | BoardUtils.BITSET[D8];
 
         MASKCE[0] = BoardUtils.BITSET[C1] | BoardUtils.BITSET[D1] | BoardUtils.BITSET[E1];
         MASKCE[1] = BoardUtils.BITSET[C8] | BoardUtils.BITSET[D8] | BoardUtils.BITSET[E8];
@@ -332,6 +331,7 @@ public abstract class BitboardAttacks implements Definitions {
     }
 
     private static void clearAttackBoards() {
+        int state;
         for (square = 0; square < 64; square++) {
             KNIGHT_ATTACKS[square] = 0x0;
             KING_ATTACKS[square] = 0x0;
@@ -341,7 +341,7 @@ public abstract class BitboardAttacks implements Definitions {
             BLACK_PAWN_ATTACKS[square] = 0x0;
             BLACK_PAWN_MOVES[square] = 0x0;
             BLACK_PAWN_DOUBLE_MOVES[square] = 0x0;
-            for (int state = 0; state < 64; state++) {
+            for (state = 0; state < 64; state++) {
                 RANK_ATTACKS[square][state] = 0x0;
                 FILE_ATTACKS[square][state] = 0x0;
                 DIAGA8H1_ATTACKS[square][state] = 0x0;
