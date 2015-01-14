@@ -80,10 +80,10 @@ public class BitboardMagicAttacks extends BitboardAttacks {
         initialize();
     }*/
 
-    private static void initialize() {
+/*    private static void initialize() {
         clearMasks();
         setupMasks();
-    }
+    }*/
 
     private static void setupMasks() {
         for (rank = 0; rank < 8; rank++) {

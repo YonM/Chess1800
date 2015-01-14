@@ -1368,7 +1368,6 @@ public class Board implements Definitions {
     public boolean isOtherKingAttacked() {
         if (whiteToMove) return MoveGenerator.isAttacked(this, blackKing, whiteToMove);
         return MoveGenerator.isAttacked(this, whiteKing, whiteToMove);
-
     }
 
     public boolean isOwnKingAttacked() {
@@ -1381,7 +1380,6 @@ public class Board implements Definitions {
         int numOfCaptures = 0;
         int from;
         int target = move.getTo();
-        ;
         int heading;
         int attackedPieceEval;
         int[] materialGains = new int[32];
@@ -1511,7 +1509,6 @@ public class Board implements Definitions {
         public int ePSquare;
         public int fiftyMove;
         public long key;
-
     }
 
 

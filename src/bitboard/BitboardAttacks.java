@@ -177,7 +177,7 @@ public abstract class BitboardAttacks implements Definitions {
     private static void generateRankAttacks() {
         for (square = 0; square < 64; square++) {
             for (state6Bit = 0; state6Bit < 64; state6Bit++) {
-                RANK_ATTACKS[square][state6Bit] |= GEN_SLIDING_ATTACKS[FILES[square]][state6Bit] << (RANKSHIFT[square] - 1);
+                RANK_ATTACKS[square][state6Bit] |= (GEN_SLIDING_ATTACKS[FILES[square]][state6Bit] << (RANKSHIFT[square] - 1));
             }
         }
     }
