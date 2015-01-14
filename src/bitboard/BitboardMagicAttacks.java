@@ -113,6 +113,8 @@ public class BitboardMagicAttacks extends BitboardAttacks {
             System.out.println(((b.allPieces & RANKMASK[from]) >>> RANKSHIFT[from]) + " : " + ((int) ((b.allPieces & RANKMASK[from]) >>> RANKSHIFT[from])) + " : " + Long.toBinaryString(((b.allPieces & RANKMASK[from]) >>> RANKSHIFT[from])));
             System.out.println("Rank Move: " + Long.toBinaryString(RANK_ATTACKS[from][(int) ((b.allPieces & RANKMASK[from]) >>> RANKSHIFT[from])] & targets));
             System.out.println("RANK Mask: " + Long.toBinaryString(RANKMASK[from]) + " From: " + from);
+            System.out.println("Rank Attacks: " + RANK_ATTACKS[from][(int) ((b.allPieces & RANKMASK[from]) >>> RANKSHIFT[from])]);
+            System.out.println("Rank Attacks Binary: " + Long.toBinaryString(RANK_ATTACKS[from][(int) ((b.allPieces & RANKMASK[from]) >>> RANKSHIFT[from])]));
         }
         return RANK_ATTACKS[from][(int) ((b.allPieces & RANKMASK[from]) >>> RANKSHIFT[from])] & targets;
     }

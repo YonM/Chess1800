@@ -575,7 +575,6 @@ public class Board implements Definitions {
         ePSquare = gameLine[endOfSearch].ePSquare;
         fiftyMove = gameLine[endOfSearch].fiftyMove;
         key = gameLine[endOfSearch].key;
-
     }
 
     private void makeWhitePawnMove(Move move) {
@@ -644,9 +643,7 @@ public class Board implements Definitions {
                 square[D1] = WHITE_ROOK;
                 key ^= Zobrist.rook[0][A1] ^ Zobrist.rook[0][D1];
             }
-
         }
-
     }
 
     private void makeWhiteKnightMove() {
@@ -662,7 +659,6 @@ public class Board implements Definitions {
         } else {
             allPieces ^= fromToBoard;
         }
-
     }
 
     private void makeWhiteBishopMove() {
@@ -678,7 +674,6 @@ public class Board implements Definitions {
         } else {
             allPieces ^= fromToBoard;
         }
-
     }
 
     private void makeWhiteRookMove() {
@@ -717,7 +712,6 @@ public class Board implements Definitions {
         } else {
             allPieces ^= fromToBoard;
         }
-
     }
 
     private void makeBlackPawnMove(Move move) {
@@ -787,7 +781,6 @@ public class Board implements Definitions {
                 square[D8] = BLACK_ROOK;
                 key ^= Zobrist.rook[1][A8] ^ Zobrist.rook[1][D8];
             }
-
         }
     }
 
@@ -911,7 +904,6 @@ public class Board implements Definitions {
                 square[D1] = EMPTY;
             }
         }
-
     }
 
     private void unmakeWhiteKnightMove() {
@@ -1044,7 +1036,6 @@ public class Board implements Definitions {
         } else {
             allPieces ^= fromToBoard;
         }
-
     }
 
     private void unmakeBlackRookMove() {
@@ -1129,7 +1120,6 @@ public class Board implements Definitions {
             totalBlackPieces += KNIGHT_VALUE;
             material -= KNIGHT_VALUE;
         }
-
     }
 
     private void unmakeWhitePromotion(int promotion, int to) {
