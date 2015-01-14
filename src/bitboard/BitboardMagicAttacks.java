@@ -83,7 +83,6 @@ public class BitboardMagicAttacks extends BitboardAttacks {
     private static void initialize() {
         clearMasks();
         setupMasks();
-
     }
 
     private static void setupMasks() {
@@ -111,6 +110,7 @@ public class BitboardMagicAttacks extends BitboardAttacks {
     private static long rankMoves(Board b, int from) {
         setTargets(b);
         if (!b.whiteToMove) {
+            System.out.println(((b.allPieces & RANKMASK[from]) >>> RANKSHIFT[from]) + " : " + ((int) ((b.allPieces & RANKMASK[from]) >>> RANKSHIFT[from])) + " : " + Long.toBinaryString(((b.allPieces & RANKMASK[from]) >>> RANKSHIFT[from])));
             System.out.println("Rank Move: " + Long.toBinaryString(RANK_ATTACKS[from][(int) ((b.allPieces & RANKMASK[from]) >>> RANKSHIFT[from])] & targets));
             System.out.println("RANK Mask: " + Long.toBinaryString(RANKMASK[from]) + " From: " + from);
         }
@@ -133,13 +133,11 @@ public class BitboardMagicAttacks extends BitboardAttacks {
     }
 
     private static long diagA8H1Moves(Board b, int from) {
-
         setTargets(b);
         return DIAGA8H1_ATTACKS[from][(int) (((b.allPieces & DIAGA8H1MASK[from]) * DIAGA8H1MAGIC[from]) >>> 57)] & targets;
     }
 
     private static long diagA1H8Moves(Board b, int from) {
-
         setTargets(b);
         return DIAGA1H8_ATTACKS[from][(int) (((b.allPieces & DIAGA1H8MASK[from]) * DIAGA1H8MAGIC[from]) >>> 57)] & targets;
     }

@@ -73,10 +73,10 @@ public interface Definitions {
     public final static int BLACK_QUEEN = 15;
 
     //Pre generated castling moves
-    public static final int WHITE_OOO_CASTLE = Move.generateMove(E1, G1, WHITE_KING, EMPTY, WHITE_KING);
-    public static final int BLACK_OOO_CASTLE = Move.generateMove(E8, G8, BLACK_KING, EMPTY, BLACK_KING);
-    public static final int WHITE_OO_CASTLE = Move.generateMove(E1, C1, WHITE_KING, EMPTY, WHITE_KING);
-    public static final int BLACK_OO_CASTLE = Move.generateMove(E8, C8, BLACK_KING, EMPTY, BLACK_KING);
+    public static final int WHITE_OOO_CASTLE = Move.generateMove(E1, C1, WHITE_KING, EMPTY, WHITE_KING);
+    public static final int BLACK_OOO_CASTLE = Move.generateMove(E8, C8, BLACK_KING, EMPTY, BLACK_KING);
+    public static final int WHITE_OO_CASTLE = Move.generateMove(E1, G1, WHITE_KING, EMPTY, WHITE_KING);
+    public static final int BLACK_OO_CASTLE = Move.generateMove(E8, G8, BLACK_KING, EMPTY, BLACK_KING);
 
     //Castling values
     public final int CANCASTLEOO = 1;

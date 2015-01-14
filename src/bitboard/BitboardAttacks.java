@@ -23,9 +23,6 @@ public abstract class BitboardAttacks implements Definitions {
     public static final long[] MASKBD = new long[2];
     public static final long[] MASKCE = new long[2];
 
-
-
-
     //For generating attacks
     public static final short[][] GEN_SLIDING_ATTACKS = new short[8][64];
 
@@ -45,12 +42,11 @@ public abstract class BitboardAttacks implements Definitions {
     public static final long[][] DIAGA1H8_ATTACKS = new long[64][64];
 
     protected static int square, rank, aRank, file, aFile, attackBit, diaga8h1, diaga1h8;
-    ;
     protected static short state6Bit;
 
-    protected BitboardAttacks() {
+/*    protected BitboardAttacks() {
         initialize();
-    }
+    }*/
 
     private static void initialize() {
         clearMasks();
@@ -351,8 +347,9 @@ public abstract class BitboardAttacks implements Definitions {
     }
 
     private static void setupMasks() {
+        int file;
         for (int rank = 0; rank < 8; rank++) {
-            for (int file = 0; file < 8; file++) {
+            for (file = 0; file < 8; file++) {
                 RANKMASK[BoardUtils.getIndex(rank, file)] = BoardUtils.BITSET[BoardUtils.getIndex(rank, 1)] | BoardUtils.BITSET[BoardUtils.getIndex(rank, 2)] | BoardUtils.BITSET[BoardUtils.getIndex(rank, 3)];
                 RANKMASK[BoardUtils.getIndex(rank, file)] |= BoardUtils.BITSET[BoardUtils.getIndex(rank, 4)] | BoardUtils.BITSET[BoardUtils.getIndex(rank, 5)] | BoardUtils.BITSET[BoardUtils.getIndex(rank, 6)];
 
