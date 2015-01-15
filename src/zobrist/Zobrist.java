@@ -1,12 +1,15 @@
 package zobrist;
 
+import board.Board;
+import definitions.Definitions;
+
 /**
  * Created by Yonathan on 04/12/2014.
  * For Zobrist key generation. Based on Alberto Ruial's "Carballo" chess game.
  * Project located @ https://github.com/albertoruibal/carballo
  *
  */
-public class Zobrist {
+public class Zobrist implements Definitions {
 
     public static final long exclusionKey = 0x5472a27925a2a2f5L;
     public static final long[][] pawn = {{0x79ad695501e7d1e8L, 0x8249a47aee0e41f7L, 0x637a7780decfc0d9L, 0x19fc8a768cf4b6d4L, 0x7bcbc38da25a7f3cL, 0x5093417aa8a7ed5eL, 0x7fb9f855a997142L, 0x5355f900c2a82dc7L, 0xe99d662af4243939L, 0xa49cd132bfbf7cc4L, 0xce26c0b95c980d9L, 0xbb6e2924f03912eaL, 0x24c3c94df9c8d3f6L, 0xdabf2ac8201752fcL, 0xf145b6beccdea195L, 0x14acbaf4777d5776L, 0xf9b89d3e99a075c2L, 0x70ac4cd9f04f21f5L, 0x9a85ac909a24eaa1L, 0xee954d3c7b411f47L, 0x72b12c32127fed2bL, 0x54b3f4fa5f40d873L, 0x8535f040b9744ff1L, 0x27e6ad7891165c3fL, 0x8de8dca9f03cc54eL, 0xff07f64ef8ed14d0L, 0x92237ac237f3859L, 0x87bf02c6b49e2ae9L, 0x1920c04d47267bbdL, 0xae4a9346cc3f7cf2L, 0xa366e5b8c54f48b8L, 0x87b3e2b2b5c907b1L, 0x6304d09a0b3738c4L, 0x4f80f7a035dafb04L, 0x9a74acb964e78cb3L, 0x1e1032911fa78984L, 0x5bfea5b4712768e9L, 0x390e5fb44d01144bL, 0xb3f22c3d0b0b38edL, 0x9c1633264db49c89L, 0x7b32f7d1e03680ecL, 0xef927dbcf00c20f2L, 0xdfd395339cdbf4a7L, 0x6503080440750644L, 0x1881afc9a3a701d6L, 0x506aacf489889342L, 0x5b9b63eb9ceff80cL, 0x2171e64683023a08L, 0xede6c87f8477609dL, 0x3c79a0ff5580ef7fL, 0xf538639ce705b824L, 0xcf464cec899a2f8aL, 0x4a750a09ce9573f7L, 0xb5889c6e15630a75L, 0x5a7e8a57db91b77L, 0xb9fd7620e7316243L, 0x73a1921916591cbdL, 0x70eb093b15b290ccL, 0x920e449535dd359eL, 0x43fcae60cc0eba0L, 0xa246637cff328532L, 0x97d7374c60087b73L, 0x86536b8cf3428a8cL, 0x799e81f05bc93f31L}, {0xe83a908ff2fb60caL, 0xfbbad1f61042279L, 0x3290ac3a203001bfL, 0x75834465489c0c89L, 0x9c15f73e62a76ae2L, 0x44db015024623547L, 0x2af7398005aaa5c7L, 0x9d39247e33776d41L, 0x239f8b2d7ff719ccL, 0x5db4832046f3d9e5L, 0x11355146fd56395L, 0x40bdf15d4a672e32L, 0xd021ff5cd13a2ed5L, 0x9605d5f0e25ec3b0L, 0x1a083822ceafe02dL, 0xd7e765d58755c10L, 0x4bb38de5e7219443L, 0x331478f3af51bbe6L, 0xf3218f1c9510786cL, 0x82c7709e781eb7ccL, 0x7d11cdb1c3b7adf0L, 0x7449bbff801fed0bL, 0x679f848f6e8fc971L, 0x5d1a1ae85b49aa1L, 0x24aa6c514da27500L, 0xc9452ca81a09d85dL, 0x7b0500ac42047ac4L, 0xb4ab30f062b19abfL, 0x19f3c751d3e92ae1L, 0x87d2074b81d79217L, 0x8dbd98a352afd40bL, 0xaa649c6ebcfd50fcL, 0x735e2b97a4c45a23L, 0x3575668334a1dd3bL, 0x9d1bc9a3dd90a94L, 0x637b2b34ff93c040L, 0x3488b95b0f1850fL, 0xa71b9b83461cbd93L, 0x14a68fd73c910841L, 0x4c9f34427501b447L, 0xfcf7fe8a3430b241L, 0x5c82c505db9ab0faL, 0x51ebdc4ab9ba3035L, 0x9f74d14f7454a824L, 0xbf983fe0fe5d8244L, 0xd310a7c2ce9b6555L, 0x1fcbacd259bf02e7L, 0x18727070f1bd400bL, 0x96d693460cc37e5dL, 0x4de0b0f40f32a7b8L, 0x6568fca92c76a243L, 0x11d505d4c351bd7fL, 0x7ef48f2b83024e20L, 0xb9bc6c87167c33e7L, 0x8c74c368081b3075L, 0x3253a729b9ba3ddeL, 0xec16ca8aea98ad76L, 0x63dc359d8d231b78L, 0x93c5b5f47356388bL, 0x39f890f579f92f88L, 0x5f0f4a5898171bb6L, 0x42880b0236e4d951L, 0x6d2bdcdae2919661L, 0x42e240cb63689f2fL}};
@@ -51,6 +54,26 @@ public class Zobrist {
             default:
                 return 0;
         }
+    }
+
+    public static long getKeyFromBoard(Board b) {
+        long key = 0;
+        for (int loc = 0; loc < 64; loc++) {
+            key ^= getKeyPieceIndex(loc, b.getPieceAt(loc));
+        }
+        if ((b.castleWhite & CANCASTLEOO) != 0)
+            key ^= whiteKingSideCastling;
+        if ((b.castleWhite & CANCASTLEOOO) != 0)
+            key ^= whiteQueenSideCastling;
+        if ((b.castleBlack & CANCASTLEOO) != 0)
+            key ^= blackKingSideCastling;
+        if ((b.castleBlack & CANCASTLEOOO) != 0)
+            key ^= blackQueenSideCastling;
+        if (b.ePSquare != -1)
+            key ^= passantColumn[b.ePSquare % 8];
+        if (b.whiteToMove)
+            key ^= whiteMove;
+        return key;
     }
 
 /*    public static long[] getKey(Board b) {

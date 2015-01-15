@@ -41,6 +41,9 @@ public class Board implements Definitions {
     public int ePSquare;
     public int fiftyMove;
     public boolean whiteToMove;
+    public int moveNumber;
+
+    public int initMoveNumber;
 
 
     public int castleWhite;
@@ -56,12 +59,12 @@ public class Board implements Definitions {
     public final GameLineRecord[] gameLine = new GameLineRecord[MAX_GAME_LENGTH]; // Current search line + moves that have actually been played.
 
     //For (un)make move
-    private int from, to, piece;
+    private int from, to, piece, moveType;
     private long fromBoard, toBoard, fromToBoard;
     private boolean capture;
 
     //public boolean viewRotated;
-    private static Board instance;
+//    private static Board instance;
 
     public long key; //Zobrist key
 
@@ -72,7 +75,7 @@ public class Board implements Definitions {
     public int totalWhitePieces;
     public int totalBlackPieces;
 
-    private Board() {
+    public Board() {
         moves = new int[MAX_GAME_LENGTH * 4];
         for (int i = 0; i < moves.length; i++) {
             moves[i] = 0;
@@ -101,7 +104,8 @@ public class Board implements Definitions {
 //            while (st.hasMoreTokens()) {
 //                arr.add(st.nextToken());
 //            }
-            int[] fenSquares = new int[64];
+            //int[] fenSquares = new int[64];
+            clearBitboards();
             String[] tokens = fen.split("[ \\t\\n\\x0B\\f\\r]+");
             String board = tokens[0];
             int rank = 7;
@@ -118,61 +122,66 @@ public class Board implements Definitions {
                             file = 0;
                             break;
                         case 'P':
-                            fenSquares[BoardUtils.getIndex(rank, file)] = WHITE_PAWN;
+                            whitePawns |= square;
                             break;
                         case 'N':
-                            fenSquares[BoardUtils.getIndex(rank, file)] = WHITE_KNIGHT;
+                            whiteKnights |= square;
                             break;
                         case 'B':
-                            fenSquares[BoardUtils.getIndex(rank, file)] = WHITE_BISHOP;
+                            whiteBishops |= square;
                             break;
                         case 'R':
-                            fenSquares[BoardUtils.getIndex(rank, file)] = WHITE_ROOK;
+                            whiteRooks |= square;
                             break;
                         case 'Q':
-                            fenSquares[BoardUtils.getIndex(rank, file)] = WHITE_QUEEN;
+                            whiteQueens |= square;
                             break;
                         case 'K':
-                            fenSquares[BoardUtils.getIndex(rank, file)] = WHITE_KING;
+                            whiteKing |= square;
                             break;
                         case 'p':
-                            fenSquares[BoardUtils.getIndex(rank, file)] = BLACK_PAWN;
+                            blackPawns |= square;
                             break;
                         case 'n':
-                            fenSquares[BoardUtils.getIndex(rank, file)] = BLACK_KNIGHT;
+                            blackKnights |= square;
                             break;
                         case 'b':
-                            fenSquares[BoardUtils.getIndex(rank, file)] = BLACK_BISHOP;
+                            blackBishops |= square;
                             break;
                         case 'r':
-                            fenSquares[BoardUtils.getIndex(rank, file)] = BLACK_ROOK;
+                            blackRooks |= square;
                             break;
                         case 'q':
-                            fenSquares[BoardUtils.getIndex(rank, file)] = BLACK_QUEEN;
+                            blackQueens |= square;
                             break;
                         case 'k':
-                            fenSquares[BoardUtils.getIndex(rank, file)] = BLACK_KING;
+                            blackKing |= square;
                             break;
                     }
                     if (c != '/') file++;
                 }
             }
-            boolean nextToMove = tokens[1].toCharArray()[0] == 'w';
-            int tempWhiteCastle = 0, tempBlackCastle = 0, ePSquare = 0, temp50Move = 0;
+            updateAggregateBitboards();
+
+            whiteToMove = tokens[1].toCharArray()[0] == 'w';
+            castleWhite = 0;
+            castleBlack = 0;
+            ePSquare = -1;
+            fiftyMove = 0;
             //For castling
             if (tokens.length > 2) {
                 String castleInfo = tokens[2];
                 if (castleInfo.contains("K")) {
-                    tempWhiteCastle += CANCASTLEOO;
+                    castleWhite += CANCASTLEOO;
                 }
                 if (castleInfo.contains("Q")) {
-                    tempWhiteCastle += CANCASTLEOOO;
+                    castleWhite += CANCASTLEOOO;
                 }
                 if (castleInfo.contains("k")) {
-                    tempBlackCastle += CANCASTLEOO;
+                    castleBlack += CANCASTLEOO;
                 }
                 if (castleInfo.contains("q")) {
-                    tempBlackCastle += CANCASTLEOOO;
+                    castleBlack += CANCASTLEOOO;
                 }
                 if (tokens.length > 3) {
                     char[] enPassant = tokens[3].toCharArray();
@@ -183,14 +192,29 @@ public class Board implements Definitions {
                 }
                 if (tokens.length > 4) {
                     try {
-                        temp50Move = Integer.parseInt(tokens[4]);
+                        fiftyMove = Integer.parseInt(tokens[4]);
+                    } catch (Exception ignore) {
+
+                    }
+                }
+                if (tokens.length > 5) {
+                    try {
+                        moveNumber = Integer.parseInt(tokens[5]);
+                        initMoveNumber = moveNumber;
                     } catch (Exception ignore) {
 
                     }
                 }
 
-
             }
+            key = Zobrist.getKeyFromBoard(this);
+
+            material = Long.bitCount(whitePawns) * PAWN_VALUE + Long.bitCount(whiteKnights) * KNIGHT_VALUE
+                    + Long.bitCount(whiteBishops) * BISHOP_VALUE + Long.bitCount(whiteRooks) * ROOK_VALUE
+                    + Long.bitCount(whiteQueens) * QUEEN_VALUE;
+            material -= (Long.bitCount(blackPawns) * PAWN_VALUE + Long.bitCount(blackKnights) * KNIGHT_VALUE
+                    + Long.bitCount(blackBishops) * BISHOP_VALUE + Long.bitCount(blackRooks) * ROOK_VALUE
+                    + Long.bitCount(blackQueens) * QUEEN_VALUE);
             /*for(int s: fenSquares)
             System.out.println(s);
             System.out.println("Turn: "+ nextToMove);
@@ -209,7 +233,7 @@ public class Board implements Definitions {
     }
 
 
-    public void initializeFromSquares(int[] input, boolean nextToMove, int fiftyMove, int castleWhiteSide, int castleBlackSide, int ePSquare) {
+    /*public void initializeFromSquares(int[] input, boolean nextToMove, int fiftyMove, int castleWhiteSide, int castleBlackSide, int ePSquare) {
         clearBitboards();
         key = 0;
         //setup the 12 boards
@@ -293,7 +317,7 @@ public class Board implements Definitions {
                 + Long.bitCount(blackBishops) * BISHOP_VALUE + Long.bitCount(blackRooks) * ROOK_VALUE
                 + Long.bitCount(blackQueens) * QUEEN_VALUE);
 
-    }
+    }*/
 
     private void updateAggregateBitboards() {
         whitePieces = whiteKing | whiteQueens | whiteRooks | whiteBishops | whiteKnights | whitePawns;
@@ -319,7 +343,7 @@ public class Board implements Definitions {
         allPieces = 0;
     }
 
-    private void setupBoard() {
+/*    private void setupBoard() {
         square[E1] = WHITE_KING;
         square[D1] = WHITE_QUEEN;
         square[A1] = WHITE_ROOK;
@@ -354,14 +378,14 @@ public class Board implements Definitions {
         square[G7] = BLACK_PAWN;
         square[H7] = BLACK_PAWN;
 
-    }
+    }*/
 
-    public static Board getInstance() {
+/*    public static Board getInstance() {
         if (instance == null) {
             instance = new Board();
         }
         return instance;
-    }
+    }*/
 
     public boolean isEndOfGame() {
 
@@ -464,13 +488,65 @@ public class Board implements Definitions {
         return rep;
     }
 
-    public void makeMove(int move) {
+    /**
+     * Gets what is found at a particular location.
+     *
+     * @param loc an integer in [0, 64) representing a position.
+     * @return a character representing the piece at the passed location.
+     */
+    public char getPieceAt(int loc) {
+        long sq = BitboardUtilsAC.getSquare[loc];
+        if ((whitePawns & sq) != 0L)
+            return 'P';
+        if ((whiteKnights & sq) != 0L)
+            return 'N';
+        if ((whiteBishops & sq) != 0L)
+            return 'B';
+        if ((whiteRooks & sq) != 0L)
+            return 'R';
+        if ((whiteQueens & sq) != 0L)
+            return 'Q';
+        if ((whiteKing & sq) != 0L)
+            return 'K';
+        if ((blackPawns & sq) != 0L)
+            return 'p';
+        if ((blackKnights & sq) != 0L)
+            return 'n';
+        if ((blackBishops & sq) != 0L)
+            return 'b';
+        if ((blackRooks & sq) != 0L)
+            return 'r';
+        if ((blackQueens & sq) != 0L)
+            return 'q';
+        if ((blackKing & sq) != 0L)
+            return 'k';
+        return ' ';
+    }
+
+    public boolean makeMove(int move) {
+
+       /*
+        * General plan of attack is as follows:
+        *
+        * (0) First of all, check if you're moving your own piece.
+        * (1) Account for captures by clearing that square from all arrays,
+        * setting 50MR to 0.
+        * (2) Make the move, but do so depending on the piece moving:
+        * (2a) Pawns -- account for ep, promos, and 50MR
+        * (2b) Kings -- account for castling
+        * (2c) Rooks -- account for lost castling rights
+        * (2d) Other -- business as usual
+        * (3) Check if king is in check, if he is, undo move
+        *
+        */
         from = MoveAC.getFromIndex(move);
         to = MoveAC.getToIndex(move);
         piece = MoveAC.getPieceMoved(move);
+        moveType = MoveAC.getMoveType(move);
         capture = MoveAC.isCapture(move);
-        fromBoard = BoardUtils.BITSET[from];
-        fromToBoard = fromBoard | BoardUtils.BITSET[to];
+        fromBoard = BitboardUtilsAC.getSquare[from];
+        toBoard = BitboardUtilsAC.getSquare[to];
+        fromToBoard = fromBoard | toBoard;
 
         gameLine[endOfSearch].move = move;
         gameLine[endOfSearch].castleWhite = castleWhite;
@@ -478,45 +554,71 @@ public class Board implements Definitions {
         gameLine[endOfSearch].fiftyMove = fiftyMove;
         gameLine[endOfSearch].ePSquare = ePSquare;
         gameLine[endOfSearch].key = key;
-        key ^= Zobrist.getKeyPieceIndex(from, PIECENAMES[piece]) ^ Zobrist.getKeyPieceIndex(to, PIECENAMES[piece]);
-        if (ePSquare != 0)
+        fiftyMove++;
+        moveNumber++;
+        //key ^= Zobrist.getKeyPieceIndex(from, PIECENAMES[piece]) ^ Zobrist.getKeyPieceIndex(to, PIECENAMES[piece]);
+        if (whiteToMove) {
+            if ((from & whitePieces) == 0) return false;
+        } else {
+            if ((from & blackPieces) == 0) return false;
+        }
+        if (capture) {
+            fiftyMove = 0;
+            long pieceToRemove = toBoard;
+            int pieceToRemoveIndex = to;
+            //Remove piece at to location
+            if (move == MoveAC.TYPE_EN_PASSANT) {
+                pieceToRemove = (whiteToMove) ? (toBoard >>> 8) : (toBoard << 8);
+                pieceToRemoveIndex = (whiteToMove) ? (to - 8) : (to + 8);
+            }
+            char pieceRemoved = getPieceAt(pieceToRemoveIndex);
+            if (whiteToMove) { // captured a black
+                blackPawns &= ~pieceToRemove;
+                blackKnights &= ~pieceToRemove;
+                blackBishops &= ~pieceToRemove;
+                blackRooks &= ~pieceToRemove;
+                blackQueens &= ~pieceToRemove;
+                blackKing &= ~pieceToRemove;
+            } else { // captured a white
+                whitePawns &= ~pieceToRemove;
+                whiteKnights &= ~pieceToRemove;
+                whiteBishops &= ~pieceToRemove;
+                whiteRooks &= ~pieceToRemove;
+                whiteQueens &= ~pieceToRemove;
+                whiteKing &= ~pieceToRemove;
+            }
+            key ^= Zobrist.getKeyPieceIndex(pieceToRemoveIndex, pieceRemoved);
+        }
+        //remove en passant from Zobrist, if it already exists.
+        if (ePSquare != -1)
             key ^= Zobrist.passantColumn[ePSquare % 8];
+
+        //reset en passant location
+        ePSquare = -1;
+
         switch (piece) {
-            case 1:
-                makeWhitePawnMove(move);
+            case PAWN:
+                fiftyMove = 0;
+                //Check if we need to update en passant square.
+                if (whiteToMove && (from << 16 & to) != 0) ePSquare = Long.numberOfTrailingZeros(from << 8);
+                if (!whiteToMove && (from >>> 16 & to) != 0) ePSquare = Long.numberOfTrailingZeros(from >>> 8);
+                if (ePSquare != -1)
+                    key ^= Zobrist.passantColumn[ePSquare % 8];
                 break;
-            case 2:
+            case KNIGHT:
                 makeWhiteKingMove(move);
                 break;
-            case 3:
+            case BISHOP:
                 makeWhiteKnightMove();
                 break;
-            case 5:
+            case ROOK:
                 makeWhiteBishopMove();
                 break;
-            case 6:
+            case QUEEN:
                 makeWhiteRookMove();
                 break;
-            case 7:
+            case ROOK:
                 makeWhiteQueenMove();
-                break;
-            case 9:
-                makeBlackPawnMove(move);
-                break;
-            case 10:
-                makeBlackKingMove(move);
-                break;
-            case 11:
-                makeBlackKnightMove();
-                break;
-            case 13:
-                makeBlackBishopMove();
-                break;
-            case 14:
-                makeBlackRookMove();
-                break;
-            case 15:
-                makeBlackQueenMove();
                 break;
             default:
                 throw new RuntimeException("Unreachable");
@@ -588,7 +690,7 @@ public class Board implements Definitions {
         whitePieces ^= fromToBoard;
         square[from] = EMPTY;
         square[to] = WHITE_PAWN;
-        ePSquare = 0;
+        ePSquare = -1;
         fiftyMove = 0;
         if (from / 8 == 1)
             if (to / 8 == 3) {

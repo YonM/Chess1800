@@ -30,12 +30,10 @@ public class AlphaBetaPVS implements Definitions {
     //private static int lastPVLength;
 
     private static Evaluator evaluator;
-    private final static Board b;
 
     static {
         triangularArray = new int[MAX_GAME_LENGTH][MAX_GAME_LENGTH];
         triangularLength = new int[MAX_GAME_LENGTH];
-        b = Board.getInstance();
     }
 
     public static void setEvaluator(Evaluator eval) {
@@ -63,19 +61,19 @@ public class AlphaBetaPVS implements Definitions {
             triangularLength = new int[MAX_GAME_LENGTH];
             follow_pv = true;
             null_allowed = true;
-            score = alphaBetaPVS(0, currentDepth, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
+            score = alphaBetaPVS(b, 0, currentDepth, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
             if ((score > (Evaluator.CHECKMATE - currentDepth)) || (score < -(Evaluator.CHECKMATE - currentDepth)))
                 currentDepth = MAX_DEPTH;
         }
         return lastPV[0];
     }
 
-    private static int alphaBetaPVS(int ply, int depth, int alpha, int beta) {
+    private static int alphaBetaPVS(Board b, int ply, int depth, int alpha, int beta) {
         int i, j, movesFound, pvMovesFound, val;
         triangularLength[ply] = ply;
         if (depth <= 0) {
             follow_pv = false;
-            return quiescenceSearch(ply, alpha, beta);
+            return quiescenceSearch(b, ply, alpha, beta);
         }
         //Threefold repetition check
         if (b.repetitionCount() >= 3) return Evaluator.DRAWSCORE;
@@ -86,7 +84,7 @@ public class AlphaBetaPVS implements Definitions {
                 if (b.isOwnKingAttacked()) {
                     null_allowed = false;
                     b.whiteToMove = !b.whiteToMove;
-                    val = -alphaBetaPVS(ply, depth - NULLMOVE_REDUCTION, -beta, -beta + 1);
+                    val = -alphaBetaPVS(b, ply, depth - NULLMOVE_REDUCTION, -beta, -beta + 1);
                     b.key ^= Zobrist.whiteMove;
                     null_allowed = true;
                     if (val >= beta) {
@@ -102,16 +100,16 @@ public class AlphaBetaPVS implements Definitions {
         b.moveBufLen[ply + 1] = MoveGenerator.moveGen(b, b.moveBufLen[ply]);
 
         for (i = b.moveBufLen[ply]; i < b.moveBufLen[ply + 1]; i++) {
-            selectBestMoveFirst(ply, depth, i, b.whiteToMove);
+            selectBestMoveFirst(b, ply, depth, i, b.whiteToMove);
             b.makeMove(b.moves[i]);
             if (!b.isOtherKingAttacked()) {
                 movesFound++;
                 if (pvMovesFound != 0) {
-                    val = -alphaBetaPVS(ply + 1, depth - 1, -alpha - 1, -alpha);
+                    val = -alphaBetaPVS(b, ply + 1, depth - 1, -alpha - 1, -alpha);
                     if ((val > alpha) && (val < beta))
-                        val = -alphaBetaPVS(ply + 1, depth - 1, -beta, -alpha); //Better move found, normal alpha-beta.
+                        val = -alphaBetaPVS(b, ply + 1, depth - 1, -beta, -alpha); //Better move found, normal alpha-beta.
                 } else {
-                    val = -alphaBetaPVS(ply + 1, depth - 1, -beta, -alpha); // Normal alpha-beta
+                    val = -alphaBetaPVS(b, ply + 1, depth - 1, -beta, -alpha); // Normal alpha-beta
                 }
                 b.unmakeMove(b.moves[i]);
                 if (val >= beta) {
@@ -152,7 +150,7 @@ public class AlphaBetaPVS implements Definitions {
         return alpha;
     }
 
-    private static void selectBestMoveFirst(int ply, int depth, int nextIndex, boolean whiteToMove) {
+    private static void selectBestMoveFirst(Board b, int ply, int depth, int nextIndex, boolean whiteToMove) {
         int tempMove = 0;
         int best, bestIndex, i;
         // Re-orders the move list so that the PV is selected as the next move to try.
@@ -199,11 +197,11 @@ public class AlphaBetaPVS implements Definitions {
         }
     }
 
-    private static int quiescenceSearch(int ply, int alpha, int beta) {
+    private static int quiescenceSearch(Board b, int ply, int alpha, int beta) {
         triangularLength[ply] = ply;
 
         //Check if we are in check.
-        if (b.isOwnKingAttacked()) return alphaBetaPVS(ply, 1, alpha, beta);
+        if (b.isOwnKingAttacked()) return alphaBetaPVS(b, ply, 1, alpha, beta);
 
         //Standing pat
         int val;
@@ -219,7 +217,7 @@ public class AlphaBetaPVS implements Definitions {
             b.makeMove(b.moves[i]);
             {
                 if (!b.isOtherKingAttacked()) {
-                    val = -quiescenceSearch(ply + 1, -beta, -alpha);
+                    val = -quiescenceSearch(b, ply + 1, -beta, -alpha);
                     b.unmakeMove(b.moves[i]);
 
                     if (val >= beta) return val;

@@ -33,7 +33,7 @@ public class MoveGetter implements Definitions {
             long to = Long.lowestOneBit(movelocs);
             int to_loc = Long.numberOfTrailingZeros(to);
             boolean capt = (to & b.blackPieces) != 0;
-            int move = MoveAC.genMove(from_loc, to_loc, MoveAC.KING, capt, 0);
+            int move = MoveAC.genMove(from_loc, to_loc, KING, capt, 0);
             moves[index + num_moves_generated] = move;
             num_moves_generated++;
             movelocs &= ~to;
@@ -48,7 +48,7 @@ public class MoveGetter implements Definitions {
                             && !BitboardMagicAttacksAC.isSquareAttacked(b, b.whiteKing << 2,
                             true)) {
                         moves[index + num_moves_generated] =
-                                MoveAC.genMove(from_loc, from_loc + 2, WHITE_KING,
+                                MoveAC.genMove(from_loc, from_loc + 2, KING,
                                         false, MoveAC.TYPE_KINGSIDE_CASTLING);
                         num_moves_generated++;
                     }
@@ -66,7 +66,7 @@ public class MoveGetter implements Definitions {
                             && !BitboardMagicAttacksAC.isSquareAttacked(b, b.whiteKing >>> 2,
                             true)) {
                         moves[index + num_moves_generated] =
-                                MoveAC.genMove(from_loc, from_loc - 2, MoveAC.KING,
+                                MoveAC.genMove(from_loc, from_loc - 2, KING,
                                         false, MoveAC.TYPE_QUEENSIDE_CASTLING);
                         num_moves_generated++;
                     }
@@ -85,7 +85,7 @@ public class MoveGetter implements Definitions {
             long to = Long.lowestOneBit(movelocs);
             int to_loc = Long.numberOfTrailingZeros(to);
             boolean capt = (to & b.whitePieces) != 0;
-            int move = MoveAC.genMove(from_loc, to_loc, MoveAC.KING, capt, 0);
+            int move = MoveAC.genMove(from_loc, to_loc, KING, capt, 0);
             moves[index + num_moves_generated] = move;
             num_moves_generated++;
             movelocs &= ~to;
@@ -100,7 +100,7 @@ public class MoveGetter implements Definitions {
                             && !BitboardMagicAttacksAC.isSquareAttacked(b, b.blackKing << 2,
                             false)) {
                         moves[index + num_moves_generated] =
-                                MoveAC.genMove(from_loc, from_loc + 2, MoveAC.KING,
+                                MoveAC.genMove(from_loc, from_loc + 2, KING,
                                         false, MoveAC.TYPE_KINGSIDE_CASTLING);
                         num_moves_generated++;
                     }
@@ -118,7 +118,7 @@ public class MoveGetter implements Definitions {
                             && !BitboardMagicAttacksAC.isSquareAttacked(b, b.blackKing >>> 2,
                             false)) {
                         moves[index + num_moves_generated] =
-                                MoveAC.genMove(from_loc, from_loc - 2, MoveAC.KING,
+                                MoveAC.genMove(from_loc, from_loc - 2, KING,
                                         false, MoveAC.TYPE_QUEENSIDE_CASTLING);
                         num_moves_generated++;
                     }
@@ -140,7 +140,7 @@ public class MoveGetter implements Definitions {
                 int to_loc = Long.numberOfTrailingZeros(to);
                 boolean capt = (to & b.blackPieces) != 0;
                 int move =
-                        MoveAC.genMove(from_loc, to_loc, MoveAC.KNIGHT, capt,
+                        MoveAC.genMove(from_loc, to_loc, KNIGHT, capt,
                                 0);
                 moves[index + num_moves_generated] = move;
                 num_moves_generated++;
@@ -163,7 +163,7 @@ public class MoveGetter implements Definitions {
                 int to_loc = Long.numberOfTrailingZeros(to);
                 boolean capt = (to & b.whitePieces) != 0;
                 int move =
-                        MoveAC.genMove(from_loc, to_loc, MoveAC.KNIGHT, capt,
+                        MoveAC.genMove(from_loc, to_loc, KNIGHT, capt,
                                 0);
                 moves[index + num_moves_generated] = move;
                 num_moves_generated++;
@@ -195,57 +195,57 @@ public class MoveGetter implements Definitions {
                 if ((from & BitboardUtilsAC.b_r) == 0 && (from << 7 & b.blackPieces) != 0) {
                     int to_loc = Long.numberOfTrailingZeros(from << 7);
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, true,
+                            MoveAC.genMove(from_loc, to_loc, PAWN, true,
                                     MoveAC.TYPE_PROMOTION_QUEEN);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, true,
+                            MoveAC.genMove(from_loc, to_loc, PAWN, true,
                                     MoveAC.TYPE_PROMOTION_KNIGHT);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, true,
+                            MoveAC.genMove(from_loc, to_loc, PAWN, true,
                                     MoveAC.TYPE_PROMOTION_ROOK);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, true,
+                            MoveAC.genMove(from_loc, to_loc, PAWN, true,
                                     MoveAC.TYPE_PROMOTION_BISHOP);
                     num_moves_generated++;
                 }
                 if ((from & BitboardUtilsAC.b_l) == 0 && (from << 9 & b.blackPieces) != 0) {
                     int to_loc = Long.numberOfTrailingZeros(from << 9);
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, true,
+                            MoveAC.genMove(from_loc, to_loc, PAWN, true,
                                     MoveAC.TYPE_PROMOTION_QUEEN);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, true,
+                            MoveAC.genMove(from_loc, to_loc, PAWN, true,
                                     MoveAC.TYPE_PROMOTION_KNIGHT);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, true,
+                            MoveAC.genMove(from_loc, to_loc, PAWN, true,
                                     MoveAC.TYPE_PROMOTION_ROOK);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, true,
+                            MoveAC.genMove(from_loc, to_loc, PAWN, true,
                                     MoveAC.TYPE_PROMOTION_BISHOP);
                     num_moves_generated++;
                 }
                 if ((from << 8 & b.allPieces) == 0) {
                     int to_loc = Long.numberOfTrailingZeros(from << 8);
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, false,
+                            MoveAC.genMove(from_loc, to_loc, PAWN, false,
                                     MoveAC.TYPE_PROMOTION_QUEEN);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, false,
+                            MoveAC.genMove(from_loc, to_loc, PAWN, false,
                                     MoveAC.TYPE_PROMOTION_KNIGHT);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, false,
+                            MoveAC.genMove(from_loc, to_loc, PAWN, false,
                                     MoveAC.TYPE_PROMOTION_ROOK);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, false,
+                            MoveAC.genMove(from_loc, to_loc, PAWN, false,
                                     MoveAC.TYPE_PROMOTION_BISHOP);
                     num_moves_generated++;
                 }
@@ -256,11 +256,11 @@ public class MoveGetter implements Definitions {
                     int to_loc = Long.numberOfTrailingZeros(from << 7);
                     if (Long.numberOfTrailingZeros(from << 7) == b.ePSquare)
                         moves[index + num_moves_generated] =
-                                MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, true,
+                                MoveAC.genMove(from_loc, to_loc, PAWN, true,
                                         MoveAC.TYPE_EN_PASSANT);
                     else
                         moves[index + num_moves_generated] =
-                                MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, true,
+                                MoveAC.genMove(from_loc, to_loc, PAWN, true,
                                         0);
                     num_moves_generated++;
                 }
@@ -269,11 +269,11 @@ public class MoveGetter implements Definitions {
                     int to_loc = Long.numberOfTrailingZeros(from << 9);
                     if (Long.numberOfTrailingZeros(from << 9) == b.ePSquare)
                         moves[index + num_moves_generated] =
-                                MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, true,
+                                MoveAC.genMove(from_loc, to_loc, PAWN, true,
                                         MoveAC.TYPE_EN_PASSANT);
                     else
                         moves[index + num_moves_generated] =
-                                MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, true,
+                                MoveAC.genMove(from_loc, to_loc, PAWN, true,
                                         0);
                     num_moves_generated++;
                 }
@@ -282,7 +282,7 @@ public class MoveGetter implements Definitions {
                     one_square_ahead_clear = true;
                     int to_loc = Long.numberOfTrailingZeros(from << 8);
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, false,
+                            MoveAC.genMove(from_loc, to_loc, PAWN, false,
                                     0);
                     num_moves_generated++;
                 }
@@ -290,7 +290,7 @@ public class MoveGetter implements Definitions {
                         && one_square_ahead_clear && (from << 16 & b.allPieces) == 0) {
                     int to_loc = Long.numberOfTrailingZeros(from << 16);
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, false,
+                            MoveAC.genMove(from_loc, to_loc, PAWN, false,
                                     0);
                     num_moves_generated++;
                 }
@@ -314,19 +314,19 @@ public class MoveGetter implements Definitions {
                 if ((from & BitboardUtilsAC.b_l) == 0 && (from >>> 7 & b.whitePieces) != 0) {
                     int to_loc = Long.numberOfTrailingZeros(from >>> 7);
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, true,
+                            MoveAC.genMove(from_loc, to_loc, PAWN, true,
                                     MoveAC.TYPE_PROMOTION_QUEEN);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, true,
+                            MoveAC.genMove(from_loc, to_loc, PAWN, true,
                                     MoveAC.TYPE_PROMOTION_KNIGHT);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, true,
+                            MoveAC.genMove(from_loc, to_loc, PAWN, true,
                                     MoveAC.TYPE_PROMOTION_ROOK);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, true,
+                            MoveAC.genMove(from_loc, to_loc, PAWN, true,
                                     MoveAC.TYPE_PROMOTION_BISHOP);
                     num_moves_generated++;
                 }
@@ -334,38 +334,38 @@ public class MoveGetter implements Definitions {
                         && (from >>> 9 & b.whitePieces) != 0) {
                     int to_loc = Long.numberOfTrailingZeros(from >>> 9);
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, true,
+                            MoveAC.genMove(from_loc, to_loc, PAWN, true,
                                     MoveAC.TYPE_PROMOTION_QUEEN);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, true,
+                            MoveAC.genMove(from_loc, to_loc, PAWN, true,
                                     MoveAC.TYPE_PROMOTION_KNIGHT);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, true,
+                            MoveAC.genMove(from_loc, to_loc, PAWN, true,
                                     MoveAC.TYPE_PROMOTION_ROOK);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, true,
+                            MoveAC.genMove(from_loc, to_loc, PAWN, true,
                                     MoveAC.TYPE_PROMOTION_BISHOP);
                     num_moves_generated++;
                 }
                 if ((from >>> 8 & b.allPieces) == 0) {
                     int to_loc = Long.numberOfTrailingZeros(from >>> 8);
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, false,
+                            MoveAC.genMove(from_loc, to_loc, PAWN, false,
                                     MoveAC.TYPE_PROMOTION_QUEEN);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, false,
+                            MoveAC.genMove(from_loc, to_loc, PAWN, false,
                                     MoveAC.TYPE_PROMOTION_KNIGHT);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, false,
+                            MoveAC.genMove(from_loc, to_loc, PAWN, false,
                                     MoveAC.TYPE_PROMOTION_ROOK);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, false,
+                            MoveAC.genMove(from_loc, to_loc, PAWN, false,
                                     MoveAC.TYPE_PROMOTION_BISHOP);
                     num_moves_generated++;
                 }
@@ -376,11 +376,11 @@ public class MoveGetter implements Definitions {
                     int to_loc = Long.numberOfTrailingZeros(from >>> 7);
                     if (Long.numberOfTrailingZeros(from >>> 7) == b.ePSquare)
                         moves[index + num_moves_generated] =
-                                MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, true,
+                                MoveAC.genMove(from_loc, to_loc, PAWN, true,
                                         MoveAC.TYPE_EN_PASSANT);
                     else
                         moves[index + num_moves_generated] =
-                                MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, true,
+                                MoveAC.genMove(from_loc, to_loc, PAWN, true,
                                         0);
                     num_moves_generated++;
                 }
@@ -389,11 +389,11 @@ public class MoveGetter implements Definitions {
                     int to_loc = Long.numberOfTrailingZeros(from >>> 9);
                     if (Long.numberOfTrailingZeros(from >>> 9) == b.ePSquare)
                         moves[index + num_moves_generated] =
-                                MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, true,
+                                MoveAC.genMove(from_loc, to_loc, PAWN, true,
                                         MoveAC.TYPE_EN_PASSANT);
                     else
                         moves[index + num_moves_generated] =
-                                MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, true,
+                                MoveAC.genMove(from_loc, to_loc, PAWN, true,
                                         0);
                     num_moves_generated++;
                 }
@@ -402,7 +402,7 @@ public class MoveGetter implements Definitions {
                     one_square_ahead_clear = true;
                     int to_loc = Long.numberOfTrailingZeros(from >>> 8);
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, false,
+                            MoveAC.genMove(from_loc, to_loc, PAWN, false,
                                     0);
                     num_moves_generated++;
                 }
@@ -410,7 +410,7 @@ public class MoveGetter implements Definitions {
                         && one_square_ahead_clear && (from >>> 16 & b.allPieces) == 0) {
                     int to_loc = Long.numberOfTrailingZeros(from >>> 16);
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, MoveAC.PAWN, false,
+                            MoveAC.genMove(from_loc, to_loc, PAWN, false,
                                     0);
                     num_moves_generated++;
                 }
@@ -434,7 +434,7 @@ public class MoveGetter implements Definitions {
                 int to_loc = Long.numberOfTrailingZeros(to);
                 boolean capt = (to & b.blackPieces) != 0;
                 int move =
-                        MoveAC.genMove(from_loc, to_loc, MoveAC.BISHOP, capt,
+                        MoveAC.genMove(from_loc, to_loc, BISHOP, capt,
                                 0);
                 moves[index + num_moves_generated] = move;
                 num_moves_generated++;
@@ -459,7 +459,7 @@ public class MoveGetter implements Definitions {
                 int to_loc = Long.numberOfTrailingZeros(to);
                 boolean capt = (to & b.whitePieces) != 0;
                 int move =
-                        MoveAC.genMove(from_loc, to_loc, MoveAC.BISHOP, capt,
+                        MoveAC.genMove(from_loc, to_loc, BISHOP, capt,
                                 0);
                 moves[index + num_moves_generated] = move;
                 num_moves_generated++;
@@ -483,7 +483,7 @@ public class MoveGetter implements Definitions {
                 int to_loc = Long.numberOfTrailingZeros(to);
                 boolean capt = (to & b.blackPieces) != 0;
                 int move =
-                        MoveAC.genMove(from_loc, to_loc, MoveAC.ROOK, capt, 0);
+                        MoveAC.genMove(from_loc, to_loc, ROOK, capt, 0);
                 moves[index + num_moves_generated] = move;
                 num_moves_generated++;
                 movelocs &= ~to;
@@ -506,7 +506,7 @@ public class MoveGetter implements Definitions {
                 int to_loc = Long.numberOfTrailingZeros(to);
                 boolean capt = (to & b.whitePieces) != 0;
                 int move =
-                        MoveAC.genMove(from_loc, to_loc, MoveAC.ROOK, capt, 0);
+                        MoveAC.genMove(from_loc, to_loc, ROOK, capt, 0);
                 moves[index + num_moves_generated] = move;
                 num_moves_generated++;
                 movelocs &= ~to;
@@ -530,7 +530,7 @@ public class MoveGetter implements Definitions {
                 int to_loc = Long.numberOfTrailingZeros(to);
                 boolean capt = (to & b.blackPieces) != 0;
                 int move =
-                        MoveAC.genMove(from_loc, to_loc, MoveAC.QUEEN, capt,
+                        MoveAC.genMove(from_loc, to_loc, QUEEN, capt,
                                 0);
                 moves[index + num_moves_generated] = move;
                 num_moves_generated++;
@@ -555,7 +555,7 @@ public class MoveGetter implements Definitions {
                 int to_loc = Long.numberOfTrailingZeros(to);
                 boolean capt = (to & b.whitePieces) != 0;
                 int move =
-                        MoveAC.genMove(from_loc, to_loc, MoveAC.QUEEN, capt,
+                        MoveAC.genMove(from_loc, to_loc, QUEEN, capt,
                                 0);
                 moves[index + num_moves_generated] = move;
                 num_moves_generated++;
