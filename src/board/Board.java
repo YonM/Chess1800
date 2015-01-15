@@ -1,8 +1,10 @@
 package board;
 
+import bitboard.BitboardUtilsAC;
 import definitions.Definitions;
 import fen.FENValidator;
 import move.Move;
+import move.MoveAC;
 import movegen.MoveGenerator;
 import search.AlphaBetaPVS;
 import zobrist.Zobrist;
@@ -47,15 +49,16 @@ public class Board implements Definitions {
 
     public static final int MAX_PLY = 64;
 
-    public Move[] moves;
+    public int[] moves;
     public int[] moveBufLen;
 
     public int endOfGame, endOfSearch; // Index for board.gameLine
     public final GameLineRecord[] gameLine = new GameLineRecord[MAX_GAME_LENGTH]; // Current search line + moves that have actually been played.
 
     //For (un)make move
-    private int from, to, piece, captured;
+    private int from, to, piece;
     private long fromBoard, toBoard, fromToBoard;
+    private boolean capture;
 
     //public boolean viewRotated;
     private static Board instance;
@@ -70,9 +73,9 @@ public class Board implements Definitions {
     public int totalBlackPieces;
 
     private Board() {
-        moves = new Move[MAX_GAME_LENGTH * 4];
+        moves = new int[MAX_GAME_LENGTH * 4];
         for (int i = 0; i < moves.length; i++) {
-            moves[i] = new Move();
+            moves[i] = 0;
         }
         for (int i = 0; i < MAX_GAME_LENGTH; i++) {
             gameLine[i] = new GameLineRecord();
@@ -81,14 +84,14 @@ public class Board implements Definitions {
         moveBufLen = new int[MAX_PLY];
     }
 
-    public void initialize() {
+/*    public void initialize() {
         for (int i = 0; i < 64; i++)
             square[i] = EMPTY;
         setupBoard();
         initializeFromSquares(square, true, 0, CANCASTLEOO + CANCASTLEOOO, CANCASTLEOO + CANCASTLEOOO, 0);
 
 
-    }
+    }*/
 
     public boolean initializeFromFEN(String fen) {
         if (FENValidator.isValidFEN(fen)) {
@@ -108,6 +111,7 @@ public class Board implements Definitions {
                     for (int j = 0; j < Character.digit(c, 10); j++) file++;
 
                 } else {
+                    long square = BitboardUtilsAC.getSquare[rank * 8 + file];
                     switch (c) {
                         case '/':
                             rank--;
@@ -194,7 +198,7 @@ public class Board implements Definitions {
             System.out.println("White castling: " +tempWhiteCastle);
             System.out.println("Black castling: " + tempBlackCastle);
             System.out.println("ePSquare: " + ePSquare);*/
-            initializeFromSquares(fenSquares, nextToMove, temp50Move, tempWhiteCastle, tempBlackCastle, ePSquare);
+            //initializeFromSquares(fenSquares, nextToMove, temp50Move, tempWhiteCastle, tempBlackCastle, ePSquare);
             return true;
         } else {
             //if fen is not valid
@@ -280,7 +284,7 @@ public class Board implements Definitions {
             key ^= Zobrist.whiteMove;
 
         if (this.ePSquare != 0)
-            key ^= Zobrist.passantColumn[FILES[this.ePSquare]];
+            key ^= Zobrist.passantColumn[ePSquare % 8];
 
         material = Long.bitCount(whitePawns) * PAWN_VALUE + Long.bitCount(whiteKnights) * KNIGHT_VALUE
                 + Long.bitCount(whiteBishops) * BISHOP_VALUE + Long.bitCount(whiteRooks) * ROOK_VALUE
@@ -459,15 +463,16 @@ public class Board implements Definitions {
         }
         return rep;
     }
-    public void makeMove(Move move) {
-        from = move.getFrom();
-        to = move.getTo();
-        piece = move.getPiece();
-        captured = move.getCapture();
+
+    public void makeMove(int move) {
+        from = MoveAC.getFromIndex(move);
+        to = MoveAC.getToIndex(move);
+        piece = MoveAC.getPieceMoved(move);
+        capture = MoveAC.isCapture(move);
         fromBoard = BoardUtils.BITSET[from];
         fromToBoard = fromBoard | BoardUtils.BITSET[to];
 
-        gameLine[endOfSearch].move.moveInt = move.moveInt;
+        gameLine[endOfSearch].move = move;
         gameLine[endOfSearch].castleWhite = castleWhite;
         gameLine[endOfSearch].castleBlack = castleBlack;
         gameLine[endOfSearch].fiftyMove = fiftyMove;
@@ -475,7 +480,7 @@ public class Board implements Definitions {
         gameLine[endOfSearch].key = key;
         key ^= Zobrist.getKeyPieceIndex(from, PIECENAMES[piece]) ^ Zobrist.getKeyPieceIndex(to, PIECENAMES[piece]);
         if (ePSquare != 0)
-            key ^= Zobrist.passantColumn[FILES[ePSquare]];
+            key ^= Zobrist.passantColumn[ePSquare % 8];
         switch (piece) {
             case 1:
                 makeWhitePawnMove(move);
@@ -521,13 +526,14 @@ public class Board implements Definitions {
         key ^= Zobrist.whiteMove;
     }
 
-    public void unmakeMove(Move move) {
-        piece = move.getPiece();
-        captured = move.getCapture();
-        from = move.getFrom();
-        to = move.getTo();
-        fromBoard = BoardUtils.BITSET[from];
-        fromToBoard = fromBoard | BoardUtils.BITSET[to];
+    public void unmakeMove(int move) {
+        piece = MoveAC.getPieceMoved(move);
+        capture = MoveAC.isCapture(move);
+        from = MoveAC.getFromIndex(move);
+        to = MoveAC.getToIndex(move);
+        fromBoard = BitboardUtilsAC.index2Square(from);
+        fromToBoard = fromBoard | BitboardUtilsAC.index2Square(to);
+        ;
         switch (piece) {
             case 1:
                 unmakeWhitePawnMove(move);
@@ -584,10 +590,10 @@ public class Board implements Definitions {
         square[to] = WHITE_PAWN;
         ePSquare = 0;
         fiftyMove = 0;
-        if (RANKS[from] == 1)
-            if (RANKS[to] == 3) {
+        if (from / 8 == 1)
+            if (to / 8 == 3) {
                 ePSquare = from + 8;
-                key ^= Zobrist.passantColumn[FILES[from]];
+                key ^= Zobrist.passantColumn[from % 8];
             }
         if (captured != 0) {
             if (move.isEnPassant()) {
@@ -721,10 +727,10 @@ public class Board implements Definitions {
         square[to] = BLACK_PAWN;
         ePSquare = 0;
         fiftyMove = 0;
-        if (RANKS[from] == 6)
-            if (RANKS[to] == 4) {
+        if (from / 8 == 6)
+            if (to / 8 == 4) {
                 ePSquare = from - 8;
-                key ^= Zobrist.passantColumn[FILES[from]];
+                key ^= Zobrist.passantColumn[from % 8];
             }
         if (captured != 0) {
             if (move.isEnPassant()) {
@@ -1377,7 +1383,7 @@ public class Board implements Definitions {
         long nonRemoved = ~0;
 
         boolean stm = whiteToMove;
-        boolean isPromoRank = ((RANKS[target] == 7) || (RANKS[target] == 0));
+        boolean isPromoRank = ((target / 8 == 7) || (target / 8 == 0));
 
         //First capture done before the loop.
         // Take first attacker from the (capture) move.
@@ -1410,7 +1416,7 @@ public class Board implements Definitions {
             //Select the least valuable attacker
             //Order is: Non-Promoting Pawn, Knight, Bishop, Rook, Promotion Pawn, Queen.
             if (stm) {
-                if (RANKS[target] != 0 && (whitePawns & attackers) != 0)
+                if (target / 8 != 0 && (whitePawns & attackers) != 0)
                     from = BoardUtils.getIndexFromBoard((whitePawns & attackers));
 
                 else if ((whiteKnights & attackers) != 0)
@@ -1421,7 +1427,7 @@ public class Board implements Definitions {
 
                 else if ((whiteRooks & attackers) != 0) from = BoardUtils.getIndexFromBoard((whiteRooks & attackers));
 
-                else if (RANKS[target] == 0 && (whitePawns & attackers) != 0)
+                else if (target / 8 == 0 && (whitePawns & attackers) != 0)
                     from = BoardUtils.getIndexFromBoard(whitePawns & attackers);
 
                 else if ((whiteQueens & attackers) != 0) from = BoardUtils.getIndexFromBoard((whiteQueens & attackers));
@@ -1433,7 +1439,7 @@ public class Board implements Definitions {
                 else break;
 
             } else {
-                if (RANKS[target] != 7 && (blackPawns & attackers) != 0)
+                if (target / 8 != 7 && (blackPawns & attackers) != 0)
                     from = BoardUtils.getIndexFromBoard((blackPawns & attackers));
 
                 else if ((blackKnights & attackers) != 0)
@@ -1444,7 +1450,7 @@ public class Board implements Definitions {
 
                 else if ((blackRooks & attackers) != 0) from = BoardUtils.getIndexFromBoard((blackRooks & attackers));
 
-                else if (RANKS[target] == 7 && (blackPawns & attackers) != 0)
+                else if (target / 8 == 7 && (blackPawns & attackers) != 0)
                     from = BoardUtils.getIndexFromBoard(blackPawns & attackers);
 
                 else if ((blackQueens & attackers) != 0) from = BoardUtils.getIndexFromBoard((blackQueens & attackers));
@@ -1493,7 +1499,7 @@ public class Board implements Definitions {
     }
 
     private class GameLineRecord {
-        public Move move = new Move();
+        public int move;
         public int castleWhite;
         public int castleBlack;
         public int ePSquare;

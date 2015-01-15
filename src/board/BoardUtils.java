@@ -63,7 +63,7 @@ public class BoardUtils implements Definitions {
         }
         long tempBlackSquares = 0;
         for (i = 0; i < 64; i++) {
-            if ((i + RANKS[i]) % 2 == 0)
+            if ((i + i / 8) % 2 == 0)
                 tempBlackSquares = BITSET[i];
         }
         BLACK_SQUARES = tempBlackSquares;

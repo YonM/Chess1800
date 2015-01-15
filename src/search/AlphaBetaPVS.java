@@ -3,7 +3,7 @@ package search;
 import board.Board;
 import definitions.Definitions;
 import evaluation.Evaluator;
-import move.Move;
+import move.MoveAC;
 import movegen.MoveGenerator;
 import zobrist.Zobrist;
 
@@ -17,14 +17,14 @@ import java.util.Arrays;
  */
 public class AlphaBetaPVS implements Definitions {
 
-    private static Move[][] triangularArray;
+    private static int[][] triangularArray;
     private static int[] triangularLength;
     public static Integer legalMoves;
-    public static Move singleMove = new Move(0);
+    public static int singleMove = 0;
     private static final int MAX_DEPTH = 4;
     private static int[][] whiteHeuristics;
     private static int[][] blackHeuristics;
-    private static Move[] lastPV;
+    private static int[] lastPV;
     private static boolean follow_pv;
     private static boolean null_allowed;
     //private static int lastPVLength;
@@ -33,8 +33,8 @@ public class AlphaBetaPVS implements Definitions {
     private final static Board b;
 
     static {
-        triangularArray = new Move[Board.MAX_GAME_LENGTH][Board.MAX_GAME_LENGTH];
-        triangularLength = new int[Board.MAX_GAME_LENGTH];
+        triangularArray = new int[MAX_GAME_LENGTH][MAX_GAME_LENGTH];
+        triangularLength = new int[MAX_GAME_LENGTH];
         b = Board.getInstance();
     }
 
@@ -43,7 +43,7 @@ public class AlphaBetaPVS implements Definitions {
     }
 
 
-    public static Move findBestMove(Board b) {
+    public static int findBestMove(Board b) {
         int currentDepth, score;
         legalMoves = 0;
 
@@ -53,13 +53,13 @@ public class AlphaBetaPVS implements Definitions {
 
         whiteHeuristics = new int[Board.MAX_PLY][Board.MAX_PLY];
         blackHeuristics = new int[Board.MAX_PLY][Board.MAX_PLY];
-        lastPV = new Move[Board.MAX_PLY];
+        lastPV = new int[Board.MAX_PLY];
         //lastPVLength = 0;
 
         for (currentDepth = 1; currentDepth < MAX_DEPTH; currentDepth++) {
             Arrays.fill(b.moveBufLen, 0);
             Arrays.fill(b.moves, NULLMOVE);
-            triangularArray = new Move[MAX_GAME_LENGTH][MAX_GAME_LENGTH];
+            triangularArray = new int[MAX_GAME_LENGTH][MAX_GAME_LENGTH];
             triangularLength = new int[MAX_GAME_LENGTH];
             follow_pv = true;
             null_allowed = true;
@@ -116,9 +116,9 @@ public class AlphaBetaPVS implements Definitions {
                 b.unmakeMove(b.moves[i]);
                 if (val >= beta) {
                     if (b.whiteToMove)
-                        whiteHeuristics[b.moves[i].getFrom()][b.moves[i].getTo()] += depth * depth;
+                        whiteHeuristics[MoveAC.getFromIndex(b.moves[i])][MoveAC.getToIndex(b.moves[i])] += depth * depth;
                     else
-                        blackHeuristics[b.moves[i].getFrom()][b.moves[i].getTo()] += depth * depth;
+                        blackHeuristics[MoveAC.getFromIndex(b.moves[i])][MoveAC.getToIndex(b.moves[i])] += depth * depth;
                     return beta;
                 }
                 if (val > alpha) {
@@ -137,9 +137,9 @@ public class AlphaBetaPVS implements Definitions {
         }
         if (pvMovesFound != 0) {
             if (b.whiteToMove)
-                whiteHeuristics[triangularArray[ply][ply].getFrom()][triangularArray[ply][ply].getTo()] += depth * depth;
+                whiteHeuristics[MoveAC.getFromIndex(triangularArray[ply][ply])][MoveAC.getToIndex(triangularArray[ply][ply])] += depth * depth;
             else
-                blackHeuristics[triangularArray[ply][ply].getFrom()][triangularArray[ply][ply].getTo()] += depth * depth;
+                blackHeuristics[MoveAC.getFromIndex(triangularArray[ply][ply])][MoveAC.getToIndex(triangularArray[ply][ply])] += depth * depth;
         }
 
         if (b.fiftyMove >= 100) return Evaluator.DRAWSCORE;                 //Fifty-move rule
@@ -153,48 +153,48 @@ public class AlphaBetaPVS implements Definitions {
     }
 
     private static void selectBestMoveFirst(int ply, int depth, int nextIndex, boolean whiteToMove) {
-        Move tempMove = new Move();
+        int tempMove = 0;
         int best, bestIndex, i;
         // Re-orders the move list so that the PV is selected as the next move to try.
         if (follow_pv && depth > 1) {
             for (i = nextIndex; i < b.moveBufLen[ply + 1]; i++) {
-                if (b.moves[i].moveInt == lastPV[ply].moveInt) {
-                    tempMove.moveInt = b.moves[i].moveInt;
-                    b.moves[i].moveInt = b.moves[nextIndex].moveInt;
-                    b.moves[nextIndex].moveInt = tempMove.moveInt;
+                if (b.moves[i] == lastPV[ply]) {
+                    tempMove = b.moves[i];
+                    b.moves[i] = b.moves[nextIndex];
+                    b.moves[nextIndex] = tempMove;
                     return;
                 }
             }
         }
 
         if (whiteToMove) {
-            best = whiteHeuristics[b.moves[nextIndex].getFrom()][b.moves[nextIndex].getTo()];
+            best = whiteHeuristics[MoveAC.getFromIndex(b.moves[nextIndex])][MoveAC.getToIndex(b.moves[nextIndex])];
             bestIndex = nextIndex;
             for (i = nextIndex + 1; i < b.moveBufLen[ply + 1]; i++) {
-                if (whiteHeuristics[b.moves[i].getFrom()][b.moves[i].getTo()] > best) {
-                    best = whiteHeuristics[b.moves[i].getFrom()][b.moves[i].getTo()];
+                if (whiteHeuristics[MoveAC.getFromIndex(b.moves[i])][MoveAC.getToIndex(b.moves[i])] > best) {
+                    best = whiteHeuristics[MoveAC.getFromIndex(b.moves[i])][MoveAC.getToIndex(b.moves[i])];
                     bestIndex = i;
                 }
             }
             if (bestIndex > nextIndex) {
-                tempMove.moveInt = b.moves[bestIndex].moveInt;
-                b.moves[bestIndex].moveInt = b.moves[nextIndex].moveInt;
-                b.moves[nextIndex].moveInt = tempMove.moveInt;
+                tempMove = b.moves[bestIndex];
+                b.moves[bestIndex] = b.moves[nextIndex];
+                b.moves[nextIndex] = tempMove;
             }
 
         } else {
-            best = blackHeuristics[b.moves[nextIndex].getFrom()][b.moves[nextIndex].getTo()];
+            best = blackHeuristics[MoveAC.getFromIndex(b.moves[nextIndex])][MoveAC.getToIndex(b.moves[nextIndex])];
             bestIndex = nextIndex;
             for (i = nextIndex + 1; i < b.moveBufLen[ply + 1]; i++) {
-                if (blackHeuristics[b.moves[i].getFrom()][b.moves[i].getTo()] > best) {
-                    best = blackHeuristics[b.moves[i].getFrom()][b.moves[i].getTo()];
+                if (blackHeuristics[MoveAC.getFromIndex(b.moves[i])][MoveAC.getToIndex(b.moves[i])] > best) {
+                    best = blackHeuristics[MoveAC.getFromIndex(b.moves[i])][MoveAC.getToIndex(b.moves[i])];
                     bestIndex = i;
                 }
             }
             if (bestIndex > nextIndex) {
-                tempMove.moveInt = b.moves[bestIndex].moveInt;
-                b.moves[bestIndex].moveInt = b.moves[nextIndex].moveInt;
-                b.moves[nextIndex].moveInt = tempMove.moveInt;
+                tempMove = b.moves[bestIndex];
+                b.moves[bestIndex] = b.moves[nextIndex];
+                b.moves[nextIndex] = tempMove;
             }
         }
     }
