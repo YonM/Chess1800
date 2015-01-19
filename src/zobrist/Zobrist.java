@@ -76,6 +76,10 @@ public class Zobrist implements Definitions {
         return key;
     }
 
+    public static long getKeyForMove(int from, int to, char p) {
+        return getKeyPieceIndex(from, p) ^ getKeyPieceIndex(to, p);
+    }
+
 /*    public static long[] getKey(Board b) {
         long key[] = {0, 0};
         long square = BoardUtils.H1;

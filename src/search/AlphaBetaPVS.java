@@ -80,7 +80,7 @@ public class AlphaBetaPVS implements Definitions {
 
         //Try Null move
         if (!follow_pv && null_allowed) {
-            if ((!b.whiteToMove && b.totalBlackPieces > NULLMOVE_LIMIT) || (b.whiteToMove && (b.totalWhitePieces > NULLMOVE_LIMIT))) {
+            if ((!b.whiteToMove && (b.totalBlackPieces > NULLMOVE_LIMIT)) || (b.whiteToMove && (b.totalWhitePieces > NULLMOVE_LIMIT))) {
                 if (b.isOwnKingAttacked()) {
                     null_allowed = false;
                     b.whiteToMove = !b.whiteToMove;

@@ -1,5 +1,7 @@
 package move;
 
+import definitions.Definitions;
+
 /**
  * Created by Yonathan on 03/12/2014.
  * This class, as the name indicates, is for the moves of a chess game.
@@ -17,18 +19,8 @@ package move;
  *  'From' is the square the piece started its move from. Again, 6 bits for 0-63.
  *  @author Alberto Alonso Ruibal updated by Yonathan Maalo
  */
-public class MoveAC {
+public class MoveAC implements Definitions {
 
-    // Move Types
-    public static final int TYPE_KINGSIDE_CASTLING = 1;
-    public static final int TYPE_QUEENSIDE_CASTLING = 2;
-    public static final int TYPE_EN_PASSANT = 3;
-
-    // promotions must be always >= TYPE_PROMOTION_QUEEN
-    public static final int TYPE_PROMOTION_QUEEN = 4;
-    public static final int TYPE_PROMOTION_KNIGHT = 5;
-    public static final int TYPE_PROMOTION_BISHOP = 6;
-    public static final int TYPE_PROMOTION_ROOK = 7;
 
     //Masks
     public static final int SQUARE_MASK = 0x3f;

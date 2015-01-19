@@ -33,7 +33,7 @@ public class Perft implements Definitions {
 
     public static void main(String[] args) {
         Board b = Board.getInstance();
-        boolean loaded = b.initializeFromFEN(test1);
+        boolean loaded = b.initializeFromFEN(START_FEN);
         int i;
         if (loaded) {
             //System.out.println("true");

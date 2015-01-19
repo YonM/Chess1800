@@ -7,6 +7,7 @@ import move.MoveAC;
  * Interface containing constants used by multiple classes.
  */
 public interface Definitions {
+    public final static String START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
     public final static int A1 = 0, B1 = 1, C1 = 2, D1 = 3, E1 = 4, F1 = 5, G1 = 6, H1 = 7;
     public final static int A2 = 8, B2 = 9, C2 = 10, D2 = 11, E2 = 12, F2 = 13, G2 = 14, H2 = 15;
@@ -98,6 +99,19 @@ public interface Definitions {
     public static final int ROOK = 4;
     public static final int QUEEN = 5;
     public static final int KING = 6;
+
+    // Move Types
+    public static final int TYPE_KINGSIDE_CASTLING = 1;
+    public static final int TYPE_QUEENSIDE_CASTLING = 2;
+    public static final int TYPE_EN_PASSANT = 3;
+
+
+    //Promotions
+    // promotions must be always >= TYPE_PROMOTION_QUEEN
+    public static final int TYPE_PROMOTION_QUEEN = 4;
+    public static final int TYPE_PROMOTION_KNIGHT = 5;
+    public static final int TYPE_PROMOTION_BISHOP = 6;
+    public static final int TYPE_PROMOTION_ROOK = 7;
 
     //Pre generated castling moves
     public static final int WHITE_OOO_CASTLE = MoveAC.genMove(E1, C1, KING, false, MoveAC.TYPE_QUEENSIDE_CASTLING);

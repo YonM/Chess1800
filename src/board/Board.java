@@ -55,8 +55,32 @@ public class Board implements Definitions {
     public int[] moves;
     public int[] moveBufLen;
 
+    //History attributes
+    public long[] white_pawn_history;
+    public long[] white_knight_history;
+    public long[] white_bishop_history;
+    public long[] white_rook_history;
+    public long[] white_queen_history;
+    public long[] white_king_history;
+    public long[] black_pawn_history;
+    public long[] black_knight_history;
+    public long[] black_bishop_history;
+    public long[] black_rook_history;
+    public long[] black_queen_history;
+    public long[] black_king_history;
+    public long[] white_pieces_history;
+    public long[] black_pieces_history;
+    public long[] all_pieces_history;
+    public boolean[] whiteToMove_history;
+    public int[] fiftyMoveRule_history;
+    public int[] enPassant_history;
+    public int[] move_history;
+    public int[] white_castle_history;
+    public int[] black_castle_history;
+    public long[] key_history;
+
     public int endOfGame, endOfSearch; // Index for board.gameLine
-    public final GameLineRecord[] gameLine = new GameLineRecord[MAX_GAME_LENGTH]; // Current search line + moves that have actually been played.
+    //public final GameLineRecord[] gameLine = new GameLineRecord[MAX_GAME_LENGTH]; // Current search line + moves that have actually been played.
 
     //For (un)make move
     private int from, to, piece, moveType;
@@ -64,11 +88,11 @@ public class Board implements Definitions {
     private boolean capture;
 
     //public boolean viewRotated;
-//    private static Board instance;
+    private static Board instance;
 
     public long key; //Zobrist key
 
-    private static final int[] SEE_PIECE_VALUES = {0, 100, 999999, 325, 0, 325, 500, 975, 0, 100, 999999, 325, 0, 325, 500, 975};
+    private static final int[] SEE_PIECE_VALUES = {0, 100, 325, 325, 500, 975, 999999};
 
     public int totalWhitePawns;
     public int totalBlackPawns;
@@ -80,21 +104,42 @@ public class Board implements Definitions {
         for (int i = 0; i < moves.length; i++) {
             moves[i] = 0;
         }
-        for (int i = 0; i < MAX_GAME_LENGTH; i++) {
+        /*for (int i = 0; i < MAX_GAME_LENGTH; i++) {
             gameLine[i] = new GameLineRecord();
-        }
+        }*/
+        white_pawn_history = new long[MAX_GAME_LENGTH];
+        white_knight_history = new long[MAX_GAME_LENGTH];
+        white_bishop_history = new long[MAX_GAME_LENGTH];
+        white_rook_history = new long[MAX_GAME_LENGTH];
+        white_queen_history = new long[MAX_GAME_LENGTH];
+        white_king_history = new long[MAX_GAME_LENGTH];
+        black_pawn_history = new long[MAX_GAME_LENGTH];
+        black_knight_history = new long[MAX_GAME_LENGTH];
+        black_bishop_history = new long[MAX_GAME_LENGTH];
+        black_rook_history = new long[MAX_GAME_LENGTH];
+        black_queen_history = new long[MAX_GAME_LENGTH];
+        black_king_history = new long[MAX_GAME_LENGTH];
+        white_pieces_history = new long[MAX_GAME_LENGTH];
+        black_pieces_history = new long[MAX_GAME_LENGTH];
+        all_pieces_history = new long[MAX_GAME_LENGTH];
+        whiteToMove_history = new boolean[MAX_GAME_LENGTH];
+        fiftyMoveRule_history = new int[MAX_GAME_LENGTH];
+        enPassant_history = new int[MAX_GAME_LENGTH];
+        move_history = new int[MAX_GAME_LENGTH];
+        white_castle_history = new int[MAX_GAME_LENGTH];
+        black_castle_history = new int[MAX_GAME_LENGTH];
+        key_history = new long[MAX_GAME_LENGTH];
 
         moveBufLen = new int[MAX_PLY];
     }
 
-/*    public void initialize() {
+    public void initialize() {
         for (int i = 0; i < 64; i++)
             square[i] = EMPTY;
-        setupBoard();
-        initializeFromSquares(square, true, 0, CANCASTLEOO + CANCASTLEOOO, CANCASTLEOO + CANCASTLEOOO, 0);
+//        setupBoard();
+        initializeFromFEN(START_FEN);
 
-
-    }*/
+    }
 
     public boolean initializeFromFEN(String fen) {
         if (FENValidator.isValidFEN(fen)) {
@@ -168,6 +213,7 @@ public class Board implements Definitions {
             castleBlack = 0;
             ePSquare = -1;
             fiftyMove = 0;
+            moveNumber = 1;
             //For castling
             if (tokens.length > 2) {
                 String castleInfo = tokens[2];
@@ -380,12 +426,12 @@ public class Board implements Definitions {
 
     }*/
 
-/*    public static Board getInstance() {
+    public static Board getInstance() {
         if (instance == null) {
             instance = new Board();
         }
         return instance;
-    }*/
+    }
 
     public boolean isEndOfGame() {
 
@@ -407,7 +453,7 @@ public class Board implements Definitions {
                 AlphaBetaPVS.legalMoves++;
                 AlphaBetaPVS.singleMove = moves[i];
             }
-            unmakeMove(moves[i]);
+            unmakeMove();
         }
 
         //Stalemate/Checkmate check.
@@ -481,7 +527,7 @@ public class Board implements Definitions {
         lastI = endOfSearch - fiftyMove;          // we don't need to go back all the way
         for (i = endOfSearch - 2; i >= lastI; i -= 2)   // Only search for current side, skip opposite side
         {
-            if (gameLine[i].key == key) rep++;
+            if (key_history[i] == key) rep++;
             if (rep >= 3) return 3;
 
         }
@@ -548,12 +594,7 @@ public class Board implements Definitions {
         toBoard = BitboardUtilsAC.getSquare[to];
         fromToBoard = fromBoard | toBoard;
 
-        gameLine[endOfSearch].move = move;
-        gameLine[endOfSearch].castleWhite = castleWhite;
-        gameLine[endOfSearch].castleBlack = castleBlack;
-        gameLine[endOfSearch].fiftyMove = fiftyMove;
-        gameLine[endOfSearch].ePSquare = ePSquare;
-        gameLine[endOfSearch].key = key;
+        saveHistory(moveNumber);
         fiftyMove++;
         moveNumber++;
         //key ^= Zobrist.getKeyPieceIndex(from, PIECENAMES[piece]) ^ Zobrist.getKeyPieceIndex(to, PIECENAMES[piece]);
@@ -573,19 +614,19 @@ public class Board implements Definitions {
             }
             char pieceRemoved = getPieceAt(pieceToRemoveIndex);
             if (whiteToMove) { // captured a black
-                blackPawns &= ~pieceToRemove;
-                blackKnights &= ~pieceToRemove;
-                blackBishops &= ~pieceToRemove;
-                blackRooks &= ~pieceToRemove;
-                blackQueens &= ~pieceToRemove;
-                blackKing &= ~pieceToRemove;
+                blackPawns ^= pieceToRemove;
+                blackKnights ^= pieceToRemove;
+                blackBishops ^= pieceToRemove;
+                blackRooks ^= pieceToRemove;
+                blackQueens ^= pieceToRemove;
+                blackKing ^= pieceToRemove;
             } else { // captured a white
-                whitePawns &= ~pieceToRemove;
-                whiteKnights &= ~pieceToRemove;
-                whiteBishops &= ~pieceToRemove;
-                whiteRooks &= ~pieceToRemove;
-                whiteQueens &= ~pieceToRemove;
-                whiteKing &= ~pieceToRemove;
+                whitePawns ^= pieceToRemove;
+                whiteKnights ^= pieceToRemove;
+                whiteBishops ^= pieceToRemove;
+                whiteRooks ^= pieceToRemove;
+                whiteQueens ^= pieceToRemove;
+                whiteKing ^= pieceToRemove;
             }
             key ^= Zobrist.getKeyPieceIndex(pieceToRemoveIndex, pieceRemoved);
         }
@@ -602,865 +643,240 @@ public class Board implements Definitions {
                 //Check if we need to update en passant square.
                 if (whiteToMove && (from << 16 & to) != 0) ePSquare = Long.numberOfTrailingZeros(from << 8);
                 if (!whiteToMove && (from >>> 16 & to) != 0) ePSquare = Long.numberOfTrailingZeros(from >>> 8);
+                //remove en passant column from key, if en passant is set.
                 if (ePSquare != -1)
                     key ^= Zobrist.passantColumn[ePSquare % 8];
+                //if promotion
+                if (MoveAC.isPromotion(move)) {
+                    if (whiteToMove) {
+                        whitePawns ^= from;
+                        key ^= Zobrist.getKeyPieceIndex(from, 'P');
+                    } else {
+                        blackPawns ^= from;
+                        key ^= Zobrist.getKeyPieceIndex(from, 'p');
+                    }
+                    switch (moveType) {
+                        case TYPE_PROMOTION_QUEEN:
+                            if (whiteToMove) {
+                                whiteQueens |= to;
+                                key ^= Zobrist.getKeyPieceIndex(to, 'Q');
+                            } else {
+                                blackQueens |= to;
+                                key ^= Zobrist.getKeyPieceIndex(to, 'q');
+                            }
+                            break;
+                        case TYPE_PROMOTION_KNIGHT:
+                            if (whiteToMove) {
+                                whiteKnights |= to;
+                                key ^= Zobrist.getKeyPieceIndex(to, 'N');
+                            } else {
+                                blackKnights |= to;
+                                key ^= Zobrist.getKeyPieceIndex(to, 'n');
+
+                            }
+                            break;
+                        case TYPE_PROMOTION_BISHOP:
+                            if (whiteToMove) {
+                                whiteBishops |= to;
+                                key ^= Zobrist.getKeyPieceIndex(to, 'B');
+                            } else {
+                                blackBishops |= to;
+                                key ^= Zobrist.getKeyPieceIndex(to, 'b');
+                            }
+                            break;
+                        case TYPE_PROMOTION_ROOK:
+                            if (whiteToMove) {
+                                whiteRooks |= to;
+                                key ^= Zobrist.getKeyPieceIndex(to, 'R');
+                            } else {
+                                blackRooks |= to;
+                                key ^= Zobrist.getKeyPieceIndex(to, 'r');
+                            }
+                            break;
+                    }
+                } else {
+                    //No promotion
+                    if (whiteToMove) {
+                        whitePawns ^= fromToBoard;
+                        key ^= Zobrist.getKeyForMove(from, to, 'P');
+                    } else {
+                        blackPawns ^= fromToBoard;
+                        key ^= Zobrist.getKeyForMove(from, to, 'p');
+                    }
+                }
                 break;
             case KNIGHT:
-                makeWhiteKingMove(move);
+                if (whiteToMove) {
+                    whiteKnights ^= fromToBoard;
+                    key ^= Zobrist.getKeyForMove(from, to, 'N');
+                } else {
+                    blackKnights ^= fromToBoard;
+                    key ^= Zobrist.getKeyForMove(from, to, 'n');
+                }
                 break;
             case BISHOP:
-                makeWhiteKnightMove();
+                if (whiteToMove) {
+                    whiteBishops ^= fromToBoard;
+                    key ^= Zobrist.getKeyForMove(from, to, 'B');
+                } else {
+                    blackBishops ^= fromToBoard;
+                    key ^= Zobrist.getKeyForMove(from, to, 'b');
+                }
                 break;
             case ROOK:
-                makeWhiteBishopMove();
+                if (whiteToMove) {
+                    whiteRooks ^= fromToBoard;
+                    key ^= Zobrist.getKeyForMove(from, to, 'R');
+                } else {
+                    blackRooks ^= fromToBoard;
+                    key ^= Zobrist.getKeyForMove(from, to, 'r');
+                }
                 break;
             case QUEEN:
-                makeWhiteRookMove();
+                if (whiteToMove) {
+                    whiteQueens ^= fromToBoard;
+                    key ^= Zobrist.getKeyForMove(from, to, 'Q');
+                } else {
+                    blackQueens ^= fromToBoard;
+                    key ^= Zobrist.getKeyForMove(from, to, 'q');
+                }
                 break;
-            case ROOK:
-                makeWhiteQueenMove();
+            case KING:
+                long rookMask = 0;
+                int rookToIndex = 0;
+                int rookFromIndex = 0;
+                //castling handled
+                if (moveType == TYPE_KINGSIDE_CASTLING) {
+                    if (whiteToMove) {
+                        castleWhite = 0;
+                        rookMask = 0xa0L;
+                        rookFromIndex = 7;
+                        rookToIndex = 5;
+                        key ^= Zobrist.whiteKingSideCastling;
+                    } else {
+                        castleBlack = 0;
+                        rookMask = 0xa000000000000000L;
+                        rookFromIndex = 63;
+                        rookToIndex = 61;
+                        key ^= Zobrist.blackKingSideCastling;
+                    }
+                }
+                if (moveType == TYPE_QUEENSIDE_CASTLING) {
+                    if (whiteToMove) {
+                        castleWhite = 0;
+                        rookMask = 0x9L;
+                        rookFromIndex = 0;
+                        rookToIndex = 3;
+                        key ^= Zobrist.whiteQueenSideCastling;
+                    } else {
+                        castleBlack = 0;
+                        rookMask = 0x900000000000000L;
+                        rookFromIndex = 56;
+                        rookToIndex = 59;
+                        key ^= Zobrist.blackQueenSideCastling;
+                    }
+                }
+                if (rookMask != 0) {
+                    if (whiteToMove) {
+                        whiteRooks ^= rookMask;
+                        key ^= Zobrist.getKeyForMove(rookFromIndex, rookToIndex, 'R');
+                    } else {
+                        blackRooks ^= rookMask;
+                        key ^= Zobrist.getKeyForMove(rookFromIndex, rookToIndex, 'r');
+                    }
+                }
+                if (whiteToMove) {
+                    whiteKing ^= fromToBoard;
+                    key ^= Zobrist.getKeyForMove(from, to, 'K');
+                } else {
+                    blackKing ^= fromToBoard;
+                    key ^= Zobrist.getKeyForMove(from, to, 'k');
+                }
                 break;
             default:
                 throw new RuntimeException("Unreachable");
+        }
+        updateAggregateBitboards();
+        if (isOwnKingAttacked()) {
+            unmakeMove();
+            return false;
         }
         endOfSearch++;
         whiteToMove = !whiteToMove;
         key ^= Zobrist.whiteMove;
+        return true;
     }
 
-    public void unmakeMove(int move) {
-        piece = MoveAC.getPieceMoved(move);
-        capture = MoveAC.isCapture(move);
-        from = MoveAC.getFromIndex(move);
-        to = MoveAC.getToIndex(move);
-        fromBoard = BitboardUtilsAC.index2Square(from);
-        fromToBoard = fromBoard | BitboardUtilsAC.index2Square(to);
-        ;
-        switch (piece) {
-            case 1:
-                unmakeWhitePawnMove(move);
-                break;
-            case 2:
-                unmakeWhiteKingMove(move);
-                break;
-            case 3:
-                unmakeWhiteKnightMove();
-                break;
-            case 5:
-                unmakeWhiteBishopMove();
-                break;
-            case 6:
-                unmakeWhiteRookMove();
-                break;
-            case 7:
-                unmakeWhiteQueenMove();
-                break;
-            case 9:
-                unmakeBlackPawnMove(move);
-                break;
-            case 10:
-                unmakeBlackKingMove(move);
-                break;
-            case 11:
-                unmakeBlackKnightMove();
-                break;
-            case 13:
-                unmakeBlackBishopMove();
-                break;
-            case 14:
-                unmakeBlackRookMove();
-                break;
-            case 15:
-                unmakeBlackQueenMove();
-                break;
-            default:
-                throw new RuntimeException("Unreachable");
-        }
-        endOfSearch--;
-        whiteToMove = !whiteToMove;
-        castleWhite = gameLine[endOfSearch].castleWhite;
-        castleBlack = gameLine[endOfSearch].castleBlack;
-        ePSquare = gameLine[endOfSearch].ePSquare;
-        fiftyMove = gameLine[endOfSearch].fiftyMove;
-        key = gameLine[endOfSearch].key;
+    private void saveHistory(int move) {
+        white_pawn_history[moveNumber] = whitePawns;
+        white_knight_history[moveNumber] = whiteKnights;
+        white_bishop_history[moveNumber] = whiteBishops;
+        white_rook_history[moveNumber] = whiteRooks;
+        white_queen_history[moveNumber] = whiteQueens;
+        white_king_history[moveNumber] = whiteKing;
+        black_pawn_history[moveNumber] = blackPawns;
+        black_knight_history[moveNumber] = blackKnights;
+        black_bishop_history[moveNumber] = blackBishops;
+        black_rook_history[moveNumber] = blackRooks;
+        black_queen_history[moveNumber] = blackQueens;
+        black_king_history[moveNumber] = blackKing;
+        white_pieces_history[moveNumber] = whitePieces;
+        black_pieces_history[moveNumber] = blackPieces;
+        all_pieces_history[moveNumber] = allPieces;
+        whiteToMove_history[moveNumber] = whiteToMove;
+        fiftyMoveRule_history[moveNumber] = fiftyMove;
+        enPassant_history[moveNumber] = ePSquare;
+        move_history[moveNumber] = move;
+        white_castle_history[moveNumber] = castleWhite;
+        black_castle_history[moveNumber] = castleBlack;
+        key_history[moveNumber] = key;
+
     }
 
-    private void makeWhitePawnMove(Move move) {
-        whitePawns ^= fromToBoard;
-        whitePieces ^= fromToBoard;
-        square[from] = EMPTY;
-        square[to] = WHITE_PAWN;
-        ePSquare = -1;
-        fiftyMove = 0;
-        if (from / 8 == 1)
-            if (to / 8 == 3) {
-                ePSquare = from + 8;
-                key ^= Zobrist.passantColumn[from % 8];
-            }
-        if (captured != 0) {
-            if (move.isEnPassant()) {
-                blackPawns ^= BoardUtils.BITSET[to - 8];
-                blackPieces ^= BoardUtils.BITSET[to - 8];
-                allPieces ^= fromToBoard | BoardUtils.BITSET[to - 8];
-                square[to - 8] = EMPTY;
-                totalBlackPawns -= PAWN_VALUE;
-                material += PAWN_VALUE;
-                key ^= Zobrist.pawn[1][to - 8];
-            } else {
-                makeCapture(captured, to);
-                allPieces ^= fromBoard;
-            }
-        } else {
-            allPieces ^= fromToBoard;
-        }
-        if (move.isPromotion()) {
-            makeWhitePromotion(move.getPromotion(), to);
-            square[to] = move.getPromotion();
-        }
+    public void unmakeMove() {
+        unmakeMove(moveNumber - 1);
     }
 
-    private void makeWhiteKingMove(Move move) {
-        whiteKing ^= fromToBoard;
-        whitePieces ^= fromToBoard;
-        square[from] = EMPTY;
-        square[to] = WHITE_KING;
-        ePSquare = 0;
-        fiftyMove++;
-        if ((castleWhite & CANCASTLEOO) != 0) key ^= Zobrist.whiteKingSideCastling;
-        if ((castleWhite & CANCASTLEOOO) != 0) key ^= Zobrist.whiteQueenSideCastling;
-        castleWhite = 0;
-        if (captured != 0) {
-            makeCapture(captured, to);
-            allPieces ^= fromBoard;
-        } else {
-            allPieces ^= fromToBoard;
-        }
-        if (move.isCastle()) {
-            if (move.isCastleOO()) {
-                whiteRooks ^= BoardUtils.BITSET[H1] | BoardUtils.BITSET[F1];
-                whitePieces ^= BoardUtils.BITSET[H1] | BoardUtils.BITSET[F1];
-                allPieces ^= BoardUtils.BITSET[H1] | BoardUtils.BITSET[F1];
-                square[H1] = EMPTY;
-                square[F1] = WHITE_ROOK;
-                key ^= Zobrist.rook[0][H1] ^ Zobrist.rook[0][F1];
-            } else {
-                whiteRooks ^= BoardUtils.BITSET[A1] | BoardUtils.BITSET[D1];
-                whitePieces ^= BoardUtils.BITSET[A1] | BoardUtils.BITSET[D1];
-                allPieces ^= BoardUtils.BITSET[A1] | BoardUtils.BITSET[D1];
-                square[A1] = EMPTY;
-                square[D1] = WHITE_ROOK;
-                key ^= Zobrist.rook[0][A1] ^ Zobrist.rook[0][D1];
-            }
-        }
+    public void unmakeMove(int moveNumber) {
+        if (moveNumber < 1 || moveNumber < initMoveNumber) return;
+
+        whitePawns = white_pawn_history[moveNumber];
+        whiteKnights = white_knight_history[moveNumber];
+        whiteBishops = white_bishop_history[moveNumber];
+        whiteRooks = white_rook_history[moveNumber];
+        whiteQueens = white_queen_history[moveNumber];
+        whiteKing = white_king_history[moveNumber];
+        blackPawns = black_pawn_history[moveNumber];
+        blackKnights = black_knight_history[moveNumber];
+        blackBishops = black_bishop_history[moveNumber];
+        blackRooks = black_rook_history[moveNumber];
+        blackQueens = black_queen_history[moveNumber];
+        blackKing = black_king_history[moveNumber];
+        whitePieces = white_pieces_history[moveNumber];
+        blackPieces = black_pieces_history[moveNumber];
+        allPieces = all_pieces_history[moveNumber];
+        whiteToMove = whiteToMove_history[moveNumber];
+        fiftyMove = fiftyMoveRule_history[moveNumber];
+        ePSquare = enPassant_history[moveNumber];
+        castleWhite = white_castle_history[moveNumber];
+        castleBlack = black_castle_history[moveNumber];
+        key = key_history[moveNumber];
+        this.moveNumber = moveNumber;
+
     }
 
-    private void makeWhiteKnightMove() {
-        whiteKnights ^= fromToBoard;
-        whitePieces ^= fromToBoard;
-        square[from] = EMPTY;
-        square[to] = WHITE_KNIGHT;
-        ePSquare = 0;
-        fiftyMove++;
-        if (captured != 0) {
-            makeCapture(captured, to);
-            allPieces ^= fromBoard;
-        } else {
-            allPieces ^= fromToBoard;
-        }
+    public int whitePieceMaterial() {
+        return 325 * Long.bitCount(whiteKnights) + 325 * Long.bitCount(whiteBishops)
+                + 500 * Long.bitCount(whiteRooks) + 975 * Long.bitCount(whiteQueens);
     }
 
-    private void makeWhiteBishopMove() {
-        whiteBishops ^= fromToBoard;
-        whitePieces ^= fromToBoard;
-        square[from] = EMPTY;
-        square[to] = WHITE_BISHOP;
-        ePSquare = 0;
-        fiftyMove++;
-        if (captured != 0) {
-            makeCapture(captured, to);
-            allPieces ^= fromBoard;
-        } else {
-            allPieces ^= fromToBoard;
-        }
+    public int blackPieceMaterial() {
+        return 325 * Long.bitCount(blackKnights) + 325 * Long.bitCount(blackBishops)
+                + 500 * Long.bitCount(blackRooks) + 975 * Long.bitCount(blackQueens);
     }
 
-    private void makeWhiteRookMove() {
-        whiteRooks ^= fromToBoard;
-        whitePieces ^= fromToBoard;
-        square[from] = EMPTY;
-        square[to] = WHITE_ROOK;
-        ePSquare = 0;
-        fiftyMove++;
-        if (from == A1) {
-            if ((castleWhite & CANCASTLEOOO) != 0) key ^= Zobrist.whiteQueenSideCastling;
-            castleWhite &= ~CANCASTLEOOO;
-        }
-        if (from == H1) {
-            if ((castleWhite & CANCASTLEOO) != 0) key ^= Zobrist.whiteKingSideCastling;
-            castleWhite &= ~CANCASTLEOO;
-        }
-        if (captured != 0) {
-            makeCapture(captured, to);
-            allPieces ^= fromBoard;
-        } else {
-            allPieces ^= fromToBoard;
-        }
-    }
-
-    private void makeWhiteQueenMove() {
-        whiteQueens ^= fromToBoard;
-        whitePieces ^= fromToBoard;
-        square[from] = EMPTY;
-        square[to] = WHITE_QUEEN;
-        ePSquare = 0;
-        fiftyMove++;
-        if (captured != 0) {
-            makeCapture(captured, to);
-            allPieces ^= fromBoard;
-        } else {
-            allPieces ^= fromToBoard;
-        }
-    }
-
-    private void makeBlackPawnMove(Move move) {
-        blackPawns ^= fromToBoard;
-        blackPieces ^= fromToBoard;
-        square[from] = EMPTY;
-        square[to] = BLACK_PAWN;
-        ePSquare = 0;
-        fiftyMove = 0;
-        if (from / 8 == 6)
-            if (to / 8 == 4) {
-                ePSquare = from - 8;
-                key ^= Zobrist.passantColumn[from % 8];
-            }
-        if (captured != 0) {
-            if (move.isEnPassant()) {
-                whitePawns ^= BoardUtils.BITSET[to + 8];
-                whitePieces ^= BoardUtils.BITSET[to + 8];
-                allPieces ^= fromToBoard | BoardUtils.BITSET[to + 8];
-                square[to + 8] = EMPTY;
-                totalWhitePawns -= PAWN_VALUE;
-                material -= PAWN_VALUE;
-                key ^= Zobrist.pawn[0][to + 8];
-            } else {
-                makeCapture(captured, to);
-                allPieces ^= fromBoard;
-            }
-        } else {
-            allPieces ^= fromToBoard;
-        }
-        if (move.isPromotion()) {
-            makeBlackPromotion(move.getPromotion(), to);
-            square[to] = move.getPromotion();
-        }
-    }
-
-
-    private void makeBlackKingMove(Move move) {
-        blackKing ^= fromToBoard;
-        blackPieces ^= fromToBoard;
-        square[from] = EMPTY;
-        square[to] = BLACK_KING;
-        ePSquare = 0;
-        fiftyMove++;
-        if ((castleBlack & CANCASTLEOO) != 0) key ^= Zobrist.blackKingSideCastling;
-        if ((castleBlack & CANCASTLEOOO) != 0) key ^= Zobrist.blackQueenSideCastling;
-        castleBlack = 0;
-        if (captured != 0) {
-            makeCapture(captured, to);
-            allPieces ^= fromBoard;
-        } else {
-            allPieces ^= fromToBoard;
-        }
-        if (move.isCastle()) {
-            if (move.isCastleOO()) {
-                blackRooks ^= BoardUtils.BITSET[H8] | BoardUtils.BITSET[F8];
-                blackPieces ^= BoardUtils.BITSET[H8] | BoardUtils.BITSET[F8];
-                allPieces ^= BoardUtils.BITSET[H8] | BoardUtils.BITSET[F8];
-                square[H8] = EMPTY;
-                square[F8] = BLACK_ROOK;
-                key ^= Zobrist.rook[1][H8] ^ Zobrist.rook[1][F8];
-            } else {
-                blackRooks ^= BoardUtils.BITSET[A8] | BoardUtils.BITSET[D8];
-                blackPieces ^= BoardUtils.BITSET[A8] | BoardUtils.BITSET[D8];
-                allPieces ^= BoardUtils.BITSET[A8] | BoardUtils.BITSET[D8];
-                square[A8] = EMPTY;
-                square[D8] = BLACK_ROOK;
-                key ^= Zobrist.rook[1][A8] ^ Zobrist.rook[1][D8];
-            }
-        }
-    }
-
-    private void makeBlackKnightMove() {
-        blackKnights ^= fromToBoard;
-        blackPieces ^= fromToBoard;
-        square[from] = EMPTY;
-        square[to] = BLACK_KNIGHT;
-        ePSquare = 0;
-        fiftyMove++;
-        if (captured != 0) {
-            makeCapture(captured, to);
-            allPieces ^= fromBoard;
-        } else {
-            allPieces ^= fromToBoard;
-        }
-    }
-
-    private void makeBlackBishopMove() {
-        blackBishops ^= fromToBoard;
-        blackPieces ^= fromToBoard;
-        square[from] = EMPTY;
-        square[to] = BLACK_BISHOP;
-        ePSquare = 0;
-        fiftyMove++;
-        if (captured != 0) {
-            makeCapture(captured, to);
-            allPieces ^= fromBoard;
-        } else {
-            allPieces ^= fromToBoard;
-        }
-    }
-
-    private void makeBlackRookMove() {
-        blackRooks ^= fromToBoard;
-        blackPieces ^= fromToBoard;
-        square[from] = EMPTY;
-        square[to] = BLACK_ROOK;
-        ePSquare = 0;
-        fiftyMove++;
-        if (from == A8) {
-            if ((castleBlack & CANCASTLEOOO) != 0) key ^= Zobrist.blackQueenSideCastling;
-            castleBlack &= ~CANCASTLEOOO;
-        }
-        if (from == H8) {
-            if ((castleBlack & CANCASTLEOOO) != 0) key ^= Zobrist.blackKingSideCastling;
-            castleBlack &= ~CANCASTLEOO;
-        }
-        if (captured != 0) {
-            makeCapture(captured, to);
-            allPieces ^= fromBoard;
-        } else {
-            allPieces ^= fromToBoard;
-        }
-    }
-
-    private void makeBlackQueenMove() {
-        blackQueens ^= fromToBoard;
-        blackPieces ^= fromToBoard;
-        square[from] = EMPTY;
-        square[to] = BLACK_QUEEN;
-        ePSquare = 0;
-        fiftyMove++;
-        if (captured != 0) {
-            makeCapture(captured, to);
-            allPieces ^= fromBoard;
-        } else {
-            allPieces ^= fromToBoard;
-        }
-    }
-
-    private void unmakeWhitePawnMove(Move move) {
-        whitePawns ^= fromToBoard;
-        whitePieces ^= fromToBoard;
-        square[from] = WHITE_PAWN;
-        square[to] = EMPTY;
-        if (captured != 0) {
-            if (move.isEnPassant()) {
-                blackPawns ^= BoardUtils.BITSET[to - 8];
-                blackPieces ^= BoardUtils.BITSET[to - 8];
-                allPieces ^= fromToBoard | BoardUtils.BITSET[to - 8];
-                square[to - 8] = BLACK_PAWN;
-                totalBlackPawns += PAWN_VALUE;
-                material -= PAWN_VALUE;
-            } else {
-                unmakeCapture(captured, to);
-                allPieces ^= fromBoard;
-            }
-        } else {
-            allPieces ^= fromToBoard;
-        }
-        if (move.isPromotion()) {
-            unmakeWhitePromotion(move.getPromotion(), to);
-        }
-    }
-
-    private void unmakeWhiteKingMove(Move move) {
-        whiteKing ^= fromToBoard;
-        whitePieces ^= fromToBoard;
-        square[from] = WHITE_KING;
-        square[to] = EMPTY;
-        if (captured != 0) {
-            unmakeCapture(captured, to);
-            allPieces ^= fromBoard;
-        } else {
-            allPieces ^= fromToBoard;
-        }
-
-        if (move.isCastle()) {
-            if (move.isCastleOO()) {
-                whiteRooks ^= BoardUtils.BITSET[H1] | BoardUtils.BITSET[F1];
-                whitePieces ^= BoardUtils.BITSET[H1] | BoardUtils.BITSET[F1];
-                allPieces ^= BoardUtils.BITSET[H1] | BoardUtils.BITSET[F1];
-                square[H1] = WHITE_ROOK;
-                square[F1] = EMPTY;
-            } else {
-                whiteRooks ^= BoardUtils.BITSET[A1] | BoardUtils.BITSET[D1];
-                whitePieces ^= BoardUtils.BITSET[A1] | BoardUtils.BITSET[D1];
-                allPieces ^= BoardUtils.BITSET[A1] | BoardUtils.BITSET[D1];
-                square[A1] = WHITE_ROOK;
-                square[D1] = EMPTY;
-            }
-        }
-    }
-
-    private void unmakeWhiteKnightMove() {
-        whiteKnights ^= fromToBoard;
-        whitePieces ^= fromToBoard;
-        square[from] = WHITE_KNIGHT;
-        square[to] = EMPTY;
-        if (captured != 0) {
-            unmakeCapture(captured, to);
-            allPieces ^= fromBoard;
-        } else {
-            allPieces ^= fromToBoard;
-        }
-    }
-
-    private void unmakeWhiteBishopMove() {
-        whiteBishops ^= fromToBoard;
-        whitePieces ^= fromToBoard;
-        square[from] = WHITE_BISHOP;
-        square[to] = EMPTY;
-        if (captured != 0) {
-            unmakeCapture(captured, to);
-            allPieces ^= fromBoard;
-        } else {
-            allPieces ^= fromToBoard;
-        }
-    }
-
-    private void unmakeWhiteRookMove() {
-        whiteRooks ^= fromToBoard;
-        whitePieces ^= fromToBoard;
-        square[from] = WHITE_ROOK;
-        square[to] = EMPTY;
-        if (captured != 0) {
-            unmakeCapture(captured, to);
-            allPieces ^= fromBoard;
-        } else {
-            allPieces ^= fromToBoard;
-        }
-    }
-
-    private void unmakeWhiteQueenMove() {
-        whiteQueens ^= fromToBoard;
-        whitePieces ^= fromToBoard;
-        square[from] = WHITE_QUEEN;
-        square[to] = EMPTY;
-        if (captured != 0) {
-            unmakeCapture(captured, to);
-            allPieces ^= fromBoard;
-        } else {
-            allPieces ^= fromToBoard;
-        }
-    }
-
-    private void unmakeBlackPawnMove(Move move) {
-        blackPawns ^= fromToBoard;
-        blackPieces ^= fromToBoard;
-        square[from] = BLACK_PAWN;
-        square[to] = EMPTY;
-        if (captured != 0) {
-            if (move.isEnPassant()) {
-                whitePawns ^= BoardUtils.BITSET[to + 8];
-                whitePieces ^= BoardUtils.BITSET[to + 8];
-                allPieces ^= fromToBoard | BoardUtils.BITSET[to + 8];
-                square[to + 8] = WHITE_PAWN;
-                totalWhitePawns += PAWN_VALUE;
-                material += PAWN_VALUE;
-            } else {
-                unmakeCapture(captured, to);
-                allPieces ^= fromBoard;
-            }
-        } else {
-            allPieces ^= fromToBoard;
-        }
-        if (move.isPromotion()) {
-            unmakeBlackPromotion(move.getPromotion(), to);
-        }
-    }
-
-    private void unmakeBlackKingMove(Move move) {
-        blackKing ^= fromToBoard;
-        blackPieces ^= fromToBoard;
-        square[from] = BLACK_KING;
-        square[to] = EMPTY;
-        if (captured != 0) {
-            unmakeCapture(captured, to);
-            allPieces ^= fromBoard;
-        } else {
-            allPieces ^= fromToBoard;
-        }
-
-        if (move.isCastle()) {
-            if (move.isCastleOO()) {
-                blackRooks ^= BoardUtils.BITSET[H8] | BoardUtils.BITSET[F8];
-                blackPieces ^= BoardUtils.BITSET[H8] | BoardUtils.BITSET[F8];
-                allPieces ^= BoardUtils.BITSET[H8] | BoardUtils.BITSET[F8];
-                square[H8] = BLACK_ROOK;
-                square[F8] = EMPTY;
-            } else {
-                blackRooks ^= BoardUtils.BITSET[A8] | BoardUtils.BITSET[D8];
-                blackPieces ^= BoardUtils.BITSET[A8] | BoardUtils.BITSET[D8];
-                allPieces ^= BoardUtils.BITSET[A8] | BoardUtils.BITSET[D8];
-                square[A8] = BLACK_ROOK;
-                square[D8] = EMPTY;
-            }
-        }
-    }
-
-    private void unmakeBlackKnightMove() {
-        blackKnights ^= fromToBoard;
-        blackPieces ^= fromToBoard;
-        square[from] = BLACK_KNIGHT;
-        square[to] = EMPTY;
-        if (captured != 0) {
-            unmakeCapture(captured, to);
-            allPieces ^= fromBoard;
-        } else {
-            allPieces ^= fromToBoard;
-        }
-    }
-
-    private void unmakeBlackBishopMove() {
-        blackBishops ^= fromToBoard;
-        blackPieces ^= fromToBoard;
-        square[from] = BLACK_BISHOP;
-        square[to] = EMPTY;
-        if (captured != 0) {
-            unmakeCapture(captured, to);
-            allPieces ^= fromBoard;
-        } else {
-            allPieces ^= fromToBoard;
-        }
-    }
-
-    private void unmakeBlackRookMove() {
-        blackRooks ^= fromToBoard;
-        blackPieces ^= fromToBoard;
-        square[from] = BLACK_ROOK;
-        square[to] = EMPTY;
-        if (captured != 0) {
-            unmakeCapture(captured, to);
-            allPieces ^= fromBoard;
-        } else {
-            allPieces ^= fromToBoard;
-        }
-    }
-
-    private void unmakeBlackQueenMove() {
-        blackQueens ^= fromToBoard;
-        blackPieces ^= fromToBoard;
-        square[from] = BLACK_QUEEN;
-        square[to] = EMPTY;
-        if (captured != 0) {
-            unmakeCapture(captured, to);
-            allPieces ^= fromBoard;
-        } else {
-            allPieces ^= fromToBoard;
-        }
-    }
-
-    private void makeWhitePromotion(int promotion, int to) {
-        toBoard = BoardUtils.BITSET[to];
-        whitePawns ^= toBoard;
-        material -= PAWN_VALUE;
-        totalWhitePawns -= PAWN_VALUE;
-
-        if (promotion == 7) {
-            key ^= Zobrist.pawn[0][to] ^ Zobrist.queen[0][to];
-            whiteQueens ^= toBoard;
-            totalWhitePieces += QUEEN_VALUE;
-            material += QUEEN_VALUE;
-        } else if (promotion == 6) {
-            key ^= Zobrist.pawn[0][to] ^ Zobrist.rook[0][to];
-            whiteRooks ^= toBoard;
-            totalWhitePieces += ROOK_VALUE;
-            material += ROOK_VALUE;
-        } else if (promotion == 5) {
-            key ^= Zobrist.pawn[0][to] ^ Zobrist.bishop[0][to];
-            whiteBishops ^= toBoard;
-            totalWhitePieces += BISHOP_VALUE;
-            material += BISHOP_VALUE;
-        } else if (promotion == 3) {
-            key ^= Zobrist.pawn[0][to] ^ Zobrist.knight[0][to];
-            whiteKnights ^= toBoard;
-            totalWhitePieces += KNIGHT_VALUE;
-            material += KNIGHT_VALUE;
-        }
-    }
-
-    private void makeBlackPromotion(int promotion, int to) {
-        toBoard = BoardUtils.BITSET[to];
-        blackPawns ^= toBoard;
-        material -= PAWN_VALUE;
-        totalBlackPawns -= PAWN_VALUE;
-
-        if (promotion == 15) {
-            key ^= Zobrist.pawn[1][to] ^ Zobrist.queen[1][to];
-            blackQueens ^= toBoard;
-            totalBlackPieces += QUEEN_VALUE;
-            material -= QUEEN_VALUE;
-        } else if (promotion == 14) {
-            key ^= Zobrist.pawn[1][to] ^ Zobrist.rook[1][to];
-            blackRooks ^= toBoard;
-            totalBlackPieces += ROOK_VALUE;
-            material -= ROOK_VALUE;
-        } else if (promotion == 13) {
-            key ^= Zobrist.pawn[1][to] ^ Zobrist.bishop[1][to];
-            blackBishops ^= toBoard;
-            totalBlackPieces += BISHOP_VALUE;
-            material -= BISHOP_VALUE;
-        } else if (promotion == 11) {
-            key ^= Zobrist.pawn[1][to] ^ Zobrist.knight[1][to];
-            blackKnights ^= toBoard;
-            totalBlackPieces += KNIGHT_VALUE;
-            material -= KNIGHT_VALUE;
-        }
-    }
-
-    private void unmakeWhitePromotion(int promotion, int to) {
-        toBoard = BoardUtils.BITSET[to];
-        whitePawns ^= toBoard;
-        material += PAWN_VALUE;
-        totalWhitePawns += PAWN_VALUE;
-        if (promotion == 7) {
-            whiteQueens ^= toBoard;
-            totalWhitePieces -= QUEEN_VALUE;
-            material -= QUEEN_VALUE;
-        } else if (promotion == 6) {
-            whiteRooks ^= toBoard;
-            totalWhitePieces -= ROOK_VALUE;
-            material -= ROOK_VALUE;
-        } else if (promotion == 5) {
-            whiteBishops ^= toBoard;
-            totalWhitePieces -= BISHOP_VALUE;
-            material -= BISHOP_VALUE;
-        } else if (promotion == 3) {
-            whiteKnights ^= toBoard;
-            totalWhitePieces -= KNIGHT_VALUE;
-            material -= KNIGHT_VALUE;
-        }
-    }
-
-    private void unmakeBlackPromotion(int promotion, int to) {
-        toBoard = BoardUtils.BITSET[to];
-        blackPawns ^= toBoard;
-        material += PAWN_VALUE;
-        totalBlackPawns += PAWN_VALUE;
-        if (promotion == 15) {
-            blackQueens ^= toBoard;
-            totalBlackPieces -= QUEEN_VALUE;
-            material += QUEEN_VALUE;
-        } else if (promotion == 14) {
-            blackRooks ^= toBoard;
-            totalBlackPieces -= ROOK_VALUE;
-            material += ROOK_VALUE;
-        } else if (promotion == 13) {
-            blackBishops ^= toBoard;
-            totalBlackPieces -= BISHOP_VALUE;
-            material += BISHOP_VALUE;
-        } else if (promotion == 11) {
-            blackKnights ^= toBoard;
-            totalBlackPieces -= KNIGHT_VALUE;
-            material += KNIGHT_VALUE;
-        }
-    }
-
-    private void makeCapture(int captured, int to) {
-        toBoard = BoardUtils.BITSET[to];
-        switch (captured) {
-            case 1:
-                key ^= Zobrist.pawn[0][to];
-                whitePawns ^= toBoard;
-                whitePieces ^= toBoard;
-                totalWhitePawns -= PAWN_VALUE;
-                material -= PAWN_VALUE;
-                break;
-            case 2:
-                key ^= Zobrist.king[0][to];
-                whiteKing ^= toBoard;
-                whitePieces ^= toBoard;
-                break;
-            case 3:
-                key ^= Zobrist.knight[0][to];
-                whiteKnights ^= toBoard;
-                whitePieces ^= toBoard;
-                totalWhitePieces -= KNIGHT_VALUE;
-                material -= KNIGHT_VALUE;
-                break;
-            case 5:
-                key ^= Zobrist.bishop[0][to];
-                whiteBishops ^= toBoard;
-                whitePieces ^= toBoard;
-                totalWhitePieces -= BISHOP_VALUE;
-                material -= BISHOP_VALUE;
-                break;
-            case 6:
-                key ^= Zobrist.rook[0][to];
-                whiteRooks ^= toBoard;
-                whitePieces ^= toBoard;
-                totalWhitePieces -= ROOK_VALUE;
-                material -= ROOK_VALUE;
-                if (to == A1)
-                    castleWhite &= ~CANCASTLEOOO;
-                if (to == H1)
-                    castleWhite &= ~CANCASTLEOO;
-                break;
-            case 7:
-                key ^= Zobrist.queen[0][to];
-                whiteQueens ^= toBoard;
-                whitePieces ^= toBoard;
-                totalWhitePieces -= QUEEN_VALUE;
-                material -= QUEEN_VALUE;
-                break;
-            case 9:
-                key ^= Zobrist.pawn[1][to];
-                blackPawns ^= toBoard;
-                blackPieces ^= toBoard;
-                totalBlackPawns -= PAWN_VALUE;
-                material += PAWN_VALUE;
-                break;
-            case 10:
-                key ^= Zobrist.king[1][to];
-                blackKing ^= toBoard;
-                blackPieces ^= toBoard;
-                break;
-            case 11:
-                key ^= Zobrist.knight[1][to];
-                blackKnights ^= toBoard;
-                blackPieces ^= toBoard;
-                totalBlackPieces -= KNIGHT_VALUE;
-                material += KNIGHT_VALUE;
-                break;
-            case 13:
-                key ^= Zobrist.bishop[1][to];
-                blackBishops ^= toBoard;
-                blackPieces ^= toBoard;
-                totalBlackPieces -= BISHOP_VALUE;
-                material += BISHOP_VALUE;
-                break;
-            case 14:
-                key ^= Zobrist.rook[1][to];
-                blackRooks ^= toBoard;
-                blackPieces ^= toBoard;
-                material += ROOK_VALUE;
-                totalBlackPieces -= ROOK_VALUE;
-                if (to == A8)
-                    castleBlack &= ~CANCASTLEOOO;
-                if (to == H8)
-                    castleBlack &= ~CANCASTLEOO;
-                break;
-            case 15:
-                key ^= Zobrist.queen[1][to];
-                blackQueens ^= toBoard;
-                blackPieces ^= toBoard;
-                totalBlackPieces -= QUEEN_VALUE;
-                material += QUEEN_VALUE;
-                break;
-            default:
-                throw new RuntimeException("Unreachable");
-        }
-        fiftyMove = 0;
-    }
-
-    private void unmakeCapture(int captured, int to) {
-        toBoard = BoardUtils.BITSET[to];
-        switch (captured) {
-            case 1:
-                whitePawns ^= toBoard;
-                whitePieces ^= toBoard;
-                square[to] = WHITE_PAWN;
-                totalWhitePawns += PAWN_VALUE;
-                material += PAWN_VALUE;
-                break;
-            case 2:
-                whiteKing ^= toBoard;
-                whitePieces ^= toBoard;
-                square[to] = WHITE_KING;
-                break;
-            case 3:
-                whiteKnights ^= toBoard;
-                whitePieces ^= toBoard;
-                square[to] = WHITE_KNIGHT;
-                totalWhitePieces += KNIGHT_VALUE;
-                material += KNIGHT_VALUE;
-                break;
-            case 5:
-                whiteBishops ^= toBoard;
-                whitePieces ^= toBoard;
-                square[to] = WHITE_BISHOP;
-                totalWhitePieces += BISHOP_VALUE;
-                material += BISHOP_VALUE;
-                break;
-            case 6:
-                whiteRooks ^= toBoard;
-                whitePieces ^= toBoard;
-                square[to] = WHITE_ROOK;
-                totalWhitePieces += ROOK_VALUE;
-                material += ROOK_VALUE;
-                break;
-            case 7:
-                whiteQueens ^= toBoard;
-                whitePieces ^= toBoard;
-                square[to] = WHITE_QUEEN;
-                totalWhitePieces += QUEEN_VALUE;
-                material += QUEEN_VALUE;
-                break;
-            case 9:
-                blackPawns ^= toBoard;
-                blackPieces ^= toBoard;
-                square[to] = BLACK_PAWN;
-                totalBlackPawns += PAWN_VALUE;
-                material -= PAWN_VALUE;
-                break;
-            case 10:
-                blackKing ^= toBoard;
-                blackPieces ^= toBoard;
-                square[to] = BLACK_KING;
-                break;
-            case 11:
-                blackKnights ^= toBoard;
-                blackPieces ^= toBoard;
-                square[to] = BLACK_KNIGHT;
-                totalBlackPieces += KNIGHT_VALUE;
-                material -= KNIGHT_VALUE;
-                break;
-            case 13:
-                blackBishops ^= toBoard;
-                blackPieces ^= toBoard;
-                square[to] = BLACK_BISHOP;
-                totalBlackPieces += BISHOP_VALUE;
-                material += BISHOP_VALUE;
-                break;
-            case 14:
-                blackRooks ^= toBoard;
-                blackPieces ^= toBoard;
-                square[to] = BLACK_ROOK;
-                totalBlackPieces += ROOK_VALUE;
-                material -= ROOK_VALUE;
-                break;
-            case 15:
-                blackQueens ^= toBoard;
-                blackPieces ^= toBoard;
-                square[to] = BLACK_QUEEN;
-                totalBlackPieces += QUEEN_VALUE;
-                material -= QUEEN_VALUE;
-                break;
-            default:
-                throw new RuntimeException("Unreachable");
-        }
+    public int movingSidePieceMaterial() {
+        return (whiteToMove) ? whitePieceMaterial() : blackPieceMaterial();
     }
 
     public boolean isOtherKingAttacked() {
@@ -1498,7 +914,7 @@ public class Board implements Definitions {
         //if promotion, add this info into materialGains & attackedPieceEval
 
         if (isPromoRank && (square[from] & 6) == 1) {
-            materialGains[0] += SEE_PIECE_VALUES[move.getPromotion()] - SEE_PIECE_VALUES[WHITE_PAWN];
+            materialGains[0] += SEE_PIECE_VALUES[move.getPromotion()] - SEE_PIECE_VALUES[];
             attackedPieceEval += SEE_PIECE_VALUES[move.getPromotion()] - SEE_PIECE_VALUES[WHITE_PAWN];
         }
         numOfCaptures++;
@@ -1600,7 +1016,7 @@ public class Board implements Definitions {
         return materialGains[0];
     }
 
-    private class GameLineRecord {
+   /* private class GameLineRecord {
         public int move;
         public int castleWhite;
         public int castleBlack;
@@ -1608,6 +1024,6 @@ public class Board implements Definitions {
         public int fiftyMove;
         public long key;
     }
-
+*/
 
 }
