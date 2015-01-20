@@ -249,7 +249,16 @@ public class BitboardMagicAttacksAC {
         return ret;
     }
 
+    //Finds & returns locations of attackers of a square.
     public static long getIndexAttacks(Board b, int index) {
-        return 0;
+        if (index < 0 || index > 63) return 0;
+
+        long all = b.allPieces;
+
+        return ((b.blackPieces & whitePawn[index] | b.whitePieces & blackPawn[index]) & (b.whitePawns & b.blackPawns))
+                | (knight[index] & (b.whiteKnights & b.blackKnights))
+                | (king[index] & (b.whiteKing & b.blackKing))
+                | (getRookAttacks(index, all) & ((b.whiteRooks & b.blackRooks) | (b.whiteQueens | b.blackQueens)))
+                | (getBishopAttacks(index, all) & ((b.whiteBishops & b.blackBishops) | (b.whiteQueens | b.blackQueens)));
     }
 }

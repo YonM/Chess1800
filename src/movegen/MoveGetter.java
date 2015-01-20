@@ -27,16 +27,16 @@ public class MoveGetter implements Definitions {
     public static int getWhiteKingMoves(Board b, int[] moves, int index) {
         long king = b.whiteKing;
         int num_moves_generated = 0;
-        int from_loc = Long.numberOfTrailingZeros(king);
-        long movelocs = pseudoLegalKingMoveDestinations(from_loc, ~b.whitePieces);
+        int fromIndex = Long.numberOfTrailingZeros(king);
+        long movelocs = pseudoLegalKingMoveDestinations(fromIndex, ~b.whitePieces);
         while (movelocs != 0) {
-            long to = Long.lowestOneBit(movelocs);
-            int to_loc = Long.numberOfTrailingZeros(to);
-            boolean capt = (to & b.blackPieces) != 0;
-            int move = MoveAC.genMove(from_loc, to_loc, KING, capt, 0);
+            long toBoard = Long.lowestOneBit(movelocs);
+            int toIndex = Long.numberOfTrailingZeros(toBoard);
+            boolean capt = (toBoard & b.blackPieces) != 0;
+            int move = MoveAC.genMove(fromIndex, toIndex, KING, capt, 0);
             moves[index + num_moves_generated] = move;
             num_moves_generated++;
-            movelocs &= ~to;
+            movelocs &= ~toBoard;
         }
         if ((b.castleWhite & CANCASTLEOO) != 0) {
             if ((b.whiteKing << 1 & b.allPieces) == 0
@@ -48,7 +48,7 @@ public class MoveGetter implements Definitions {
                             && !BitboardMagicAttacksAC.isSquareAttacked(b, b.whiteKing << 2,
                             true)) {
                         moves[index + num_moves_generated] =
-                                MoveAC.genMove(from_loc, from_loc + 2, KING,
+                                MoveAC.genMove(fromIndex, fromIndex + 2, KING,
                                         false, MoveAC.TYPE_KINGSIDE_CASTLING);
                         num_moves_generated++;
                     }
@@ -66,7 +66,7 @@ public class MoveGetter implements Definitions {
                             && !BitboardMagicAttacksAC.isSquareAttacked(b, b.whiteKing >>> 2,
                             true)) {
                         moves[index + num_moves_generated] =
-                                MoveAC.genMove(from_loc, from_loc - 2, KING,
+                                MoveAC.genMove(fromIndex, fromIndex - 2, KING,
                                         false, MoveAC.TYPE_QUEENSIDE_CASTLING);
                         num_moves_generated++;
                     }
@@ -79,16 +79,16 @@ public class MoveGetter implements Definitions {
     public static int getBlackKingMoves(Board b, int[] moves, int index) {
         long king = b.blackKing;
         int num_moves_generated = 0;
-        int from_loc = Long.numberOfTrailingZeros(king);
-        long movelocs = pseudoLegalKingMoveDestinations(from_loc, ~b.blackPieces);
+        int fromIndex = Long.numberOfTrailingZeros(king);
+        long movelocs = pseudoLegalKingMoveDestinations(fromIndex, ~b.blackPieces);
         while (movelocs != 0) {
-            long to = Long.lowestOneBit(movelocs);
-            int to_loc = Long.numberOfTrailingZeros(to);
-            boolean capt = (to & b.whitePieces) != 0;
-            int move = MoveAC.genMove(from_loc, to_loc, KING, capt, 0);
+            long toBoard = Long.lowestOneBit(movelocs);
+            int toIndex = Long.numberOfTrailingZeros(toBoard);
+            boolean capt = (toBoard & b.whitePieces) != 0;
+            int move = MoveAC.genMove(fromIndex, toIndex, KING, capt, 0);
             moves[index + num_moves_generated] = move;
             num_moves_generated++;
-            movelocs &= ~to;
+            movelocs &= ~toBoard;
         }
         if ((b.castleBlack & CANCASTLEOO) != 0) {
             if ((b.blackKing << 1 & b.allPieces) == 0
@@ -100,7 +100,7 @@ public class MoveGetter implements Definitions {
                             && !BitboardMagicAttacksAC.isSquareAttacked(b, b.blackKing << 2,
                             false)) {
                         moves[index + num_moves_generated] =
-                                MoveAC.genMove(from_loc, from_loc + 2, KING,
+                                MoveAC.genMove(fromIndex, fromIndex + 2, KING,
                                         false, MoveAC.TYPE_KINGSIDE_CASTLING);
                         num_moves_generated++;
                     }
@@ -118,7 +118,7 @@ public class MoveGetter implements Definitions {
                             && !BitboardMagicAttacksAC.isSquareAttacked(b, b.blackKing >>> 2,
                             false)) {
                         moves[index + num_moves_generated] =
-                                MoveAC.genMove(from_loc, from_loc - 2, KING,
+                                MoveAC.genMove(fromIndex, fromIndex - 2, KING,
                                         false, MoveAC.TYPE_QUEENSIDE_CASTLING);
                         num_moves_generated++;
                     }
@@ -132,21 +132,21 @@ public class MoveGetter implements Definitions {
         long knights = b.whiteKnights;
         int num_moves_generated = 0;
         while (knights != 0) {
-            long from = Long.lowestOneBit(knights);
-            int from_loc = Long.numberOfTrailingZeros(from);
-            long movelocs = pseudoLegalKnightMoveDestinations(from_loc, ~b.whitePieces);
+            long fromBoard = Long.lowestOneBit(knights);
+            int fromIndex = Long.numberOfTrailingZeros(fromBoard);
+            long movelocs = pseudoLegalKnightMoveDestinations(fromIndex, ~b.whitePieces);
             while (movelocs != 0) {
                 long to = Long.lowestOneBit(movelocs);
-                int to_loc = Long.numberOfTrailingZeros(to);
+                int toIndex = Long.numberOfTrailingZeros(to);
                 boolean capt = (to & b.blackPieces) != 0;
                 int move =
-                        MoveAC.genMove(from_loc, to_loc, KNIGHT, capt,
+                        MoveAC.genMove(fromIndex, toIndex, KNIGHT, capt,
                                 0);
                 moves[index + num_moves_generated] = move;
                 num_moves_generated++;
                 movelocs &= ~to;
             }
-            knights &= ~from;
+            knights ^= fromBoard;
         }
         return num_moves_generated;
     }
@@ -155,21 +155,21 @@ public class MoveGetter implements Definitions {
         long knights = b.blackKnights;
         int num_moves_generated = 0;
         while (knights != 0) {
-            long from = Long.lowestOneBit(knights);
-            int from_loc = Long.numberOfTrailingZeros(from);
-            long movelocs = pseudoLegalKnightMoveDestinations(from_loc, ~b.blackPieces);
+            long fromBoard = Long.lowestOneBit(knights);
+            int fromIndex = Long.numberOfTrailingZeros(fromBoard);
+            long movelocs = pseudoLegalKnightMoveDestinations(fromIndex, ~b.blackPieces);
             while (movelocs != 0) {
                 long to = Long.lowestOneBit(movelocs);
-                int to_loc = Long.numberOfTrailingZeros(to);
+                int toIndex = Long.numberOfTrailingZeros(to);
                 boolean capt = (to & b.whitePieces) != 0;
                 int move =
-                        MoveAC.genMove(from_loc, to_loc, KNIGHT, capt,
+                        MoveAC.genMove(fromIndex, toIndex, KNIGHT, capt,
                                 0);
                 moves[index + num_moves_generated] = move;
                 num_moves_generated++;
                 movelocs &= ~to;
             }
-            knights &= ~from;
+            knights ^= fromBoard;
         }
         return num_moves_generated;
     }
@@ -188,114 +188,114 @@ public class MoveGetter implements Definitions {
         long pawns = b.whitePawns;
         int num_moves_generated = 0;
         while (pawns != 0) {
-            long from = Long.lowestOneBit(pawns);
-            int from_loc = Long.numberOfTrailingZeros(from);
-            if ((from & BitboardUtilsAC.RANK[RANK_7]) != 0) {
+            long fromBoard = Long.lowestOneBit(pawns);
+            int fromIndex = Long.numberOfTrailingZeros(fromBoard);
+            if ((fromBoard & BitboardUtilsAC.RANK[RANK_7]) != 0) {
 // promos are possible, no en passant
-                if ((from & BitboardUtilsAC.b_r) == 0 && (from << 7 & b.blackPieces) != 0) {
-                    int to_loc = Long.numberOfTrailingZeros(from << 7);
+                if ((fromBoard & BitboardUtilsAC.b_r) == 0 && (fromBoard << 7 & b.blackPieces) != 0) {
+                    int toIndex = Long.numberOfTrailingZeros(fromBoard << 7);
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, PAWN, true,
+                            MoveAC.genMove(fromIndex, toIndex, PAWN, true,
                                     MoveAC.TYPE_PROMOTION_QUEEN);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, PAWN, true,
+                            MoveAC.genMove(fromIndex, toIndex, PAWN, true,
                                     MoveAC.TYPE_PROMOTION_KNIGHT);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, PAWN, true,
+                            MoveAC.genMove(fromIndex, toIndex, PAWN, true,
                                     MoveAC.TYPE_PROMOTION_ROOK);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, PAWN, true,
+                            MoveAC.genMove(fromIndex, toIndex, PAWN, true,
                                     MoveAC.TYPE_PROMOTION_BISHOP);
                     num_moves_generated++;
                 }
-                if ((from & BitboardUtilsAC.b_l) == 0 && (from << 9 & b.blackPieces) != 0) {
-                    int to_loc = Long.numberOfTrailingZeros(from << 9);
+                if ((fromBoard & BitboardUtilsAC.b_l) == 0 && (fromBoard << 9 & b.blackPieces) != 0) {
+                    int toIndex = Long.numberOfTrailingZeros(fromBoard << 9);
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, PAWN, true,
+                            MoveAC.genMove(fromIndex, toIndex, PAWN, true,
                                     MoveAC.TYPE_PROMOTION_QUEEN);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, PAWN, true,
+                            MoveAC.genMove(fromIndex, toIndex, PAWN, true,
                                     MoveAC.TYPE_PROMOTION_KNIGHT);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, PAWN, true,
+                            MoveAC.genMove(fromIndex, toIndex, PAWN, true,
                                     MoveAC.TYPE_PROMOTION_ROOK);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, PAWN, true,
+                            MoveAC.genMove(fromIndex, toIndex, PAWN, true,
                                     MoveAC.TYPE_PROMOTION_BISHOP);
                     num_moves_generated++;
                 }
-                if ((from << 8 & b.allPieces) == 0) {
-                    int to_loc = Long.numberOfTrailingZeros(from << 8);
+                if ((fromBoard << 8 & b.allPieces) == 0) {
+                    int toIndex = Long.numberOfTrailingZeros(fromBoard << 8);
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, PAWN, false,
+                            MoveAC.genMove(fromIndex, toIndex, PAWN, false,
                                     MoveAC.TYPE_PROMOTION_QUEEN);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, PAWN, false,
+                            MoveAC.genMove(fromIndex, toIndex, PAWN, false,
                                     MoveAC.TYPE_PROMOTION_KNIGHT);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, PAWN, false,
+                            MoveAC.genMove(fromIndex, toIndex, PAWN, false,
                                     MoveAC.TYPE_PROMOTION_ROOK);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, PAWN, false,
+                            MoveAC.genMove(fromIndex, toIndex, PAWN, false,
                                     MoveAC.TYPE_PROMOTION_BISHOP);
                     num_moves_generated++;
                 }
             } else {
 // no promos to worry about, but there is en passant
-                if (((from & BitboardUtilsAC.b_r) == 0)
-                        && (((from << 7 & b.blackPieces) != 0) || Long.numberOfTrailingZeros(from << 7) == b.ePSquare)) {
-                    int to_loc = Long.numberOfTrailingZeros(from << 7);
-                    if (Long.numberOfTrailingZeros(from << 7) == b.ePSquare)
+                if (((fromBoard & BitboardUtilsAC.b_r) == 0)
+                        && (((fromBoard << 7 & b.blackPieces) != 0) || Long.numberOfTrailingZeros(fromBoard << 7) == b.ePSquare)) {
+                    int toIndex = Long.numberOfTrailingZeros(fromBoard << 7);
+                    if (Long.numberOfTrailingZeros(fromBoard << 7) == b.ePSquare)
                         moves[index + num_moves_generated] =
-                                MoveAC.genMove(from_loc, to_loc, PAWN, true,
+                                MoveAC.genMove(fromIndex, toIndex, PAWN, true,
                                         MoveAC.TYPE_EN_PASSANT);
                     else
                         moves[index + num_moves_generated] =
-                                MoveAC.genMove(from_loc, to_loc, PAWN, true,
+                                MoveAC.genMove(fromIndex, toIndex, PAWN, true,
                                         0);
                     num_moves_generated++;
                 }
-                if (((from & BitboardUtilsAC.b_l) == 0)
-                        && (((from << 9 & b.blackPieces) != 0) || Long.numberOfTrailingZeros(from << 9) == b.ePSquare)) {
-                    int to_loc = Long.numberOfTrailingZeros(from << 9);
-                    if (Long.numberOfTrailingZeros(from << 9) == b.ePSquare)
+                if (((fromBoard & BitboardUtilsAC.b_l) == 0)
+                        && (((fromBoard << 9 & b.blackPieces) != 0) || Long.numberOfTrailingZeros(fromBoard << 9) == b.ePSquare)) {
+                    int toIndex = Long.numberOfTrailingZeros(fromBoard << 9);
+                    if (Long.numberOfTrailingZeros(fromBoard << 9) == b.ePSquare)
                         moves[index + num_moves_generated] =
-                                MoveAC.genMove(from_loc, to_loc, PAWN, true,
+                                MoveAC.genMove(fromIndex, toIndex, PAWN, true,
                                         MoveAC.TYPE_EN_PASSANT);
                     else
                         moves[index + num_moves_generated] =
-                                MoveAC.genMove(from_loc, to_loc, PAWN, true,
+                                MoveAC.genMove(fromIndex, toIndex, PAWN, true,
                                         0);
                     num_moves_generated++;
                 }
                 boolean one_square_ahead_clear = false;
-                if ((from << 8 & b.allPieces) == 0) {
+                if ((fromBoard << 8 & b.allPieces) == 0) {
                     one_square_ahead_clear = true;
-                    int to_loc = Long.numberOfTrailingZeros(from << 8);
+                    int toIndex = Long.numberOfTrailingZeros(fromBoard << 8);
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, PAWN, false,
+                            MoveAC.genMove(fromIndex, toIndex, PAWN, false,
                                     0);
                     num_moves_generated++;
                 }
-                if ((from & BitboardUtilsAC.RANK[RANK_2]) != 0
-                        && one_square_ahead_clear && (from << 16 & b.allPieces) == 0) {
-                    int to_loc = Long.numberOfTrailingZeros(from << 16);
+                if ((fromBoard & BitboardUtilsAC.RANK[RANK_2]) != 0
+                        && one_square_ahead_clear && (fromBoard << 16 & b.allPieces) == 0) {
+                    int toIndex = Long.numberOfTrailingZeros(fromBoard << 16);
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, PAWN, false,
+                            MoveAC.genMove(fromIndex, toIndex, PAWN, false,
                                     0);
                     num_moves_generated++;
                 }
             }
-            pawns &= ~from;
+            pawns ^= fromBoard;
         }
         return num_moves_generated;
     }
@@ -307,115 +307,115 @@ public class MoveGetter implements Definitions {
         long pawns = b.blackPawns;
         int num_moves_generated = 0;
         while (pawns != 0) {
-            long from = Long.lowestOneBit(pawns);
-            int from_loc = Long.numberOfTrailingZeros(from);
-            if ((from & BitboardUtilsAC.RANK[RANK_2]) != 0) {
+            long fromBoard = Long.lowestOneBit(pawns);
+            int fromIndex = Long.numberOfTrailingZeros(fromBoard);
+            if ((fromBoard & BitboardUtilsAC.RANK[RANK_2]) != 0) {
 // promos are possible, no en passant
-                if ((from & BitboardUtilsAC.b_l) == 0 && (from >>> 7 & b.whitePieces) != 0) {
-                    int to_loc = Long.numberOfTrailingZeros(from >>> 7);
+                if ((fromBoard & BitboardUtilsAC.b_l) == 0 && (fromBoard >>> 7 & b.whitePieces) != 0) {
+                    int toIndex = Long.numberOfTrailingZeros(fromBoard >>> 7);
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, PAWN, true,
+                            MoveAC.genMove(fromIndex, toIndex, PAWN, true,
                                     MoveAC.TYPE_PROMOTION_QUEEN);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, PAWN, true,
+                            MoveAC.genMove(fromIndex, toIndex, PAWN, true,
                                     MoveAC.TYPE_PROMOTION_KNIGHT);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, PAWN, true,
+                            MoveAC.genMove(fromIndex, toIndex, PAWN, true,
                                     MoveAC.TYPE_PROMOTION_ROOK);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, PAWN, true,
+                            MoveAC.genMove(fromIndex, toIndex, PAWN, true,
                                     MoveAC.TYPE_PROMOTION_BISHOP);
                     num_moves_generated++;
                 }
-                if ((from & BitboardUtilsAC.b_r) == 0
-                        && (from >>> 9 & b.whitePieces) != 0) {
-                    int to_loc = Long.numberOfTrailingZeros(from >>> 9);
+                if ((fromBoard & BitboardUtilsAC.b_r) == 0
+                        && (fromBoard >>> 9 & b.whitePieces) != 0) {
+                    int toIndex = Long.numberOfTrailingZeros(fromBoard >>> 9);
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, PAWN, true,
+                            MoveAC.genMove(fromIndex, toIndex, PAWN, true,
                                     MoveAC.TYPE_PROMOTION_QUEEN);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, PAWN, true,
+                            MoveAC.genMove(fromIndex, toIndex, PAWN, true,
                                     MoveAC.TYPE_PROMOTION_KNIGHT);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, PAWN, true,
+                            MoveAC.genMove(fromIndex, toIndex, PAWN, true,
                                     MoveAC.TYPE_PROMOTION_ROOK);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, PAWN, true,
+                            MoveAC.genMove(fromIndex, toIndex, PAWN, true,
                                     MoveAC.TYPE_PROMOTION_BISHOP);
                     num_moves_generated++;
                 }
-                if ((from >>> 8 & b.allPieces) == 0) {
-                    int to_loc = Long.numberOfTrailingZeros(from >>> 8);
+                if ((fromBoard >>> 8 & b.allPieces) == 0) {
+                    int toIndex = Long.numberOfTrailingZeros(fromBoard >>> 8);
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, PAWN, false,
+                            MoveAC.genMove(fromIndex, toIndex, PAWN, false,
                                     MoveAC.TYPE_PROMOTION_QUEEN);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, PAWN, false,
+                            MoveAC.genMove(fromIndex, toIndex, PAWN, false,
                                     MoveAC.TYPE_PROMOTION_KNIGHT);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, PAWN, false,
+                            MoveAC.genMove(fromIndex, toIndex, PAWN, false,
                                     MoveAC.TYPE_PROMOTION_ROOK);
                     num_moves_generated++;
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, PAWN, false,
+                            MoveAC.genMove(fromIndex, toIndex, PAWN, false,
                                     MoveAC.TYPE_PROMOTION_BISHOP);
                     num_moves_generated++;
                 }
             } else {
 // no promos to worry about, but there is en passant
-                if (((from & BitboardUtilsAC.b_l) == 0)
-                        && (((from >>> 7 & b.whitePieces) != 0) || Long.numberOfTrailingZeros(from >>> 7) == b.ePSquare)) {
-                    int to_loc = Long.numberOfTrailingZeros(from >>> 7);
-                    if (Long.numberOfTrailingZeros(from >>> 7) == b.ePSquare)
+                if (((fromBoard & BitboardUtilsAC.b_l) == 0)
+                        && (((fromBoard >>> 7 & b.whitePieces) != 0) || Long.numberOfTrailingZeros(fromBoard >>> 7) == b.ePSquare)) {
+                    int toIndex = Long.numberOfTrailingZeros(fromBoard >>> 7);
+                    if (Long.numberOfTrailingZeros(fromBoard >>> 7) == b.ePSquare)
                         moves[index + num_moves_generated] =
-                                MoveAC.genMove(from_loc, to_loc, PAWN, true,
+                                MoveAC.genMove(fromIndex, toIndex, PAWN, true,
                                         MoveAC.TYPE_EN_PASSANT);
                     else
                         moves[index + num_moves_generated] =
-                                MoveAC.genMove(from_loc, to_loc, PAWN, true,
+                                MoveAC.genMove(fromIndex, toIndex, PAWN, true,
                                         0);
                     num_moves_generated++;
                 }
-                if (((from & BitboardUtilsAC.b_r) == 0)
-                        && (((from >>> 9 & b.whitePieces) != 0) || Long.numberOfTrailingZeros(from >>> 9) == b.ePSquare)) {
-                    int to_loc = Long.numberOfTrailingZeros(from >>> 9);
-                    if (Long.numberOfTrailingZeros(from >>> 9) == b.ePSquare)
+                if (((fromBoard & BitboardUtilsAC.b_r) == 0)
+                        && (((fromBoard >>> 9 & b.whitePieces) != 0) || Long.numberOfTrailingZeros(fromBoard >>> 9) == b.ePSquare)) {
+                    int toIndex = Long.numberOfTrailingZeros(fromBoard >>> 9);
+                    if (Long.numberOfTrailingZeros(fromBoard >>> 9) == b.ePSquare)
                         moves[index + num_moves_generated] =
-                                MoveAC.genMove(from_loc, to_loc, PAWN, true,
+                                MoveAC.genMove(fromIndex, toIndex, PAWN, true,
                                         MoveAC.TYPE_EN_PASSANT);
                     else
                         moves[index + num_moves_generated] =
-                                MoveAC.genMove(from_loc, to_loc, PAWN, true,
+                                MoveAC.genMove(fromIndex, toIndex, PAWN, true,
                                         0);
                     num_moves_generated++;
                 }
                 boolean one_square_ahead_clear = false;
-                if ((from >>> 8 & b.allPieces) == 0) {
+                if ((fromBoard >>> 8 & b.allPieces) == 0) {
                     one_square_ahead_clear = true;
-                    int to_loc = Long.numberOfTrailingZeros(from >>> 8);
+                    int toIndex = Long.numberOfTrailingZeros(fromBoard >>> 8);
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, PAWN, false,
+                            MoveAC.genMove(fromIndex, toIndex, PAWN, false,
                                     0);
                     num_moves_generated++;
                 }
-                if ((from & BitboardUtilsAC.RANK[RANK_7]) != 0
-                        && one_square_ahead_clear && (from >>> 16 & b.allPieces) == 0) {
-                    int to_loc = Long.numberOfTrailingZeros(from >>> 16);
+                if ((fromBoard & BitboardUtilsAC.RANK[RANK_7]) != 0
+                        && one_square_ahead_clear && (fromBoard >>> 16 & b.allPieces) == 0) {
+                    int toIndex = Long.numberOfTrailingZeros(fromBoard >>> 16);
                     moves[index + num_moves_generated] =
-                            MoveAC.genMove(from_loc, to_loc, PAWN, false,
+                            MoveAC.genMove(fromIndex, toIndex, PAWN, false,
                                     0);
                     num_moves_generated++;
                 }
             }
-            pawns &= ~from;
+            pawns ^= fromBoard;
         }
         return num_moves_generated;
     }
@@ -424,23 +424,23 @@ public class MoveGetter implements Definitions {
         long bishops = b.whiteBishops;
         int num_moves_generated = 0;
         while (bishops != 0) {
-            long from = Long.lowestOneBit(bishops);
-            int from_loc = Long.numberOfTrailingZeros(from);
+            long fromBoard = Long.lowestOneBit(bishops);
+            int fromIndex = Long.numberOfTrailingZeros(fromBoard);
             long movelocs =
-                    BitboardMagicAttacksAC.getBishopAttacks(from_loc, b.allPieces & ~from);
+                    BitboardMagicAttacksAC.getBishopAttacks(fromIndex, b.allPieces ^ fromBoard);
             movelocs &= ~b.whitePieces;
             while (movelocs != 0) {
                 long to = Long.lowestOneBit(movelocs);
-                int to_loc = Long.numberOfTrailingZeros(to);
+                int toIndex = Long.numberOfTrailingZeros(to);
                 boolean capt = (to & b.blackPieces) != 0;
                 int move =
-                        MoveAC.genMove(from_loc, to_loc, BISHOP, capt,
+                        MoveAC.genMove(fromIndex, toIndex, BISHOP, capt,
                                 0);
                 moves[index + num_moves_generated] = move;
                 num_moves_generated++;
                 movelocs &= ~to;
             }
-            bishops &= ~from;
+            bishops ^= fromBoard;
         }
         return num_moves_generated;
     }
@@ -449,23 +449,23 @@ public class MoveGetter implements Definitions {
         long bishops = b.blackBishops;
         int num_moves_generated = 0;
         while (bishops != 0) {
-            long from = Long.lowestOneBit(bishops);
-            int from_loc = Long.numberOfTrailingZeros(from);
+            long fromBoard = Long.lowestOneBit(bishops);
+            int fromIndex = Long.numberOfTrailingZeros(fromBoard);
             long movelocs =
-                    BitboardMagicAttacksAC.getBishopAttacks(from_loc, b.allPieces & ~from);
+                    BitboardMagicAttacksAC.getBishopAttacks(fromIndex, b.allPieces ^ fromBoard);
             movelocs &= ~b.blackPieces;
             while (movelocs != 0) {
                 long to = Long.lowestOneBit(movelocs);
-                int to_loc = Long.numberOfTrailingZeros(to);
+                int toIndex = Long.numberOfTrailingZeros(to);
                 boolean capt = (to & b.whitePieces) != 0;
                 int move =
-                        MoveAC.genMove(from_loc, to_loc, BISHOP, capt,
+                        MoveAC.genMove(fromIndex, toIndex, BISHOP, capt,
                                 0);
                 moves[index + num_moves_generated] = move;
                 num_moves_generated++;
                 movelocs &= ~to;
             }
-            bishops &= ~from;
+            bishops ^= fromBoard;
         }
         return num_moves_generated;
     }
@@ -474,21 +474,21 @@ public class MoveGetter implements Definitions {
         long rooks = b.whiteRooks;
         int num_moves_generated = 0;
         while (rooks != 0) {
-            long from = Long.lowestOneBit(rooks);
-            int from_loc = Long.numberOfTrailingZeros(from);
-            long movelocs = BitboardMagicAttacksAC.getRookAttacks(from_loc, b.allPieces & ~from);
+            long fromBoard = Long.lowestOneBit(rooks);
+            int fromIndex = Long.numberOfTrailingZeros(fromBoard);
+            long movelocs = BitboardMagicAttacksAC.getRookAttacks(fromIndex, b.allPieces ^ fromBoard);
             movelocs &= ~b.whitePieces;
             while (movelocs != 0) {
                 long to = Long.lowestOneBit(movelocs);
-                int to_loc = Long.numberOfTrailingZeros(to);
+                int toIndex = Long.numberOfTrailingZeros(to);
                 boolean capt = (to & b.blackPieces) != 0;
                 int move =
-                        MoveAC.genMove(from_loc, to_loc, ROOK, capt, 0);
+                        MoveAC.genMove(fromIndex, toIndex, ROOK, capt, 0);
                 moves[index + num_moves_generated] = move;
                 num_moves_generated++;
                 movelocs &= ~to;
             }
-            rooks &= ~from;
+            rooks ^= fromBoard;
         }
         return num_moves_generated;
     }
@@ -497,21 +497,21 @@ public class MoveGetter implements Definitions {
         long rooks = b.blackRooks;
         int num_moves_generated = 0;
         while (rooks != 0) {
-            long from = Long.lowestOneBit(rooks);
-            int from_loc = Long.numberOfTrailingZeros(from);
-            long movelocs = BitboardMagicAttacksAC.getRookAttacks(from_loc, b.allPieces & ~from);
+            long fromBoard = Long.lowestOneBit(rooks);
+            int fromIndex = Long.numberOfTrailingZeros(fromBoard);
+            long movelocs = BitboardMagicAttacksAC.getRookAttacks(fromIndex, b.allPieces ^ fromBoard);
             movelocs &= ~b.blackPieces;
             while (movelocs != 0) {
                 long to = Long.lowestOneBit(movelocs);
-                int to_loc = Long.numberOfTrailingZeros(to);
+                int toIndex = Long.numberOfTrailingZeros(to);
                 boolean capt = (to & b.whitePieces) != 0;
                 int move =
-                        MoveAC.genMove(from_loc, to_loc, ROOK, capt, 0);
+                        MoveAC.genMove(fromIndex, toIndex, ROOK, capt, 0);
                 moves[index + num_moves_generated] = move;
                 num_moves_generated++;
                 movelocs &= ~to;
             }
-            rooks &= ~from;
+            rooks ^= fromBoard;
         }
         return num_moves_generated;
     }
@@ -520,23 +520,23 @@ public class MoveGetter implements Definitions {
         long queens = b.whiteQueens;
         int num_moves_generated = 0;
         while (queens != 0) {
-            long from = Long.lowestOneBit(queens);
-            int from_loc = Long.numberOfTrailingZeros(from);
+            long fromBoard = Long.lowestOneBit(queens);
+            int fromIndex = Long.numberOfTrailingZeros(fromBoard);
             long movelocs =
-                    BitboardMagicAttacksAC.getQueenAttacks(from_loc, b.allPieces & ~from);
+                    BitboardMagicAttacksAC.getQueenAttacks(fromIndex, b.allPieces ^ fromBoard);
             movelocs &= ~b.whitePieces;
             while (movelocs != 0) {
                 long to = Long.lowestOneBit(movelocs);
-                int to_loc = Long.numberOfTrailingZeros(to);
+                int toIndex = Long.numberOfTrailingZeros(to);
                 boolean capt = (to & b.blackPieces) != 0;
                 int move =
-                        MoveAC.genMove(from_loc, to_loc, QUEEN, capt,
+                        MoveAC.genMove(fromIndex, toIndex, QUEEN, capt,
                                 0);
                 moves[index + num_moves_generated] = move;
                 num_moves_generated++;
                 movelocs &= ~to;
             }
-            queens &= ~from;
+            queens ^= fromBoard;
         }
         return num_moves_generated;
     }
@@ -545,23 +545,23 @@ public class MoveGetter implements Definitions {
         long queens = b.blackQueens;
         int num_moves_generated = 0;
         while (queens != 0) {
-            long from = Long.lowestOneBit(queens);
-            int from_loc = Long.numberOfTrailingZeros(from);
+            long fromBoard = Long.lowestOneBit(queens);
+            int fromIndex = Long.numberOfTrailingZeros(fromBoard);
             long movelocs =
-                    BitboardMagicAttacksAC.getQueenAttacks(from_loc, b.allPieces & ~from);
+                    BitboardMagicAttacksAC.getQueenAttacks(fromIndex, b.allPieces ^ fromBoard);
             movelocs &= ~b.blackPieces;
             while (movelocs != 0) {
                 long to = Long.lowestOneBit(movelocs);
-                int to_loc = Long.numberOfTrailingZeros(to);
+                int toIndex = Long.numberOfTrailingZeros(to);
                 boolean capt = (to & b.whitePieces) != 0;
                 int move =
-                        MoveAC.genMove(from_loc, to_loc, QUEEN, capt,
+                        MoveAC.genMove(fromIndex, toIndex, QUEEN, capt,
                                 0);
                 moves[index + num_moves_generated] = move;
                 num_moves_generated++;
                 movelocs &= ~to;
             }
-            queens &= ~from;
+            queens ^= fromBoard;
         }
         return num_moves_generated;
     }

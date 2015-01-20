@@ -5,7 +5,7 @@ import bitboard.BitboardUtilsAC;
 import definitions.Definitions;
 import fen.FENValidator;
 import move.MoveAC;
-import movegen.MoveGenerator;
+import movegen.MoveGeneratorAC;
 import search.AlphaBetaPVS;
 import zobrist.Zobrist;
 
@@ -408,7 +408,7 @@ public class Board implements Definitions {
         int i;
         AlphaBetaPVS.legalMoves = 0;
         moveBufLen[0] = 0;
-        moveBufLen[1] = MoveGenerator.moveGen(this, moveBufLen[0]);
+        moveBufLen[1] = MoveGeneratorAC.moveGen(this, moveBufLen[0]);
         for (i = moveBufLen[0]; i < moveBufLen[1]; i++) {
             makeMove(moves[i]);
             if (!isOtherKingAttacked()) {
@@ -846,16 +846,17 @@ public class Board implements Definitions {
     }
 
     public boolean isOtherKingAttacked() {
-        if (whiteToMove) return MoveGenerator.isAttacked(this, blackKing, whiteToMove);
-        return MoveGenerator.isAttacked(this, whiteKing, whiteToMove);
+        if (whiteToMove) return MoveGeneratorAC.isAttacked(this, blackKing, whiteToMove);
+        return MoveGeneratorAC.isAttacked(this, whiteKing, whiteToMove);
     }
 
     public boolean isOwnKingAttacked() {
-        if (whiteToMove) return MoveGenerator.isAttacked(this, whiteKing, !whiteToMove);
-        return MoveGenerator.isAttacked(this, blackKing, !whiteToMove);
+        if (whiteToMove) return MoveGeneratorAC.isAttacked(this, whiteKing, !whiteToMove);
+        return MoveGeneratorAC.isAttacked(this, blackKing, !whiteToMove);
     }
 
-    public int see(int move) {
+    //Static Exchange Evaluator based on https://chessprogramming.wikispaces.com/SEE+-+The+Swap+Algorithm
+    public int sEE(int move) {
         int capturedPiece = 0;
         long toBoard = MoveAC.getToSquare(move);
 
@@ -864,10 +865,10 @@ public class Board implements Definitions {
         else if ((toBoard & (whiteRooks | blackRooks)) != 0) capturedPiece = ROOK;
         else if ((toBoard & (whiteQueens | blackQueens)) != 0) capturedPiece = QUEEN;
         else if ((toBoard & (whitePawns | blackPawns)) != 0) capturedPiece = PAWN;
-        return see(MoveAC.getFromIndex(move), MoveAC.getToIndex(move), MoveAC.getPieceMoved(move), capturedPiece);
+        return sEE(MoveAC.getFromIndex(move), MoveAC.getToIndex(move), MoveAC.getPieceMoved(move), capturedPiece);
     }
 
-    public int see(int fromIndex, int toIndex, int pieceMoved, int capturedPiece) {
+    public int sEE(int fromIndex, int toIndex, int pieceMoved, int capturedPiece) {
         int d = 0;
 
         long mayXray = (whitePawns | blackPawns) | (whiteKnights | blackKnights) | (whiteBishops | blackBishops) |
@@ -875,7 +876,52 @@ public class Board implements Definitions {
         long fromSquare = MoveAC.getFromSquare(fromIndex);
         long all = allPieces;
         long attacks = BitboardMagicAttacksAC.getIndexAttacks(this, toIndex);
+        long fromCandidates;
 
+        seeGain[d] = SEE_PIECE_VALUES[capturedPiece];
+        do {
+            long side = (d % 2) == 0 ? getOpponentPieces() : getMyPieces();
+            d++; // depth increased.
+
+            // speculative score if defended.
+            seeGain[d] = SEE_PIECE_VALUES[pieceMoved] - seeGain[d - 1];
+
+            attacks ^= fromSquare; // reset bit in set to traverse
+            all ^= fromSquare;  // reset bit in temporary occupancy (for x-Rays)
+
+            if ((fromSquare & mayXray) != 0) attacks |= BitboardMagicAttacksAC.getXrayAttacks(this, toIndex, all);
+
+            //Find the next attacker from least valuable to most valuable.
+
+            //non-promoting pawn
+            if ((fromCandidates = attacks & (whitePawns | blackPawns) & side) != 0 && ((toIndex / 8 != 1 & ((d % 2) == 0))
+                    || ((toIndex / 8 != 8 & ((d % 2) != 0)))))
+                pieceMoved = PAWN;
+            else if ((fromCandidates = attacks & (whiteKnights | blackKnights) & side) != 0)
+                pieceMoved = KNIGHT;
+            else if ((fromCandidates = attacks & (whiteBishops | blackBishops) & side) != 0)
+                pieceMoved = BISHOP;
+            else if ((fromCandidates = attacks & (whiteRooks | blackRooks) & side) != 0)
+                pieceMoved = ROOK;
+                //promoting pawn(s) included
+            else if ((fromCandidates = attacks & (whitePawns | blackPawns) & side) != 0)
+                pieceMoved = PAWN;
+            else if ((fromCandidates = attacks & (whiteQueens | blackQueens) & side) != 0)
+                pieceMoved = QUEEN;
+                //king will only capture if there are no more attackers left.
+            else if ((fromCandidates = attacks & (whiteKing | blackKing) & side) != 0 && ((attacks & blackPieces) == 0
+                    & ((d % 2) != 0) || (((attacks & blackPieces) == 0) & ((d % 2) == 0))))
+                pieceMoved = KING;
+
+            fromSquare = Long.lowestOneBit(fromCandidates);
+
+        } while (fromSquare != 0);
+
+        while (--d != 0) {
+            seeGain[d - 1] = -Math.max(-seeGain[d - 1], seeGain[d]);
+        }
+
+        return seeGain[0];
     }
 
 

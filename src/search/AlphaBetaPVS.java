@@ -4,7 +4,6 @@ import board.Board;
 import definitions.Definitions;
 import evaluation.Evaluator;
 import move.MoveAC;
-import movegen.MoveGenerator;
 import zobrist.Zobrist;
 
 import java.util.Arrays;
