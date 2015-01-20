@@ -1,6 +1,7 @@
 package evaluation;
 
 import bitboard.BitboardAttacks;
+import bitboard.BitboardUtilsAC;
 import board.Board;
 import board.BoardUtils;
 import definitions.Definitions;
@@ -178,11 +179,11 @@ public class Evaluator implements Definitions {
         int square;
         for (i = 0; i < 64; i++) {
             for (square = 0; square < 64; square++) {
-                if (Math.abs(BoardUtils.RANKS[i] - BoardUtils.RANKS[square]) >
-                        Math.abs(BoardUtils.FILES[i] - BoardUtils.FILES[square]))
-                    DISTANCE[i][square] = Math.abs(BoardUtils.RANKS[i] - BoardUtils.RANKS[square]);
+                if (Math.abs(i / 8 - square / 8) >
+                        Math.abs(i % 8 - square % 8))
+                    DISTANCE[i][square] = Math.abs(i / 8 - square / 8);
                 else
-                    DISTANCE[i][square] = Math.abs(BoardUtils.FILES[i] - BoardUtils.FILES[square]);
+                    DISTANCE[i][square] = Math.abs(i % 8 - square % 8);
             }
         }
 
@@ -196,8 +197,8 @@ public class Evaluator implements Definitions {
         int rank, file;
         for (i = 0; i < 64; i++) {
             //Passed white pawns
-            for (rank = BoardUtils.RANKS[i] + 1; rank < 7; rank++) {
-                file = BoardUtils.FILES[i];
+            for (rank = i / 8 + 1; rank < 7; rank++) {
+                file = i % 8;
                 if (file > 0)
                     PASSED_WHITE[i] ^= BoardUtils.BITSET[BoardUtils.getIndex(rank, file - 1)];
                 PASSED_WHITE[i] ^= BoardUtils.BITSET[BoardUtils.getIndex(rank, file)];
@@ -206,14 +207,14 @@ public class Evaluator implements Definitions {
             }
             //Isolated white pawns
             for (rank = 1; rank < 7; rank++) {
-                file = BoardUtils.FILES[i];
+                file = i % 8;
                 if (file > 0) ISOLATED_WHITE[i] ^= BoardUtils.BITSET[BoardUtils.getIndex(rank, file - 1)];
                 if (file < 7) ISOLATED_WHITE[i] ^= BoardUtils.BITSET[BoardUtils.getIndex(rank, file + 1)];
             }
 
             //Backward white pawns
             for (rank = 1; rank < 7; rank++) {
-                file = BoardUtils.FILES[i];
+                file = i % 8;
                 if (file > 0) BACKWARD_WHITE[i] ^= BoardUtils.BITSET[BoardUtils.getIndex(rank, file - 1)];
                 if (file > 7) BACKWARD_WHITE[i] ^= BoardUtils.BITSET[BoardUtils.getIndex(rank, file + 1)];
             }
@@ -223,7 +224,7 @@ public class Evaluator implements Definitions {
         //Strong/Weak squares for white pawns, used for king safety. Only if the king is on the first 3 ranks.
         for (i = 0; i < 24; i++) {
             STRONG_SAFE_WHITE[i] ^= BoardUtils.BITSET[i + 8];
-            file = BoardUtils.FILES[i];
+            file = i % 8;
             if (file > 0) {
                 STRONG_SAFE_WHITE[i] ^= BoardUtils.BITSET[i + 7];
             } else {
@@ -424,11 +425,11 @@ public class Evaluator implements Definitions {
                 if (square < BoardUtils.getLastIndexFromBoard((BitboardAttacks.FILEMASK[square] & whitePassedPawns)))
                     score += BONUS_ROOK_BEHIND_PASSED_PAWN;
 
-/*            if((BitboardAttacks.FILEMASK[square]&board.blackPawns)==0) {
+            if ((BitboardUtilsAC.COLUMN[square % 8] & b.blackPawns) == 0) {
                 score += BONUS_ROOK_ON_OPEN_FILE;
-                if((BitboardAttacks.FILEMASK[square]& (board.whiteRooks & ~Long.lowestOneBit(temp)))!=0)
+                if ((BitboardUtilsAC.COLUMN[square % 8] & (b.whiteRooks & ~Long.lowestOneBit(temp))) != 0)
                     score+=BONUS_TWO_ROOKS_ON_OPEN_FILE;
-            }*/
+            }
             temp ^= BoardUtils.BITSET[square];
         }
     }
@@ -529,11 +530,11 @@ public class Evaluator implements Definitions {
             if ((BitboardAttacks.FILEMASK[square] & blackPassedPawns) != 0)
                 if (square < BoardUtils.getLastIndexFromBoard((BitboardAttacks.FILEMASK[square] & blackPassedPawns)))
                     score -= BONUS_ROOK_BEHIND_PASSED_PAWN;
-/*            if ((BitboardAttacks.FILEMASK[square] & board.whitePawns) == 0) {
-                score += BONUS_ROOK_ON_OPEN_FILE;
-                if ((BitboardAttacks.FILEMASK[square] & (board.blackRooks & ~Long.lowestOneBit(temp))) != 0)
-                    score += BONUS_TWO_ROOKS_ON_OPEN_FILE;
-            }*/
+            if ((BitboardUtilsAC.COLUMN[square % 8] & b.whitePawns) == 0) {
+                score -= BONUS_ROOK_ON_OPEN_FILE;
+                if ((BitboardUtilsAC.COLUMN[square % 8] & (b.blackRooks & ~Long.lowestOneBit(temp))) != 0)
+                    score -= BONUS_TWO_ROOKS_ON_OPEN_FILE;
+            }
             temp ^= BoardUtils.BITSET[square];
         }
     }
@@ -561,11 +562,5 @@ public class Evaluator implements Definitions {
             score -= BONUS_PAWN_SHIELD_WEAK * Long.bitCount((WEAK_SAFE_WHITE[blackKingSquare] & b.blackPawns));
         }
     }
-
-
-
-
-
-    
 
 }

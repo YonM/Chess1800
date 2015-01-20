@@ -248,4 +248,8 @@ public class BitboardMagicAttacksAC {
         }
         return ret;
     }
+
+    public static long getIndexAttacks(Board b, int index) {
+        return 0;
+    }
 }

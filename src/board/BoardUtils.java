@@ -35,7 +35,7 @@ public class BoardUtils implements Definitions {
 
     public BoardUtils() {
         initialize(null);
-        Board b = new Board.getInstance();
+        Board b = Board.getInstance();
     }
 
     public BoardUtils(String fen) {

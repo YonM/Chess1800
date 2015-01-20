@@ -1,5 +1,6 @@
 package board;
 
+import bitboard.BitboardMagicAttacksAC;
 import bitboard.BitboardUtilsAC;
 import definitions.Definitions;
 import fen.FENValidator;
@@ -93,6 +94,7 @@ public class Board implements Definitions {
     public long key; //Zobrist key
 
     private static final int[] SEE_PIECE_VALUES = {0, 100, 325, 325, 500, 975, 999999};
+    private int[] seeGain;
 
     public int totalWhitePawns;
     public int totalBlackPawns;
@@ -104,9 +106,8 @@ public class Board implements Definitions {
         for (int i = 0; i < moves.length; i++) {
             moves[i] = 0;
         }
-        /*for (int i = 0; i < MAX_GAME_LENGTH; i++) {
-            gameLine[i] = new GameLineRecord();
-        }*/
+        seeGain = new int[32];
+
         white_pawn_history = new long[MAX_GAME_LENGTH];
         white_knight_history = new long[MAX_GAME_LENGTH];
         white_bishop_history = new long[MAX_GAME_LENGTH];
@@ -386,43 +387,6 @@ public class Board implements Definitions {
         blackPieces = 0;
         allPieces = 0;
     }
-
-/*    private void setupBoard() {
-        square[E1] = WHITE_KING;
-        square[D1] = WHITE_QUEEN;
-        square[A1] = WHITE_ROOK;
-        square[H1] = WHITE_ROOK;
-        square[B1] = WHITE_KNIGHT;
-        square[G1] = WHITE_KNIGHT;
-        square[C1] = WHITE_BISHOP;
-        square[F1] = WHITE_BISHOP;
-        square[A2] = WHITE_PAWN;
-        square[B2] = WHITE_PAWN;
-        square[C2] = WHITE_PAWN;
-        square[D2] = WHITE_PAWN;
-        square[E2] = WHITE_PAWN;
-        square[F2] = WHITE_PAWN;
-        square[G2] = WHITE_PAWN;
-        square[H2] = WHITE_PAWN;
-
-        square[E8] = BLACK_KING;
-        square[D8] = BLACK_QUEEN;
-        square[A8] = BLACK_ROOK;
-        square[H8] = BLACK_ROOK;
-        square[B8] = BLACK_KNIGHT;
-        square[G8] = BLACK_KNIGHT;
-        square[C8] = BLACK_BISHOP;
-        square[F8] = BLACK_BISHOP;
-        square[A7] = BLACK_PAWN;
-        square[B7] = BLACK_PAWN;
-        square[C7] = BLACK_PAWN;
-        square[D7] = BLACK_PAWN;
-        square[E7] = BLACK_PAWN;
-        square[F7] = BLACK_PAWN;
-        square[G7] = BLACK_PAWN;
-        square[H7] = BLACK_PAWN;
-
-    }*/
 
     public static Board getInstance() {
         if (instance == null) {
@@ -905,141 +869,15 @@ public class Board implements Definitions {
 
     public int see(int fromIndex, int toIndex, int pieceMoved, int capturedPiece) {
         int d = 0;
-        int[] seeGain = new int[32];
+
         long mayXray = (whitePawns | blackPawns) | (whiteKnights | blackKnights) | (whiteBishops | blackBishops) |
                 (whiteRooks | blackRooks) | (whiteQueens | blackQueens);
         long fromSquare = MoveAC.getFromSquare(fromIndex);
         long all = allPieces;
-        long attacks =
+        long attacks = BitboardMagicAttacksAC.getIndexAttacks(this, toIndex);
 
     }
 
-    /*public int see(int move) {
-        //Static Exchange Evaluator
-        int numOfCaptures = 0;
-        int from;
-        int target = Move.getTo(move);
-        int heading;
-        int attackedPieceEval;
-        int[] materialGains = new int[32];
-        long attackers = MoveGenerator.getAttacksTo(this, target);
-        long nonRemoved = ~0;
-
-        boolean stm = whiteToMove;
-        boolean isPromoRank = ((target / 8 == 7) || (target / 8 == 0));
-
-        //First capture done before the loop.
-        // Take first attacker from the (capture) move.
-        from = Move.getFrom(move);
-
-        materialGains[0] = SEE_PIECE_VALUES[square[target]];
-
-        attackedPieceEval = SEE_PIECE_VALUES[square[from]];
-
-        //if promotion, add this info into materialGains & attackedPieceEval
-
-        if (isPromoRank && (square[from] & 6) == 1) {
-            materialGains[0] += SEE_PIECE_VALUES[move.getPromotion()] - SEE_PIECE_VALUES[PAWN];
-            attackedPieceEval += SEE_PIECE_VALUES[move.getPromotion()] - SEE_PIECE_VALUES[PAWN];
-        }
-        numOfCaptures++;
-
-        //remove last attacker
-        attackers ^= BoardUtils.BITSET[from];
-        nonRemoved ^= BoardUtils.BITSET[from];
-
-        //what direction did the attack come from
-        heading = BoardUtils.HEADINGS[from][to];
-        if (heading != 0) attackers = MoveGenerator.getXrayAttackers(this, attackers, nonRemoved, target, heading);
-
-        //switch side to move
-        stm = !stm;
-
-        while (attackers != 0) {
-            //Select the least valuable attacker
-            //Order is: Non-Promoting Pawn, Knight, Bishop, Rook, Promotion Pawn, Queen.
-            if (stm) {
-                if (target / 8 != 0 && (whitePawns & attackers) != 0)
-                    from = BoardUtils.getIndexFromBoard((whitePawns & attackers));
-
-                else if ((whiteKnights & attackers) != 0)
-                    from = BoardUtils.getIndexFromBoard((whiteKnights & attackers));
-
-                else if ((whiteBishops & attackers) != 0)
-                    from = BoardUtils.getIndexFromBoard((whiteBishops & attackers));
-
-                else if ((whiteRooks & attackers) != 0) from = BoardUtils.getIndexFromBoard((whiteRooks & attackers));
-
-                else if (target / 8 == 0 && (whitePawns & attackers) != 0)
-                    from = BoardUtils.getIndexFromBoard(whitePawns & attackers);
-
-                else if ((whiteQueens & attackers) != 0) from = BoardUtils.getIndexFromBoard((whiteQueens & attackers));
-
-                    //king can only capture if no opponent attackers are left
-                else if ((attackers & blackPieces) == 0 && (whiteKing & attackers) != 0)
-                    from = BoardUtils.getIndexFromBoard(whiteKing);
-
-                else break;
-
-            } else {
-                if (target / 8 != 7 && (blackPawns & attackers) != 0)
-                    from = BoardUtils.getIndexFromBoard((blackPawns & attackers));
-
-                else if ((blackKnights & attackers) != 0)
-                    from = BoardUtils.getIndexFromBoard((blackKnights & attackers));
-
-                else if ((blackBishops & attackers) != 0)
-                    from = BoardUtils.getIndexFromBoard((blackBishops & attackers));
-
-                else if ((blackRooks & attackers) != 0) from = BoardUtils.getIndexFromBoard((blackRooks & attackers));
-
-                else if (target / 8 == 7 && (blackPawns & attackers) != 0)
-                    from = BoardUtils.getIndexFromBoard(blackPawns & attackers);
-
-                else if ((blackQueens & attackers) != 0) from = BoardUtils.getIndexFromBoard((blackQueens & attackers));
-
-                    //king can only capture if no opponent attackers are left
-                else if ((attackers & whitePieces) == 0 && (blackKing & attackers) != 0)
-                    from = BoardUtils.getIndexFromBoard(blackKing);
-
-                else break;
-            }
-
-            // update the materialGains array:
-            materialGains[numOfCaptures] = -materialGains[numOfCaptures - 1] + attackedPieceEval;
-
-            //Update the value of the attacking piece, it will be the next piece captured.
-            attackedPieceEval = SEE_PIECE_VALUES[square[from]];
-
-            //if it was a promotion, add into materialGains & attackedPieceEval.
-            if (isPromoRank && (square[from] & 6) == 1) {
-                materialGains[numOfCaptures] += SEE_PIECE_VALUES[WHITE_QUEEN] - SEE_PIECE_VALUES[WHITE_PAWN];
-                attackedPieceEval = SEE_PIECE_VALUES[WHITE_QUEEN] - SEE_PIECE_VALUES[WHITE_PAWN];
-            }
-
-            numOfCaptures++;
-
-            //remove last attacker
-            attackers ^= BoardUtils.BITSET[from];
-            nonRemoved ^= BoardUtils.BITSET[from];
-
-            //what direction did the attack come from. If heading!=0, add xray Attackers.
-            heading = BoardUtils.HEADINGS[target][from];
-            if (heading != 0) attackers = MoveGenerator.getXrayAttackers(this, attackers, nonRemoved, target, heading);
-
-            //switch side to move
-            stm = !stm;
-        }
-
-        //work backwards, using a Minimax-type sequence to calculate the SEE value of the first capture
-
-        while (--numOfCaptures > 0) {
-            if (materialGains[numOfCaptures] > -materialGains[numOfCaptures - 1])
-                materialGains[numOfCaptures - 1] = -materialGains[numOfCaptures];
-        }
-
-        return materialGains[0];
-    }*/
 
     public long getMyPieces() {
         return whiteToMove ? whitePieces : blackPieces;
@@ -1052,15 +890,5 @@ public class Board implements Definitions {
     /*public long getAllPieces(){
         return allPieces;
     }*/
-
-   /* private class GameLineRecord {
-        public int move;
-        public int castleWhite;
-        public int castleBlack;
-        public int ePSquare;
-        public int fiftyMove;
-        public long key;
-    }
-*/
 
 }
