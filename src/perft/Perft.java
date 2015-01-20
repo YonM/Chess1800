@@ -2,7 +2,6 @@ package perft;
 
 import board.Board;
 import definitions.Definitions;
-import move.Move;
 import movegen.MoveGenerator;
 
 /**
@@ -57,13 +56,7 @@ public class Perft implements Definitions {
 
         for (int i = b.moveBufLen[ply]; i < b.moveBufLen[ply + 1]; i++) {
             b.makeMove(b.moves[i]);
-            if (!b.isOtherKingAttacked()) {
-                if (Move.getPiece(b.moves[i].moveInt) <= 7)
-                    System.out.println("White piece moved: " + Move.getPiece(b.moves[i].moveInt));
-                else
-                    System.out.println("Black piece moved: " + Move.getPiece(b.moves[i].moveInt));
-                count += perft(b, ply + 1, depth - 1);
-            }
+            if (!b.isOtherKingAttacked()) count += perft(b, ply + 1, depth - 1);
             b.unmakeMove(b.moves[i]);
 
         }

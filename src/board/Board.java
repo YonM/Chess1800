@@ -3,7 +3,6 @@ package board;
 import bitboard.BitboardUtilsAC;
 import definitions.Definitions;
 import fen.FENValidator;
-import move.Move;
 import move.MoveAC;
 import movegen.MoveGenerator;
 import search.AlphaBetaPVS;
@@ -15,9 +14,10 @@ import javax.swing.*;
  * Created by Yonathan on 08/12/2014.
  * Singleton class to represent the board.
  * Inspired by Stef Luijten's Winglet Chess @ http://web.archive.org/web/20120621100214/http://www.sluijten.com/winglet/
+ * and Ulysse Carion's Godot @ https://github.com/ucarion/godot
+ * and Alberto Alonso Ruibal's Carballo @ https://github.com/albertoruibal/carballo
  */
 public class Board implements Definitions {
-    public int[] square = new int[64];
     public int material;
 
     public long whitePawns;
@@ -134,8 +134,6 @@ public class Board implements Definitions {
     }
 
     public void initialize() {
-        for (int i = 0; i < 64; i++)
-            square[i] = EMPTY;
 //        setupBoard();
         initializeFromFEN(START_FEN);
 
@@ -570,7 +568,6 @@ public class Board implements Definitions {
     }
 
     public boolean makeMove(int move) {
-
        /*
         * General plan of attack is as follows:
         *
@@ -598,11 +595,7 @@ public class Board implements Definitions {
         fiftyMove++;
         moveNumber++;
         //key ^= Zobrist.getKeyPieceIndex(from, PIECENAMES[piece]) ^ Zobrist.getKeyPieceIndex(to, PIECENAMES[piece]);
-        if (whiteToMove) {
-            if ((from & whitePieces) == 0) return false;
-        } else {
-            if ((from & blackPieces) == 0) return false;
-        }
+        if ((from & getMyPieces()) == 0) return false;
         if (capture) {
             fiftyMove = 0;
             long pieceToRemove = toBoard;
@@ -629,7 +622,7 @@ public class Board implements Definitions {
                 whiteKing ^= pieceToRemove;
             }
             key ^= Zobrist.getKeyPieceIndex(pieceToRemoveIndex, pieceRemoved);
-        }
+            }
         //remove en passant from Zobrist, if it already exists.
         if (ePSquare != -1)
             key ^= Zobrist.passantColumn[ePSquare % 8];
@@ -706,40 +699,40 @@ public class Board implements Definitions {
                 }
                 break;
             case KNIGHT:
-                if (whiteToMove) {
-                    whiteKnights ^= fromToBoard;
-                    key ^= Zobrist.getKeyForMove(from, to, 'N');
-                } else {
-                    blackKnights ^= fromToBoard;
-                    key ^= Zobrist.getKeyForMove(from, to, 'n');
-                }
+                    if (whiteToMove) {
+                        whiteKnights ^= fromToBoard;
+                        key ^= Zobrist.getKeyForMove(from, to, 'N');
+                    } else {
+                        blackKnights ^= fromToBoard;
+                        key ^= Zobrist.getKeyForMove(from, to, 'n');
+                    }
                 break;
             case BISHOP:
-                if (whiteToMove) {
-                    whiteBishops ^= fromToBoard;
-                    key ^= Zobrist.getKeyForMove(from, to, 'B');
-                } else {
-                    blackBishops ^= fromToBoard;
-                    key ^= Zobrist.getKeyForMove(from, to, 'b');
-                }
+                    if (whiteToMove) {
+                        whiteBishops ^= fromToBoard;
+                        key ^= Zobrist.getKeyForMove(from, to, 'B');
+                    } else {
+                        blackBishops ^= fromToBoard;
+                        key ^= Zobrist.getKeyForMove(from, to, 'b');
+                    }
                 break;
             case ROOK:
-                if (whiteToMove) {
-                    whiteRooks ^= fromToBoard;
-                    key ^= Zobrist.getKeyForMove(from, to, 'R');
-                } else {
-                    blackRooks ^= fromToBoard;
-                    key ^= Zobrist.getKeyForMove(from, to, 'r');
-                }
+                    if (whiteToMove) {
+                        whiteRooks ^= fromToBoard;
+                        key ^= Zobrist.getKeyForMove(from, to, 'R');
+                    } else {
+                        blackRooks ^= fromToBoard;
+                        key ^= Zobrist.getKeyForMove(from, to, 'r');
+                    }
                 break;
             case QUEEN:
-                if (whiteToMove) {
-                    whiteQueens ^= fromToBoard;
-                    key ^= Zobrist.getKeyForMove(from, to, 'Q');
-                } else {
-                    blackQueens ^= fromToBoard;
-                    key ^= Zobrist.getKeyForMove(from, to, 'q');
-                }
+                    if (whiteToMove) {
+                        whiteQueens ^= fromToBoard;
+                        key ^= Zobrist.getKeyForMove(from, to, 'Q');
+                    } else {
+                        blackQueens ^= fromToBoard;
+                        key ^= Zobrist.getKeyForMove(from, to, 'q');
+                    }
                 break;
             case KING:
                 long rookMask = 0;
@@ -785,13 +778,13 @@ public class Board implements Definitions {
                         key ^= Zobrist.getKeyForMove(rookFromIndex, rookToIndex, 'r');
                     }
                 }
-                if (whiteToMove) {
-                    whiteKing ^= fromToBoard;
-                    key ^= Zobrist.getKeyForMove(from, to, 'K');
-                } else {
-                    blackKing ^= fromToBoard;
-                    key ^= Zobrist.getKeyForMove(from, to, 'k');
-                }
+                    if (whiteToMove) {
+                        whiteKing ^= fromToBoard;
+                        key ^= Zobrist.getKeyForMove(from, to, 'K');
+                    } else {
+                        blackKing ^= fromToBoard;
+                        key ^= Zobrist.getKeyForMove(from, to, 'k');
+                    }
                 break;
             default:
                 throw new RuntimeException("Unreachable");
@@ -805,6 +798,15 @@ public class Board implements Definitions {
         whiteToMove = !whiteToMove;
         key ^= Zobrist.whiteMove;
         return true;
+    }
+
+    public void makeNullMove() {
+        saveHistory(moveNumber);
+        moveNumber++;
+        if (ePSquare != -1) key ^= Zobrist.passantColumn[ePSquare % 8];
+        ePSquare = -1;
+        whiteToMove = !whiteToMove;
+        key ^= Zobrist.whiteMove;
     }
 
     private void saveHistory(int move) {
@@ -889,11 +891,34 @@ public class Board implements Definitions {
         return MoveGenerator.isAttacked(this, blackKing, !whiteToMove);
     }
 
-    public int see(Move move) {
+    public int see(int move) {
+        int capturedPiece = 0;
+        long toBoard = MoveAC.getToSquare(move);
+
+        if ((toBoard & (whiteKnights | blackKnights)) != 0) capturedPiece = KNIGHT;
+        else if ((toBoard & (whiteBishops | blackBishops)) != 0) capturedPiece = BISHOP;
+        else if ((toBoard & (whiteRooks | blackRooks)) != 0) capturedPiece = ROOK;
+        else if ((toBoard & (whiteQueens | blackQueens)) != 0) capturedPiece = QUEEN;
+        else if ((toBoard & (whitePawns | blackPawns)) != 0) capturedPiece = PAWN;
+        return see(MoveAC.getFromIndex(move), MoveAC.getToIndex(move), MoveAC.getPieceMoved(move), capturedPiece);
+    }
+
+    public int see(int fromIndex, int toIndex, int pieceMoved, int capturedPiece) {
+        int d = 0;
+        int[] seeGain = new int[32];
+        long mayXray = (whitePawns | blackPawns) | (whiteKnights | blackKnights) | (whiteBishops | blackBishops) |
+                (whiteRooks | blackRooks) | (whiteQueens | blackQueens);
+        long fromSquare = MoveAC.getFromSquare(fromIndex);
+        long all = allPieces;
+        long attacks =
+
+    }
+
+    /*public int see(int move) {
         //Static Exchange Evaluator
         int numOfCaptures = 0;
         int from;
-        int target = move.getTo();
+        int target = Move.getTo(move);
         int heading;
         int attackedPieceEval;
         int[] materialGains = new int[32];
@@ -905,7 +930,7 @@ public class Board implements Definitions {
 
         //First capture done before the loop.
         // Take first attacker from the (capture) move.
-        from = move.getFrom();
+        from = Move.getFrom(move);
 
         materialGains[0] = SEE_PIECE_VALUES[square[target]];
 
@@ -914,8 +939,8 @@ public class Board implements Definitions {
         //if promotion, add this info into materialGains & attackedPieceEval
 
         if (isPromoRank && (square[from] & 6) == 1) {
-            materialGains[0] += SEE_PIECE_VALUES[move.getPromotion()] - SEE_PIECE_VALUES[];
-            attackedPieceEval += SEE_PIECE_VALUES[move.getPromotion()] - SEE_PIECE_VALUES[WHITE_PAWN];
+            materialGains[0] += SEE_PIECE_VALUES[move.getPromotion()] - SEE_PIECE_VALUES[PAWN];
+            attackedPieceEval += SEE_PIECE_VALUES[move.getPromotion()] - SEE_PIECE_VALUES[PAWN];
         }
         numOfCaptures++;
 
@@ -1014,7 +1039,19 @@ public class Board implements Definitions {
         }
 
         return materialGains[0];
+    }*/
+
+    public long getMyPieces() {
+        return whiteToMove ? whitePieces : blackPieces;
     }
+
+    public long getOpponentPieces() {
+        return whiteToMove ? blackPieces : whitePieces;
+    }
+
+    /*public long getAllPieces(){
+        return allPieces;
+    }*/
 
    /* private class GameLineRecord {
         public int move;

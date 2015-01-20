@@ -4,6 +4,7 @@ import board.Board;
 
 /**
  * Created by Yonathan on 07/12/2014.
+ * Based on Alberto Ruibal's Carballo. Source @ https://github.com/albertoruibal/carballo/
  */
 public class BitboardMagicAttacksAC {
 
@@ -57,14 +58,29 @@ public class BitboardMagicAttacksAC {
         byte i = 0;
         while (square != 0) {
 
-            rookMask[i] = squareAttackedAuxSliderMask(square, +8, BitboardUtilsAC.b_u) //
-                    | squareAttackedAuxSliderMask(square, -8, BitboardUtilsAC.b_d) //
-                    | squareAttackedAuxSliderMask(square, -1, BitboardUtilsAC.b_r) //
+            rookMask[i] = squareAttackedAuxSliderMask(square, +8, BitboardUtilsAC.b_u)
+                    | squareAttackedAuxSliderMask(square, -8, BitboardUtilsAC.b_d)
+                    | squareAttackedAuxSliderMask(square, -1, BitboardUtilsAC.b_r) 
                     | squareAttackedAuxSliderMask(square, +1, BitboardUtilsAC.b_l);
-            bishopMask[i] = squareAttackedAuxSliderMask(square, +9, BitboardUtilsAC.b_u | BitboardUtilsAC.b_l) //
-                    | squareAttackedAuxSliderMask(square, +7, BitboardUtilsAC.b_u | BitboardUtilsAC.b_r) //
-                    | squareAttackedAuxSliderMask(square, -7, BitboardUtilsAC.b_d | BitboardUtilsAC.b_l) //
+
+            bishopMask[i] = squareAttackedAuxSliderMask(square, +9, BitboardUtilsAC.b_u | BitboardUtilsAC.b_l)
+                    | squareAttackedAuxSliderMask(square, +7, BitboardUtilsAC.b_u | BitboardUtilsAC.b_r)
+                    | squareAttackedAuxSliderMask(square, -7, BitboardUtilsAC.b_d | BitboardUtilsAC.b_l) 
                     | squareAttackedAuxSliderMask(square, -9, BitboardUtilsAC.b_d | BitboardUtilsAC.b_r);
+
+            knight[i] = squareAttackedAux(square, +17, BitboardUtilsAC.b2_u | BitboardUtilsAC.b_l)
+                    | squareAttackedAux(square, +15, BitboardUtilsAC.b2_u | BitboardUtilsAC.b_r)
+                    | squareAttackedAux(square, -15, BitboardUtilsAC.b2_d | BitboardUtilsAC.b_l)
+                    | squareAttackedAux(square, -17, BitboardUtilsAC.b2_d | BitboardUtilsAC.b_r)
+                    | squareAttackedAux(square, +10, BitboardUtilsAC.b_u | BitboardUtilsAC.b2_l)
+                    | squareAttackedAux(square, +6, BitboardUtilsAC.b_u | BitboardUtilsAC.b2_r)
+                    | squareAttackedAux(square, -6, BitboardUtilsAC.b_d | BitboardUtilsAC.b2_l)
+                    | squareAttackedAux(square, -10, BitboardUtilsAC.b_d | BitboardUtilsAC.b2_r);
+
+            whitePawn[i] = squareAttackedAux(square, 7, BitboardUtilsAC.b_u | BitboardUtilsAC.b_r) //
+                    | squareAttackedAux(square, 9, BitboardUtilsAC.b_u | BitboardUtilsAC.b_l);
+            blackPawn[i] = squareAttackedAux(square, -7, BitboardUtilsAC.b_d | BitboardUtilsAC.b_l) //
+                    | squareAttackedAux(square, -9, BitboardUtilsAC.b_d | BitboardUtilsAC.b_r);
 
             // And now generate magics
             int rookPositions = (1 << magicNumberShiftsRook[i]);
@@ -88,6 +104,7 @@ public class BitboardMagicAttacksAC {
 
     }
 
+    //Fills a board according to the mask. Used for magics.
     private static long generatePieces(int index, int bits, long mask) {
         int i;
         long lsb;
@@ -101,6 +118,19 @@ public class BitboardMagicAttacksAC {
         return result;
     }
 
+    //For non-slider pieces
+    private static long squareAttackedAux(long square, int shift, long border) {
+        if ((square & border) == 0) {
+            if (shift > 0)
+                square <<= shift;
+            else
+                square >>>= -shift;
+            return square;
+        }
+        return 0;
+    }
+
+    //For slider pieces
     private static long squareAttackedAuxSliderMask(long square, int shift, long border) {
         long mask = 0;
         while ((square & border) == 0) {
@@ -129,7 +159,7 @@ public class BitboardMagicAttacksAC {
         return isIndexAttacked(b, BitboardUtilsAC.square2Index(square), white);
     }
 
-    private static boolean isIndexAttacked(Board b, byte i, boolean white) {
+    private static boolean isIndexAttacked(Board b, int i, boolean white) {
         if (i < 0 || i > 63)
             return false;
         long others = (white ? b.blackPieces : b.whitePieces);
@@ -167,14 +197,16 @@ public class BitboardMagicAttacksAC {
                 & all;
     }
 
+
+
+    public static int magicTransform(long b, long magic, int bits) {
+        return (int) ((b * magic) >>> (64 - bits));
+    }
+
     public static long getRookAttacks(int index, long all) {
         int i = magicTransform(all & rookMask[index], magicNumberRook[index],
                 magicNumberShiftsRook[index]);
         return rookMagic[index][i];
-    }
-
-    public static int magicTransform(long b, long magic, int bits) {
-        return (int) ((b * magic) >>> (64 - bits));
     }
 
     public static long getBishopAttacks(int index, long all) {
@@ -185,5 +217,35 @@ public class BitboardMagicAttacksAC {
 
     public static long getQueenAttacks(int index, long all) {
         return getRookAttacks(index, all) | getBishopAttacks(index, all);
+    }
+
+    public static long getRookShiftAttacks(long square, long all) {
+        return checkSquareAttackedAux(square, all, +8, BitboardUtilsAC.b_u) | checkSquareAttackedAux(square, all, -8, BitboardUtilsAC.b_d)
+                | checkSquareAttackedAux(square, all, -1, BitboardUtilsAC.b_r) | checkSquareAttackedAux(square, all, +1, BitboardUtilsAC.b_l);
+    }
+
+    public static long getBishopShiftAttacks(long square, long all) {
+        return checkSquareAttackedAux(square, all, +9, BitboardUtilsAC.b_u | BitboardUtilsAC.b_l)
+                | checkSquareAttackedAux(square, all, +7, BitboardUtilsAC.b_u | BitboardUtilsAC.b_r)
+                | checkSquareAttackedAux(square, all, -7, BitboardUtilsAC.b_d | BitboardUtilsAC.b_l)
+                | checkSquareAttackedAux(square, all, -9, BitboardUtilsAC.b_d | BitboardUtilsAC.b_r);
+    }
+
+    /**
+     * Attacks for sliding pieces
+     */
+    private static long checkSquareAttackedAux(long square, long all, int shift, long border) {
+        long ret = 0;
+        while ((square & border) == 0) {
+            if (shift > 0)
+                square <<= shift;
+            else
+                square >>>= -shift;
+            ret |= square;
+            // If we collide with other piece
+            if ((square & all) != 0)
+                break;
+        }
+        return ret;
     }
 }

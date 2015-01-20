@@ -468,7 +468,7 @@ public class MoveGenerator implements Definitions {
             genBlackQueenCaps(b);
             genBlackKingCaps(b);
         }
-        return 0;
+        return MoveGenerator.index;
     }
 
     private static void genBlackPawnCaps(Board b) {

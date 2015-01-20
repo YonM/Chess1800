@@ -46,50 +46,11 @@ public interface Definitions {
     public static final int FILE_F = 5;
     public static final int FILE_G = 6;
     public static final int FILE_H = 7;
-/*
-    //Convert index to file number
-    public final static int FILES[] = {
-            0, 1, 2, 3, 4, 5, 6, 7,
-            0, 1, 2, 3, 4, 5, 6, 7,
-            0, 1, 2, 3, 4, 5, 6, 7,
-            0, 1, 2, 3, 4, 5, 6, 7,
-            0, 1, 2, 3, 4, 5, 6, 7,
-            0, 1, 2, 3, 4, 5, 6, 7,
-            0, 1, 2, 3, 4, 5, 6, 7,
-            0, 1, 2, 3, 4, 5, 6, 7
-    };
-
-    //Convert index to RANK number
-    public final static int RANKS[] = {
-            0, 0, 0, 0, 0, 0, 0, 0,
-            1, 1, 1, 1, 1, 1, 1, 1,
-            2, 2, 2, 2, 2, 2, 2, 2,
-            3, 3, 3, 3, 3, 3, 3, 3,
-            4, 4, 4, 4, 4, 4, 4, 4,
-            5, 5, 5, 5, 5, 5, 5, 5,
-            6, 6, 6, 6, 6, 6, 6, 6,
-            7, 7, 7, 7, 7, 7, 7, 7
-    };
-*/
 
     //Array of piece names. Capitals for whites.
     public final static char[] PIECENAMES = {' ', 'P', 'K', 'N', ' ', 'B', 'R', 'Q',
             ' ', 'p', 'k', 'n', ' ', 'b', 'r', 'q'};
 
-    //Piece values for moves
-/*    public final static int EMPTY = 0;
-    public final static int WHITE_PAWN = 1;
-    public final static int WHITE_KING = 2;
-    public final static int WHITE_KNIGHT = 3;
-    public final static int WHITE_BISHOP = 5;
-    public final static int WHITE_ROOK = 6;
-    public final static int WHITE_QUEEN = 7;
-    public final static int BLACK_PAWN = 9;
-    public final static int BLACK_KING = 10;
-    public final static int BLACK_KNIGHT = 11;
-    public final static int BLACK_BISHOP = 13;
-    public final static int BLACK_ROOK = 14;
-    public final static int BLACK_QUEEN = 15;*/
 
     // Move pieces ordered by value
     public final static int EMPTY = 0;
