@@ -9,8 +9,8 @@ package bitboard;
 public class BitboardUtilsAC {
     public static final long A8 = 0x8000000000000000L;
     public static final long H1 = 0x0000000000000001L;
-    public static final long BLACK_SQUARES = 0x55aa55aa55aa55aaL;
-    public static final long WHITE_SQUARES = 0xaa55aa55aa55aa55L;
+    public static final long WHITE_SQUARES = 0x55aa55aa55aa55aaL;
+    public static final long BLACK_SQUARES = 0xaa55aa55aa55aa55L;
     // Board borders
     public static final long b_d = 0x00000000000000ffL; // down
     public static final long b_u = 0xff00000000000000L; // up
@@ -112,7 +112,7 @@ public class BitboardUtilsAC {
 
     static {
         getSquare = new long[64];
-        for (int i = 0; i < 64; i++) getSquare[i] = 1L << i;
+        for (int i = 0; i < getSquare.length; i++) getSquare[i] = 1L << i;
     }
 
     /**
@@ -122,6 +122,14 @@ public class BitboardUtilsAC {
         long b = square ^ (square - 1);
         int fold = (int) (b ^ (b >>> 32));
         return bitTable[(fold * 0x783a9b23) >>> 26];
+    }
+
+    public static int getIndexFromBoard(long board) {
+        return (Long.numberOfTrailingZeros(Long.lowestOneBit(board)));
+    }
+
+    public static int getLastIndexFromBoard(long board) {
+        return (Long.numberOfTrailingZeros(Long.highestOneBit(board)));
     }
 
     /**

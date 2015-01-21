@@ -2,7 +2,7 @@ package perft;
 
 import board.Board;
 import definitions.Definitions;
-import movegen.MoveGenerator;
+import movegen.MoveGeneratorAC;
 
 /**
  * Created by Yonathan on 21/12/2014.
@@ -31,7 +31,7 @@ public class Perft implements Definitions {
     private static String test2 = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
 
     public static void main(String[] args) {
-        Board b = Board.getInstance();
+        Board b = new Board();
         boolean loaded = b.initializeFromFEN(START_FEN);
         int i;
         if (loaded) {
@@ -51,13 +51,17 @@ public class Perft implements Definitions {
 
 
         //Move[] moves = new Move [MAX_MOVES];
-        b.moveBufLen[ply + 1] = MoveGenerator.moveGen(b, b.moveBufLen[ply]);
+        int [] moves = new int[MAX_MOVES];
+        int num_moves = MoveGeneratorAC.getAllMoves(b,moves);
         int count = 0;
 
-        for (int i = b.moveBufLen[ply]; i < b.moveBufLen[ply + 1]; i++) {
-            b.makeMove(b.moves[i]);
-            if (!b.isOtherKingAttacked()) count += perft(b, ply + 1, depth - 1);
-            b.unmakeMove(b.moves[i]);
+        for (int i = 0; i < num_moves; i++) {
+
+            if (b.makeMove(moves[i])) {
+                count += perft(b, ply + 1, depth - 1);
+                b.unmakeMove();
+            }
+
 
         }
         return count;

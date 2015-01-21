@@ -88,7 +88,7 @@ public class Board implements Definitions {
     private boolean capture;
 
     //public boolean viewRotated;
-    private static Board instance;
+
 
     public long key; //Zobrist key
 
@@ -139,13 +139,6 @@ public class Board implements Definitions {
 
     public boolean initializeFromFEN(String fen) {
         if (FENValidator.isValidFEN(fen)) {
-//            StringTokenizer st = new StringTokenizer(fen, "/ ");
-//            ArrayList<String> arr = new ArrayList<String>();
-//
-//            while (st.hasMoreTokens()) {
-//                arr.add(st.nextToken());
-//            }
-            //int[] fenSquares = new int[64];
             clearBitboards();
             String[] tokens = fen.split("[ \\t\\n\\x0B\\f\\r]+");
             String board = tokens[0];
@@ -156,7 +149,13 @@ public class Board implements Definitions {
                     for (int j = 0; j < Character.digit(c, 10); j++) file++;
 
                 } else {
-                    long square = BitboardUtilsAC.getSquare[rank * 8 + file];
+                    if(rank==7){
+                        System.out.println("as expected");
+                        System.out.println(file);
+                    }
+                    //if(((rank * 8) + file) == 64) System.out.println("HOW " + rank + " : " + file);
+                    long square=0;
+                    if(rank !=7 && file==8)square = BitboardUtilsAC.getSquare[rank * 8 + file];
                     switch (c) {
                         case '/':
                             rank--;
@@ -229,7 +228,7 @@ public class Board implements Definitions {
                     char[] enPassant = tokens[3].toCharArray();
 
                     if (enPassant[0] != ('-')) {
-                        ePSquare = BoardUtils.getIndex(enPassant[0] - 96, enPassant[1]);
+                        ePSquare = (enPassant[0] - 96) * 8 + enPassant[1]; //Converts rank & file to index
                     }
                 }
                 if (tokens.length > 4) {
@@ -299,13 +298,6 @@ public class Board implements Definitions {
         allPieces = 0;
     }
 
-    public static Board getInstance() {
-        if (instance == null) {
-            instance = new Board();
-        }
-        return instance;
-    }
-
     public boolean isEndOfGame() {
 
         // Checks if the current position is end-of-game due to:
@@ -370,8 +362,8 @@ public class Board implements Definitions {
 
             if (whiteBishops + blackBishops > 0) {
                 if (whiteKnights + whiteRooks + whiteQueens + blackKnights + blackRooks + blackQueens == 0) {
-                    if (((whiteBishops | blackBishops) & BoardUtils.WHITE_SQUARES) != 0
-                            || ((whiteBishops | blackBishops) & BoardUtils.BLACK_SQUARES) != 0) {
+                    if (((whiteBishops | blackBishops) & BitboardUtilsAC.WHITE_SQUARES) != 0
+                            || ((whiteBishops | blackBishops) & BitboardUtilsAC.BLACK_SQUARES) != 0) {
                         JOptionPane.showMessageDialog(null, "0.5-0.5 Draw due to insufficient material.");
                         return true;
                     }

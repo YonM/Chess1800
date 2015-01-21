@@ -8,6 +8,7 @@ import board.Board;
  */
 public class BitboardMagicAttacksAC {
 
+    private static boolean initialized;
     public static long[] rook;
     public static long[] rookMask;
     public static long[][] rookMagic;
