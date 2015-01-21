@@ -100,8 +100,8 @@ public class Search implements Definitions {
 
         for (i = 0; i < num_moves; i++) {
             selectBestMoveFirst(b, ply, depth, i, b.whiteToMove);
-            b.makeMove(b.moves[i]);
-            if (!b.isOtherKingAttacked()) {
+
+            if (b.makeMove(moves[i])) {
                 movesFound++;
                 if (pvMovesFound != 0) {
                     val = -alphaBetaPVS(b, ply + 1, depth - 1, -alpha - 1, -alpha);
@@ -110,7 +110,7 @@ public class Search implements Definitions {
                 } else {
                     val = -alphaBetaPVS(b, ply + 1, depth - 1, -beta, -alpha); // Normal alpha-beta
                 }
-                b.unmakeMove(b.moves[i]);
+                b.unmakeMove();
                 if (val >= beta) {
                     if (b.whiteToMove)
                         whiteHeuristics[MoveAC.getFromIndex(b.moves[i])][MoveAC.getToIndex(b.moves[i])] += depth * depth;
@@ -127,10 +127,7 @@ public class Search implements Definitions {
 
                     triangularLength[ply] = triangularLength[ply + 1];
                 }
-            } else {
-                b.unmakeMove(b.moves[i]);
             }
-
         }
         if (pvMovesFound != 0) {
             if (b.whiteToMove)
@@ -215,24 +212,21 @@ public class Search implements Definitions {
 
         for (int i = 0; i < num_captures; i++) {
             b.makeMove(captures[i]);
-            {
-                if (!b.isOtherKingAttacked()) {
-                    val = -quiescenceSearch(b, ply + 1, -beta, -alpha);
-                    b.unmakeMove(captures[i]);
+            val = -quiescenceSearch(b, ply + 1, -beta, -alpha);
+            b.unmakeMove(captures[i]);
 
-                    if (val >= beta) return val;
+            if (val >= beta) return val;
 
-                    if (val > alpha) {
-                        alpha = val;
-                        triangularArray[ply][ply] = captures[i];
-                        for (int j = ply + 1; j < triangularLength[ply + 1]; j++) {
-                            triangularArray[ply][j] = triangularArray[ply + 1][j];
-                        }
-                        triangularLength[ply] = triangularLength[ply + 1];
-                    }
-                } else
-                    b.unmakeMove(captures[i]);
+            if (val > alpha) {
+                alpha = val;
+                triangularArray[ply][ply] = captures[i];
+                for (int j = ply + 1; j < triangularLength[ply + 1]; j++) {
+                    triangularArray[ply][j] = triangularArray[ply + 1][j];
+                }
+                triangularLength[ply] = triangularLength[ply + 1];
             }
+
+
         }
         return alpha;
     }

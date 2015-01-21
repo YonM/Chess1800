@@ -2,9 +2,13 @@ package movegen;
 
 import board.Board;
 import definitions.Definitions;
+import move.MoveAC;
+import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * Created by Yonathan on 15/01/2015.
+ * Based on Alberto Ruibal's Carballo. Source @ https://github.com/albertoruibal/carballo/ &
+ * Ulysse Carion's Godot. Source @ https://github.com/ucarion
  */
 public class MoveGeneratorAC implements Definitions {
 
@@ -46,13 +50,46 @@ public class MoveGeneratorAC implements Definitions {
         return index;
     }
 
+    // Pseudo-Legal capture generator.
     public static int genCaptures(Board b, int[] captures) {
         int[] captureValues = new int[MAX_MOVES];
         int num_captures = getAllCaptures(b, captures);
+        int val;
+        int insertIndex;
+        for(int i = 0; i < num_captures; i++){
+            val = b.sEE(captures[i]);
+            if(val< MINCAPTVAL){
+                ArrayUtils.remove(captures, i);
+                ArrayUtils.remove(captureValues, i);
+                num_captures--;
+                i--;
+            }
+            insertIndex = i;
+
+            //Insert the capture into the correct position. Sorts the captures.
+            while(insertIndex >= 0 && captureValues[i] > captureValues[insertIndex]){
+                int tempCap = captures[i];
+                captures[i] = captures[insertIndex];
+                captures[insertIndex] = tempCap;
+
+                int tempCapVal = captureValues[i];
+                captureValues[i] = captureValues[insertIndex];
+                captureValues[insertIndex] = tempCapVal;
+
+                insertIndex--;
+            }
+        }
         return 0;
     }
 
     private static int getAllCaptures(Board b, int[] captures) {
-        return 0;
+        int lastIndex= getAllMoves(b, captures);
+        int num_captures=0;
+        for(int i=0; i< lastIndex; i++){
+            if(MoveAC.isPromotion(captures[i]) || MoveAC.isCapture(captures[i]))
+                captures[num_captures++] = captures[i];
+        }
+        return num_captures;
+
     }
 }

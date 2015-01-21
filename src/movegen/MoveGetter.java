@@ -8,7 +8,7 @@ import move.MoveAC;
 
 /**
  * Created by Yonathan on 15/01/2015.
- * Based off of Ulysse Carion's Godot. Source @ https://github.com/ucarion
+ * Based on Ulysse Carion's Godot. Source @ https://github.com/ucarion
  */
 public class MoveGetter implements Definitions {
     private static long[] kingMoves =
@@ -250,7 +250,7 @@ public class MoveGetter implements Definitions {
                     num_moves_generated++;
                 }
             } else {
-// no promos to worry about, but there is en passant
+                // no promos to worry about, but there is en passant
                 if (((fromBoard & BitboardUtilsAC.b_r) == 0)
                         && (((fromBoard << 7 & b.blackPieces) != 0) || Long.numberOfTrailingZeros(fromBoard << 7) == b.ePSquare)) {
                     int toIndex = Long.numberOfTrailingZeros(fromBoard << 7);
