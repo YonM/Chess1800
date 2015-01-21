@@ -4,17 +4,15 @@ import board.Board;
 import definitions.Definitions;
 import evaluation.Evaluator;
 import move.MoveAC;
-import zobrist.Zobrist;
-
-import java.util.Arrays;
+import movegen.MoveGeneratorAC;
 
 /**
  * Created by Yonathan on 21/12/2014.
- * Main search class, uses alpha-beta algorithm with Principal Variation Search.
+ * Main search class, uses alpha-beta algorithm with Principal Variation Search, quiescence search and null move pruning.
  * Based on Winglet by Stef Luijten's Winglet Chess @
  * http://web.archive.org/web/20120621100214/http://www.sluijten.com/winglet/
  */
-public class AlphaBetaPVS implements Definitions {
+public class Search implements Definitions {
 
     private static int[][] triangularArray;
     private static int[] triangularLength;
@@ -26,6 +24,9 @@ public class AlphaBetaPVS implements Definitions {
     private static int[] lastPV;
     private static boolean follow_pv;
     private static boolean null_allowed;
+
+    public static int num_moves;
+    public static int[] moves;
     //private static int lastPVLength;
 
     private static Evaluator evaluator;
@@ -41,21 +42,19 @@ public class AlphaBetaPVS implements Definitions {
 
 
     public static int findBestMove(Board b) {
-        int currentDepth, score;
+        int score;
         legalMoves = 0;
 
         if (b.isEndOfGame()) return NULLMOVE;
 
         if (legalMoves == 1) return singleMove;
 
-        whiteHeuristics = new int[Board.MAX_PLY][Board.MAX_PLY];
-        blackHeuristics = new int[Board.MAX_PLY][Board.MAX_PLY];
-        lastPV = new int[Board.MAX_PLY];
+        whiteHeuristics = new int[MAX_PLY][MAX_PLY];
+        blackHeuristics = new int[MAX_PLY][MAX_PLY];
+        lastPV = new int[MAX_PLY];
         //lastPVLength = 0;
 
-        for (currentDepth = 1; currentDepth < MAX_DEPTH; currentDepth++) {
-            Arrays.fill(b.moveBufLen, 0);
-            Arrays.fill(b.moves, NULLMOVE);
+        for (int currentDepth = 1; currentDepth < MAX_DEPTH; currentDepth++) {
             triangularArray = new int[MAX_GAME_LENGTH][MAX_GAME_LENGTH];
             triangularLength = new int[MAX_GAME_LENGTH];
             follow_pv = true;
@@ -79,12 +78,12 @@ public class AlphaBetaPVS implements Definitions {
 
         //Try Null move
         if (!follow_pv && null_allowed) {
-            if ((!b.whiteToMove && (b.totalBlackPieces > NULLMOVE_LIMIT)) || (b.whiteToMove && (b.totalWhitePieces > NULLMOVE_LIMIT))) {
-                if (b.isOwnKingAttacked()) {
+            if (b.movingSidePieceMaterial() > NULLMOVE_LIMIT) {
+                if (!b.isOwnKingAttacked()) {
                     null_allowed = false;
-                    b.whiteToMove = !b.whiteToMove;
+                    b.makeNullMove();
                     val = -alphaBetaPVS(b, ply, depth - NULLMOVE_REDUCTION, -beta, -beta + 1);
-                    b.key ^= Zobrist.whiteMove;
+                    b.unmakeMove();
                     null_allowed = true;
                     if (val >= beta) {
                         return val;
@@ -96,9 +95,10 @@ public class AlphaBetaPVS implements Definitions {
         null_allowed = true;
         movesFound = 0;
         pvMovesFound = 0;
-        b.moveBufLen[ply + 1] = MoveGenerator.moveGen(b, b.moveBufLen[ply]);
+        int[] moves = new int[MAX_MOVES];
+        num_moves = MoveGeneratorAC.getAllMoves(b, moves);
 
-        for (i = b.moveBufLen[ply]; i < b.moveBufLen[ply + 1]; i++) {
+        for (i = 0; i < num_moves; i++) {
             selectBestMoveFirst(b, ply, depth, i, b.whiteToMove);
             b.makeMove(b.moves[i]);
             if (!b.isOtherKingAttacked()) {
@@ -154,7 +154,7 @@ public class AlphaBetaPVS implements Definitions {
         int best, bestIndex, i;
         // Re-orders the move list so that the PV is selected as the next move to try.
         if (follow_pv && depth > 1) {
-            for (i = nextIndex; i < b.moveBufLen[ply + 1]; i++) {
+            for (i = nextIndex; i < num_moves; i++) {
                 if (b.moves[i] == lastPV[ply]) {
                     tempMove = b.moves[i];
                     b.moves[i] = b.moves[nextIndex];
@@ -167,7 +167,7 @@ public class AlphaBetaPVS implements Definitions {
         if (whiteToMove) {
             best = whiteHeuristics[MoveAC.getFromIndex(b.moves[nextIndex])][MoveAC.getToIndex(b.moves[nextIndex])];
             bestIndex = nextIndex;
-            for (i = nextIndex + 1; i < b.moveBufLen[ply + 1]; i++) {
+            for (i = nextIndex + 1; i < num_moves; i++) {
                 if (whiteHeuristics[MoveAC.getFromIndex(b.moves[i])][MoveAC.getToIndex(b.moves[i])] > best) {
                     best = whiteHeuristics[MoveAC.getFromIndex(b.moves[i])][MoveAC.getToIndex(b.moves[i])];
                     bestIndex = i;
@@ -182,7 +182,7 @@ public class AlphaBetaPVS implements Definitions {
         } else {
             best = blackHeuristics[MoveAC.getFromIndex(b.moves[nextIndex])][MoveAC.getToIndex(b.moves[nextIndex])];
             bestIndex = nextIndex;
-            for (i = nextIndex + 1; i < b.moveBufLen[ply + 1]; i++) {
+            for (i = nextIndex + 1; i < num_moves; i++) {
                 if (blackHeuristics[MoveAC.getFromIndex(b.moves[i])][MoveAC.getToIndex(b.moves[i])] > best) {
                     best = blackHeuristics[MoveAC.getFromIndex(b.moves[i])][MoveAC.getToIndex(b.moves[i])];
                     bestIndex = i;
@@ -210,9 +210,10 @@ public class AlphaBetaPVS implements Definitions {
 
         // generate captures & promotions:
         // genCaptures returns a sorted move list
-        b.moveBufLen[ply + 1] = MoveGenerator.genCaptures(b, b.moveBufLen[ply]);
+        int[] captures = new int[MAX_MOVES];
+        int num_captures = MoveGeneratorAC.genCaptures(b, captures);
 
-        for (int i = b.moveBufLen[ply]; i < b.moveBufLen[ply + 1]; i++) {
+        for (int i = 0; i < num_captures; i++) {
             b.makeMove(b.moves[i]);
             {
                 if (!b.isOtherKingAttacked()) {

@@ -44,4 +44,8 @@ public class MoveGeneratorAC {
         index += MoveGetter.getBlackQueenMoves(b, moves, index);
         return index;
     }
+
+    public static int genCaptures(Board b, int i) {
+        return 0;
+    }
 }

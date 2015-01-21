@@ -6,7 +6,7 @@ import definitions.Definitions;
 import fen.FENValidator;
 import move.MoveAC;
 import movegen.MoveGeneratorAC;
-import search.AlphaBetaPVS;
+import search.Search;
 import zobrist.Zobrist;
 
 import javax.swing.*;
@@ -51,10 +51,9 @@ public class Board implements Definitions {
     public int castleBlack;
 
 
-    public static final int MAX_PLY = 64;
 
     public int[] moves;
-    public int[] moveBufLen;
+    private int num_moves;
 
     //History attributes
     public long[] white_pawn_history;
@@ -130,8 +129,6 @@ public class Board implements Definitions {
         white_castle_history = new int[MAX_GAME_LENGTH];
         black_castle_history = new int[MAX_GAME_LENGTH];
         key_history = new long[MAX_GAME_LENGTH];
-
-        moveBufLen = new int[MAX_PLY];
     }
 
     public void initialize() {
@@ -406,20 +403,20 @@ public class Board implements Definitions {
             return true;
         }
         int i;
-        AlphaBetaPVS.legalMoves = 0;
-        moveBufLen[0] = 0;
-        moveBufLen[1] = MoveGeneratorAC.moveGen(this, moveBufLen[0]);
-        for (i = moveBufLen[0]; i < moveBufLen[1]; i++) {
+        Search.legalMoves = 0;
+        moves = new int[MAX_MOVES];
+        num_moves = MoveGeneratorAC.getAllMoves(this, moves);
+        for (i = 0; i < num_moves; i++) {
             makeMove(moves[i]);
             if (!isOtherKingAttacked()) {
-                AlphaBetaPVS.legalMoves++;
-                AlphaBetaPVS.singleMove = moves[i];
+                Search.legalMoves++;
+                Search.singleMove = moves[i];
             }
             unmakeMove();
         }
 
         //Stalemate/Checkmate check.
-        if (AlphaBetaPVS.legalMoves == 0) {
+        if (Search.legalMoves == 0) {
             if (isOwnKingAttacked()) {
                 if (whiteToMove) JOptionPane.showMessageDialog(null, "1-0 Black checkmates");
                 else JOptionPane.showMessageDialog(null, "1-0 White checkmates");
@@ -846,13 +843,13 @@ public class Board implements Definitions {
     }
 
     public boolean isOtherKingAttacked() {
-        if (whiteToMove) return MoveGeneratorAC.isAttacked(this, blackKing, whiteToMove);
-        return MoveGeneratorAC.isAttacked(this, whiteKing, whiteToMove);
+        if (whiteToMove) return BitboardMagicAttacksAC.isSquareAttacked(this, blackKing, whiteToMove);
+        return BitboardMagicAttacksAC.isSquareAttacked(this, whiteKing, whiteToMove);
     }
 
     public boolean isOwnKingAttacked() {
-        if (whiteToMove) return MoveGeneratorAC.isAttacked(this, whiteKing, !whiteToMove);
-        return MoveGeneratorAC.isAttacked(this, blackKing, !whiteToMove);
+        if (whiteToMove) return BitboardMagicAttacksAC.isSquareAttacked(this, whiteKing, !whiteToMove);
+        return BitboardMagicAttacksAC.isSquareAttacked(this, blackKing, !whiteToMove);
     }
 
     //Static Exchange Evaluator based on https://chessprogramming.wikispaces.com/SEE+-+The+Swap+Algorithm

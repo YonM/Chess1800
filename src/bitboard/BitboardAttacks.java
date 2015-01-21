@@ -114,10 +114,10 @@ public abstract class BitboardAttacks implements Definitions {
         for (square = 0; square < 64; square++) {
             for (state6Bit = 0; state6Bit < 64; state6Bit++) {
                 for (attackBit = 0; attackBit < 8; attackBit++) {
-                    //  Conversion from 64 board squares to the 8 corresponding positions in the GEN_SLIDING_ATTACKS array: MIN((RANKS[square]),(FILES[square]))
-                    if ((GEN_SLIDING_ATTACKS[(RANKS[square]) < FILES[square] ? (RANKS[square]) : FILES[square]][state6Bit] & BoardUtils.SHORTBITSET[attackBit]) != 0) {
+                    //  Conversion from 64 board squares to the 8 corresponding positions in the GEN_SLIDING_ATTACKS array: MIN(((square / 8)),((square % 8)))
+                    if ((GEN_SLIDING_ATTACKS[((square / 8)) < (square % 8) ? ((square / 8)) : (square % 8)][state6Bit] & BoardUtils.SHORTBITSET[attackBit]) != 0) {
                         // Conversion of square/attackBit to the corresponding 64 board file and rank:
-                        diaga1h8 = FILES[square] - RANKS[square]; //from -7 to 7 & longest=0
+                        diaga1h8 = (square % 8) - (square / 8); //from -7 to 7 & longest=0
                         if (diaga1h8 < 0) {
                             file = attackBit;
                             rank = file - diaga1h8;
@@ -139,10 +139,10 @@ public abstract class BitboardAttacks implements Definitions {
         for (square = 0; square < 64; square++) {
             for (state6Bit = 0; state6Bit < 64; state6Bit++) {
                 for (attackBit = 0; attackBit < 8; attackBit++) {
-                    //  conversion from 64 board squares to the 8 corresponding positions in the GEN_SLIDING_ATTACKS array: MIN((7-RANKS[square]),(FILES[square]))
-                    if ((GEN_SLIDING_ATTACKS[(7 - RANKS[square]) < FILES[square] ? (7 - RANKS[square]) : FILES[square]][state6Bit] & BoardUtils.SHORTBITSET[attackBit]) != 0) {
+                    //  conversion from 64 board squares to the 8 corresponding positions in the GEN_SLIDING_ATTACKS array: MIN((7-(square / 8)),((square % 8)))
+                    if ((GEN_SLIDING_ATTACKS[(7 - (square / 8)) < (square % 8) ? (7 - (square / 8)) : (square % 8)][state6Bit] & BoardUtils.SHORTBITSET[attackBit]) != 0) {
                         // conversion of square/attackBit to the corresponding 64 board file and rank:
-                        diaga8h1 = FILES[square] + RANKS[square]; //from 0 to 14 & longest =7
+                        diaga8h1 = (square % 8) + (square / 8); //from 0 to 14 & longest =7
                         if (diaga8h1 < 8) {
                             file = attackBit;
                             rank = diaga8h1 - file;
@@ -164,8 +164,8 @@ public abstract class BitboardAttacks implements Definitions {
         for (square = 0; square < 64; square++) {
             for (state6Bit = 0; state6Bit < 64; state6Bit++) {
                 for (attackBit = 0; attackBit < 8; attackBit++) {
-                    if ((GEN_SLIDING_ATTACKS[7 - RANKS[square]][state6Bit] & BoardUtils.SHORTBITSET[attackBit]) != 0) {
-                        file = FILES[square];
+                    if ((GEN_SLIDING_ATTACKS[7 - (square / 8)][state6Bit] & BoardUtils.SHORTBITSET[attackBit]) != 0) {
+                        file = (square % 8);
                         rank = 7 - attackBit;
                         FILE_ATTACKS[square][state6Bit] |= BoardUtils.BITSET[BoardUtils.getIndex(rank, file)];
                     }
@@ -177,15 +177,15 @@ public abstract class BitboardAttacks implements Definitions {
     private static void generateRankAttacks() {
         for (square = 0; square < 64; square++) {
             for (state6Bit = 0; state6Bit < 64; state6Bit++) {
-                RANK_ATTACKS[square][state6Bit] |= (GEN_SLIDING_ATTACKS[FILES[square]][state6Bit] << (RANKSHIFT[square] - 1));
+                RANK_ATTACKS[square][state6Bit] |= (GEN_SLIDING_ATTACKS[(square % 8)][state6Bit] << (RANKSHIFT[square] - 1));
             }
         }
     }
 
     private static void generateKingAttacks() {
         for (square = 0; square < 64; square++) {
-            file = FILES[square];
-            rank = RANKS[square];
+            file = (square % 8);
+            rank = (square / 8);
             aFile = file - 1;
             aRank = rank;
             if ((aFile >= 0) & (aFile <= 7) & (aRank >= 0) & (aRank <= 7))
@@ -223,8 +223,8 @@ public abstract class BitboardAttacks implements Definitions {
 
     private static void generateKnightAttacks() {
         for (square = 0; square < 64; square++) {
-            file = FILES[square];
-            rank = RANKS[square];
+            file = (square % 8);
+            rank = (square / 8);
             aFile = file - 2;
             aRank = rank + 1;
             if ((aFile >= 0) & (aFile <= 7) & (aRank >= 0) & (aRank <= 7))
@@ -263,8 +263,8 @@ public abstract class BitboardAttacks implements Definitions {
     private static void generatePawnAttacksAndMoves() {
         //white pawn attacks
         for (square = 0; square < 64; square++) {
-            file = FILES[square];
-            rank = RANKS[square];
+            file = (square % 8);
+            rank = (square / 8);
             aFile = file - 1;
             aRank = rank + 1;
             if ((aFile >= 0) & (aFile <= 7) & (aRank >= 0) & (aRank <= 7))
@@ -277,8 +277,8 @@ public abstract class BitboardAttacks implements Definitions {
 
         //white pawn moves
         for (square = 0; square < 64; square++) {
-            file = FILES[square];
-            rank = RANKS[square];
+            file = (square % 8);
+            rank = (square / 8);
             aFile = file;
             aRank = rank + 1;
             if ((aFile >= 0) & (aFile <= 7) & (aRank >= 0) & (aRank <= 7)) {
@@ -296,8 +296,8 @@ public abstract class BitboardAttacks implements Definitions {
 
         //black pawn attacks
         for (square = 0; square < 64; square++) {
-            file = FILES[square];
-            rank = RANKS[square];
+            file = (square % 8);
+            rank = (square / 8);
             aFile = file - 1;
             aRank = rank - 1;
             if ((aFile >= 0) & (aFile <= 7) & (aRank >= 0) & (aRank <= 7))
@@ -310,8 +310,8 @@ public abstract class BitboardAttacks implements Definitions {
 
         //black pawn moves
         for (square = 0; square < 64; square++) {
-            file = FILES[square];
-            rank = RANKS[square];
+            file = (square % 8);
+            rank = (square / 8);
             aFile = file;
             aRank = rank - 1;
             if ((aFile >= 0) & (aFile <= 7) & (aRank >= 0) & (aRank <= 7))

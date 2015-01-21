@@ -116,5 +116,7 @@ public interface Definitions {
     public static final int MAX_GAME_LENGTH = 1024; // Maximum number of half-moves, if 50-move rule is obeyed.
     public static final int MAX_MOVES = 256;
 
+    public static final int MAX_PLY = 64;
+
 
 }
