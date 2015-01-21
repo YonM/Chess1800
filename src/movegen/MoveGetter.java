@@ -565,4 +565,6 @@ public class MoveGetter implements Definitions {
         }
         return num_moves_generated;
     }
+
+
 }

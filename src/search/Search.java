@@ -214,24 +214,24 @@ public class Search implements Definitions {
         int num_captures = MoveGeneratorAC.genCaptures(b, captures);
 
         for (int i = 0; i < num_captures; i++) {
-            b.makeMove(b.moves[i]);
+            b.makeMove(captures[i]);
             {
                 if (!b.isOtherKingAttacked()) {
                     val = -quiescenceSearch(b, ply + 1, -beta, -alpha);
-                    b.unmakeMove(b.moves[i]);
+                    b.unmakeMove(captures[i]);
 
                     if (val >= beta) return val;
 
                     if (val > alpha) {
                         alpha = val;
-                        triangularArray[ply][ply] = b.moves[i];
+                        triangularArray[ply][ply] = captures[i];
                         for (int j = ply + 1; j < triangularLength[ply + 1]; j++) {
                             triangularArray[ply][j] = triangularArray[ply + 1][j];
                         }
                         triangularLength[ply] = triangularLength[ply + 1];
                     }
                 } else
-                    b.unmakeMove(b.moves[i]);
+                    b.unmakeMove(captures[i]);
             }
         }
         return alpha;

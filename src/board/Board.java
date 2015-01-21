@@ -275,92 +275,6 @@ public class Board implements Definitions {
     }
 
 
-    /*public void initializeFromSquares(int[] input, boolean nextToMove, int fiftyMove, int castleWhiteSide, int castleBlackSide, int ePSquare) {
-        clearBitboards();
-        key = 0;
-        //setup the 12 boards
-        for (int i = 0; i < 64; i++) {
-            square[i] = input[i];
-            switch (square[i]) {
-                case WHITE_KING:
-                    whiteKing |= BoardUtils.BITSET[i];
-                    key ^= Zobrist.king[0][i];
-                    break;
-                case WHITE_QUEEN:
-                    whiteQueens |= BoardUtils.BITSET[i];
-                    key ^= Zobrist.queen[0][i];
-                    break;
-                case WHITE_ROOK:
-                    whiteRooks |= BoardUtils.BITSET[i];
-                    key ^= Zobrist.rook[0][i];
-                    break;
-                case WHITE_BISHOP:
-                    whiteBishops |= BoardUtils.BITSET[i];
-                    key ^= Zobrist.bishop[0][i];
-                    break;
-                case WHITE_KNIGHT:
-                    whiteKnights |= BoardUtils.BITSET[i];
-                    key ^= Zobrist.knight[0][i];
-                    break;
-                case WHITE_PAWN:
-                    whitePawns |= BoardUtils.BITSET[i];
-                    key ^= Zobrist.pawn[0][i];
-                    break;
-                case BLACK_KING:
-                    blackKing |= BoardUtils.BITSET[i];
-                    key ^= Zobrist.king[1][i];
-                    break;
-                case BLACK_QUEEN:
-                    blackQueens |= BoardUtils.BITSET[i];
-                    key ^= Zobrist.queen[1][i];
-                    break;
-                case BLACK_ROOK:
-                    blackRooks |= BoardUtils.BITSET[i];
-                    key ^= Zobrist.rook[1][i];
-                    break;
-                case BLACK_BISHOP:
-                    blackBishops |= BoardUtils.BITSET[i];
-                    key ^= Zobrist.bishop[1][i];
-                    break;
-                case BLACK_KNIGHT:
-                    blackKnights |= BoardUtils.BITSET[i];
-                    key ^= Zobrist.knight[1][i];
-                    break;
-                case BLACK_PAWN:
-                    blackPawns |= BoardUtils.BITSET[i];
-                    key ^= Zobrist.pawn[1][i];
-                    break;
-            }
-
-        }
-        updateAggregateBitboards();
-
-        whiteToMove = nextToMove;
-        castleWhite = castleWhiteSide;
-        castleBlack = castleBlackSide;
-        this.ePSquare = ePSquare;
-        this.fiftyMove = fiftyMove;
-
-        if ((castleWhite & CANCASTLEOO) != 0) key ^= Zobrist.whiteKingSideCastling;
-        if ((castleWhite & CANCASTLEOOO) != 0) key ^= Zobrist.whiteQueenSideCastling;
-        if ((castleBlack & CANCASTLEOO) != 0) key ^= Zobrist.blackKingSideCastling;
-        if ((castleBlack & CANCASTLEOOO) != 0) key ^= Zobrist.blackQueenSideCastling;
-
-        if (whiteToMove)
-            key ^= Zobrist.whiteMove;
-
-        if (this.ePSquare != 0)
-            key ^= Zobrist.passantColumn[ePSquare % 8];
-
-        material = Long.bitCount(whitePawns) * PAWN_VALUE + Long.bitCount(whiteKnights) * KNIGHT_VALUE
-                + Long.bitCount(whiteBishops) * BISHOP_VALUE + Long.bitCount(whiteRooks) * ROOK_VALUE
-                + Long.bitCount(whiteQueens) * QUEEN_VALUE;
-        material -= (Long.bitCount(blackPawns) * PAWN_VALUE + Long.bitCount(blackKnights) * KNIGHT_VALUE
-                + Long.bitCount(blackBishops) * BISHOP_VALUE + Long.bitCount(blackRooks) * ROOK_VALUE
-                + Long.bitCount(blackQueens) * QUEEN_VALUE);
-
-    }*/
-
     private void updateAggregateBitboards() {
         whitePieces = whiteKing | whiteQueens | whiteRooks | whiteBishops | whiteKnights | whitePawns;
         blackPieces = blackKing | blackQueens | blackRooks | blackBishops | blackKnights | blackPawns;
@@ -562,7 +476,7 @@ public class Board implements Definitions {
             long pieceToRemove = toBoard;
             int pieceToRemoveIndex = to;
             //Remove piece at to location
-            if (move == MoveAC.TYPE_EN_PASSANT) {
+            if (moveType == MoveAC.TYPE_EN_PASSANT) {
                 pieceToRemove = (whiteToMove) ? (toBoard >>> 8) : (toBoard << 8);
                 pieceToRemoveIndex = (whiteToMove) ? (to - 8) : (to + 8);
             }

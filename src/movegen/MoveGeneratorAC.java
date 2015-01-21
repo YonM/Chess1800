@@ -1,11 +1,12 @@
 package movegen;
 
 import board.Board;
+import definitions.Definitions;
 
 /**
  * Created by Yonathan on 15/01/2015.
  */
-public class MoveGeneratorAC {
+public class MoveGeneratorAC implements Definitions {
 
     /**
      * Gets all <i>pseudo-legal</i> moves available for the side to move. If the
@@ -45,7 +46,13 @@ public class MoveGeneratorAC {
         return index;
     }
 
-    public static int genCaptures(Board b, int i) {
+    public static int genCaptures(Board b, int[] captures) {
+        int[] captureValues = new int[MAX_MOVES];
+        int num_captures = getAllCaptures(b, captures);
+        return 0;
+    }
+
+    private static int getAllCaptures(Board b, int[] captures) {
         return 0;
     }
 }
