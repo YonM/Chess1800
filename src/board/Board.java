@@ -10,6 +10,8 @@ import search.Search;
 import zobrist.Zobrist;
 
 import javax.swing.*;
+import java.util.ArrayList;
+import java.util.StringTokenizer;
 
 /**
  * Created by Yonathan on 08/12/2014.
@@ -140,7 +142,7 @@ public class Board implements Definitions {
     public boolean initializeFromFEN(String fen) {
         if (FENValidator.isValidFEN(fen)) {
             clearBitboards();
-            String[] tokens = fen.split("[ \\t\\n\\x0B\\f\\r]+");
+            /*String[] tokens = fen.split("[ \\t\\n\\x0B\\f\\r]+");
             String board = tokens[0];
             int rank = 7;
             int file = 0;
@@ -155,7 +157,7 @@ public class Board implements Definitions {
                     }
                     //if(((rank * 8) + file) == 64) System.out.println("HOW " + rank + " : " + file);
                     long square=0;
-                    if(rank !=7 && file==8)square = BitboardUtilsAC.getSquare[rank * 8 + file];
+                    if(!(rank ==7 & file==8))square = BitboardUtilsAC.getSquare[rank * 8 + file];
                     switch (c) {
                         case '/':
                             rank--;
@@ -177,6 +179,7 @@ public class Board implements Definitions {
                             whiteQueens |= square;
                             break;
                         case 'K':
+                            System.out.println("king added " + square);
                             whiteKing |= square;
                             break;
                         case 'p':
@@ -200,10 +203,71 @@ public class Board implements Definitions {
                     }
                     if (c != '/') file++;
                 }
+            }*/
+            StringTokenizer st = new StringTokenizer(fen, "/ ");
+            ArrayList<String> arr = new ArrayList<String>();
+            while (st.hasMoreTokens()) {
+                arr.add(st.nextToken());
+            }
+// traversing the square-description part of the FEN
+            int up = 7;
+            int out = 0;
+            for (int i = 0; i < 8; i++) {
+                out = 0;
+                for (char c : arr.get(i).toCharArray()) {
+                    if (Character.isDigit(c)) {
+                        for (int j = 0; j < Character.digit(c, 10); j++) {
+                            out++;
+                        }
+                    }
+                    else {
+                        long square = BitboardUtilsAC.getSquare[up * 8 + out];
+                        switch (c) {
+                            case 'p':
+                                blackPawns |= square;
+                                break;
+                            case 'P':
+                                whitePawns |= square;
+                                break;
+                            case 'n':
+                                blackKnights |= square;
+                                break;
+                            case 'N':
+                                whiteKnights |= square;
+                                break;
+                            case 'b':
+                                blackBishops |= square;
+                                break;
+                            case 'B':
+                                whiteBishops |= square;
+                                break;
+                            case 'r':
+                                blackRooks |= square;
+                                break;
+                            case 'R':
+                                whiteRooks |= square;
+                                break;
+                            case 'q':
+                                blackQueens |= square;
+                                break;
+                            case 'Q':
+                                whiteQueens |= square;
+                                break;
+                            case 'k':
+                                blackKing |= square;
+                                break;
+                            case 'K':
+                                whiteKing |= square;
+                                break;
+                        }
+                        out++;
+                    }
+                }
+                up--;
             }
             updateAggregateBitboards();
 
-            whiteToMove = tokens[1].toCharArray()[0] == 'w';
+            /*whiteToMove = tokens[1].toCharArray()[0] == 'w';
             castleWhite = 0;
             castleBlack = 0;
             ePSquare = -1;
@@ -247,7 +311,23 @@ public class Board implements Definitions {
                     }
                 }
 
-            }
+            }*/
+            // and now we deal with turn, ep, 50mr, and move number
+            // turn
+            whiteToMove = arr.get(8).equals("w");
+            // castling
+            if(arr.get(9).contains("K")) castleWhite += CANCASTLEOO;
+            if(arr.get(9).contains("Q")) castleWhite += CANCASTLEOOO;
+            if(arr.get(9).contains("k")) castleBlack+= CANCASTLEOO;
+            if(arr.get(9).contains("q")) castleBlack+=CANCASTLEOOO;
+            // en passant
+            ePSquare = BitboardUtilsAC.algebraicLocToInt(arr.get(10));
+            // 50mr
+            fiftyMove = Integer.parseInt(arr.get(11));
+            // move number
+            moveNumber = Integer.parseInt(arr.get(12));
+            initMoveNumber = moveNumber;
+
             key = Zobrist.getKeyFromBoard(this);
 
             material = Long.bitCount(whitePawns) * PAWN_VALUE + Long.bitCount(whiteKnights) * KNIGHT_VALUE

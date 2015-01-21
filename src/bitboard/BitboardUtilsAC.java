@@ -236,6 +236,14 @@ public class BitboardUtilsAC {
         return -1;
     }
 
+    public static int algebraicLocToInt(String loc) {
+        if (loc.equals("-"))
+            return -1;
+        int out = loc.charAt(0) - 'a';
+        int up = Integer.parseInt(loc.charAt(1) + "") - 1;
+        return up * 8 + out;
+    }
+
     public static long algebraic2Square(String name) {
         long aux = H1;
         for (int i = 0; i < 64; i++) {
