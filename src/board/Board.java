@@ -81,8 +81,7 @@ public class Board implements Definitions {
     public int[] black_castle_history;
     public long[] key_history;
 
-    public int endOfGame, endOfSearch; // Index for board.gameLine
-    //public final GameLineRecord[] gameLine = new GameLineRecord[MAX_GAME_LENGTH]; // Current search line + moves that have actually been played.
+    public int endOfGame;
 
     //For (un)make move
     private int from, to, piece, moveType;
@@ -466,8 +465,8 @@ public class Board implements Definitions {
 
     public int repetitionCount() {
         int i, lastI, rep = 1; // current position is at least 1 repetition
-        lastI = endOfSearch - fiftyMove;          // we don't need to go back all the way
-        for (i = endOfSearch - 2; i >= lastI; i -= 2)   // Only search for current side, skip opposite side
+        lastI = moveNumber - fiftyMove;          // we don't need to go back all the way
+        for (i = moveNumber - 2; i >= lastI; i -= 2)   // Only search for current side, skip opposite side
         {
             if (key_history[i] == key) rep++;
             if (rep >= 3) return 3;
@@ -772,7 +771,6 @@ public class Board implements Definitions {
             return false;
         }
 
-        endOfSearch++;
         whiteToMove = !whiteToMove;
         key ^= Zobrist.whiteMove;
         return true;

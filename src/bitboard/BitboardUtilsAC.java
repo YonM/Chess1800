@@ -21,6 +21,7 @@ public class BitboardUtilsAC {
     public static final long b2_u = 0xffff000000000000L; // up
     public static final long b2_r = 0x0303030303030303L; // right
     public static final long b2_l = 0xC0C0C0C0C0C0C0C0L; // left
+/*
     public static final long b3_d = 0x0000000000ffffffL; // down
     public static final long b3_u = 0xffffff0000000000L; // up
     public static final long r2_d = 0x000000000000ff00L; // rank 2 down
@@ -33,6 +34,7 @@ public class BitboardUtilsAC {
     public static final long c36 = 0x007E7E7E7E7E7E00L; // center (36 squares)
     public static final long r4 = 0xC3C300000000C3C3L; // corners (4 squares)
     public static final long r9 = 0xE7E7E70000E7E7E7L; // corners (9 squares)
+*/
 
     /**
      * To get the square at A1, give 0. To get the square at A2, give 1. To get
