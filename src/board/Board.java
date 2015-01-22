@@ -556,7 +556,7 @@ public class Board implements Definitions {
             }
             char pieceRemoved = getPieceAt(pieceToRemoveIndex);
             if (whiteToMove) { // captured a black
-                System.out.println("captured black");
+//                System.out.println("captured black");
                 blackPawns &= ~pieceToRemove;
                 blackKnights &= ~pieceToRemove;
                 blackBishops &= ~pieceToRemove;
