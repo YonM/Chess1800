@@ -51,18 +51,34 @@ public class BitboardMagicAttacksAC {
     }
 
     private static void generateAttacks() {
+        rook = new long [64];
         rookMask = new long[64];
         rookMagic = new long[64][];
+        bishop = new long [64];
         bishopMask = new long[64];
         bishopMagic = new long[64][];
+        knight = new long[64];
+        king = new long [64];
+        blackPawn = new long [64];
+        whitePawn = new long [64];
         long square = 1;
         byte i = 0;
         while (square != 0) {
 
+            rook[i] = squareAttackedAuxSlider(square, +8, BitboardUtilsAC.b_u) 
+                    | squareAttackedAuxSlider(square, -8, BitboardUtilsAC.b_d) 
+                    | squareAttackedAuxSlider(square, -1, BitboardUtilsAC.b_r) 
+                    | squareAttackedAuxSlider(square, +1, BitboardUtilsAC.b_l);
+            
             rookMask[i] = squareAttackedAuxSliderMask(square, +8, BitboardUtilsAC.b_u)
                     | squareAttackedAuxSliderMask(square, -8, BitboardUtilsAC.b_d)
                     | squareAttackedAuxSliderMask(square, -1, BitboardUtilsAC.b_r) 
                     | squareAttackedAuxSliderMask(square, +1, BitboardUtilsAC.b_l);
+
+            bishop[i] = squareAttackedAuxSlider(square, +9, BitboardUtilsAC.b_u | BitboardUtilsAC.b_l) //
+                    | squareAttackedAuxSlider(square, +7, BitboardUtilsAC.b_u | BitboardUtilsAC.b_r) //
+                    | squareAttackedAuxSlider(square, -7, BitboardUtilsAC.b_d | BitboardUtilsAC.b_l) //
+                    | squareAttackedAuxSlider(square, -9, BitboardUtilsAC.b_d | BitboardUtilsAC.b_r);
 
             bishopMask[i] = squareAttackedAuxSliderMask(square, +9, BitboardUtilsAC.b_u | BitboardUtilsAC.b_l)
                     | squareAttackedAuxSliderMask(square, +7, BitboardUtilsAC.b_u | BitboardUtilsAC.b_r)
@@ -163,7 +179,7 @@ public class BitboardMagicAttacksAC {
     private static boolean isIndexAttacked(Board b, int i, boolean white) {
         if (i < 0 || i > 63)
             return false;
-        long others = (white ? b.blackPieces : b.whitePieces);
+        long others = b.getOpponentPieces();
         long all = b.allPieces;
         if (((white ? whitePawn[i] : blackPawn[i])
                 & (b.whitePawns | b.blackPawns) & others) != 0)
@@ -246,6 +262,18 @@ public class BitboardMagicAttacksAC {
             // If we collide with other piece
             if ((square & all) != 0)
                 break;
+        }
+        return ret;
+    }
+
+    private static long squareAttackedAuxSlider(long square, int shift, long border) {
+        long ret = 0;
+        while ((square & border) == 0) {
+            if (shift > 0)
+                square <<= shift;
+            else
+                square >>>= -shift;
+            ret |= square;
         }
         return ret;
     }

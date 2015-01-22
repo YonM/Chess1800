@@ -134,9 +134,7 @@ public class Board implements Definitions {
     }
 
     public void initialize() {
-//        setupBoard();
         initializeFromFEN(START_FEN);
-
     }
 
     public boolean initializeFromFEN(String fen) {
@@ -336,14 +334,13 @@ public class Board implements Definitions {
             material -= (Long.bitCount(blackPawns) * PAWN_VALUE + Long.bitCount(blackKnights) * KNIGHT_VALUE
                     + Long.bitCount(blackBishops) * BISHOP_VALUE + Long.bitCount(blackRooks) * ROOK_VALUE
                     + Long.bitCount(blackQueens) * QUEEN_VALUE);
-            /*for(int s: fenSquares)
-            System.out.println(s);
-            System.out.println("Turn: "+ nextToMove);
-            System.out.println("50-Move: "+temp50Move);
-            System.out.println("White castling: " +tempWhiteCastle);
-            System.out.println("Black castling: " + tempBlackCastle);
+//            for(int s: fenSquares)
+//            System.out.println(s);
+            /*System.out.println("Turn: "+ whiteToMove);
+            System.out.println("50-Move: "+ fiftyMove);
+            System.out.println("White castling: " + castleWhite);
+            System.out.println("Black castling: " + castleBlack);
             System.out.println("ePSquare: " + ePSquare);*/
-            //initializeFromSquares(fenSquares, nextToMove, temp50Move, tempWhiteCastle, tempBlackCastle, ePSquare);
             return true;
         } else {
             //if fen is not valid
@@ -542,7 +539,12 @@ public class Board implements Definitions {
         fiftyMove++;
         moveNumber++;
         //key ^= Zobrist.getKeyPieceIndex(from, PIECENAMES[piece]) ^ Zobrist.getKeyPieceIndex(to, PIECENAMES[piece]);
-        if ((from & getMyPieces()) == 0) return false;
+        if ((fromBoard & getMyPieces()) == 0) {
+            /*System.out.println("From board: " + Long.toBinaryString(fromBoard));
+            System.out.println("My pieces: " +Long.toBinaryString(getMyPieces()));
+            System.out.println("not mine");*/
+            return false;
+        }
         if (capture) {
             fiftyMove = 0;
             long pieceToRemove = toBoard;
@@ -554,19 +556,20 @@ public class Board implements Definitions {
             }
             char pieceRemoved = getPieceAt(pieceToRemoveIndex);
             if (whiteToMove) { // captured a black
-                blackPawns ^= pieceToRemove;
-                blackKnights ^= pieceToRemove;
-                blackBishops ^= pieceToRemove;
-                blackRooks ^= pieceToRemove;
-                blackQueens ^= pieceToRemove;
-                blackKing ^= pieceToRemove;
+                System.out.println("captured black");
+                blackPawns &= ~pieceToRemove;
+                blackKnights &= ~pieceToRemove;
+                blackBishops &= ~pieceToRemove;
+                blackRooks &= ~pieceToRemove;
+                blackQueens &= ~pieceToRemove;
+                blackKing &= ~pieceToRemove;
             } else { // captured a white
-                whitePawns ^= pieceToRemove;
-                whiteKnights ^= pieceToRemove;
-                whiteBishops ^= pieceToRemove;
-                whiteRooks ^= pieceToRemove;
-                whiteQueens ^= pieceToRemove;
-                whiteKing ^= pieceToRemove;
+                whitePawns &= ~pieceToRemove;
+                whiteKnights &= ~pieceToRemove;
+                whiteBishops &= ~pieceToRemove;
+                whiteRooks &= ~pieceToRemove;
+                whiteQueens &= ~pieceToRemove;
+                whiteKing &= ~pieceToRemove;
             }
             key ^= Zobrist.getKeyPieceIndex(pieceToRemoveIndex, pieceRemoved);
             }
@@ -636,6 +639,7 @@ public class Board implements Definitions {
                     }
                 } else {
                     //No promotion
+                    //System.out.println("no promo");
                     if (whiteToMove) {
                         whitePawns ^= fromToBoard;
                         key ^= Zobrist.getKeyForMove(from, to, 'P');
@@ -647,6 +651,7 @@ public class Board implements Definitions {
                 break;
             case KNIGHT:
                     if (whiteToMove) {
+
                         whiteKnights ^= fromToBoard;
                         key ^= Zobrist.getKeyForMove(from, to, 'N');
                     } else {
@@ -737,10 +742,36 @@ public class Board implements Definitions {
                 throw new RuntimeException("Unreachable");
         }
         updateAggregateBitboards();
+        if (whiteToMove) {
+            if ((fromToBoard & 0x90L) != 0) { // 0x90 is e1 | h1 -- the king or
+                                              // king's rook has moved
+                castleWhite -=CANCASTLEOO;
+                key ^= Zobrist.whiteKingSideCastling;
+            }
+            if ((fromToBoard & 0x11L) != 0) { // 0x11 is e1 | a1 -- the king or
+                                           // queen's rook has moved
+                castleWhite -=CANCASTLEOOO;
+                key ^= Zobrist.whiteQueenSideCastling;
+            }
+        } else {
+            if ((fromToBoard & 0x9000000000000000L) != 0) { // 0x90... is 0x90
+                                                        // <<'d to
+                                                        // black's side
+                castleBlack -= CANCASTLEOO;
+                key ^= Zobrist.blackKingSideCastling;
+            }
+            if ((fromToBoard & 0x1100000000000000L) != 0) { // 0x11... is 0x11
+                                                         // <<'d to
+                                                         // black's side
+                castleBlack -= CANCASTLEOOO;
+                key ^= Zobrist.blackQueenSideCastling;
+            }
+        }
         if (isOwnKingAttacked()) {
             unmakeMove();
             return false;
         }
+
         endOfSearch++;
         whiteToMove = !whiteToMove;
         key ^= Zobrist.whiteMove;
@@ -829,13 +860,13 @@ public class Board implements Definitions {
     }
 
     public boolean isOtherKingAttacked() {
-        if (whiteToMove) return BitboardMagicAttacksAC.isSquareAttacked(this, blackKing, whiteToMove);
-        return BitboardMagicAttacksAC.isSquareAttacked(this, whiteKing, whiteToMove);
+        if (whiteToMove) return BitboardMagicAttacksAC.isSquareAttacked(this, blackKing, !whiteToMove);
+        return BitboardMagicAttacksAC.isSquareAttacked(this, whiteKing, !whiteToMove);
     }
 
     public boolean isOwnKingAttacked() {
-        if (whiteToMove) return BitboardMagicAttacksAC.isSquareAttacked(this, whiteKing, !whiteToMove);
-        return BitboardMagicAttacksAC.isSquareAttacked(this, blackKing, !whiteToMove);
+        if (whiteToMove) return BitboardMagicAttacksAC.isSquareAttacked(this, whiteKing, whiteToMove);
+        return BitboardMagicAttacksAC.isSquareAttacked(this, blackKing, whiteToMove);
     }
 
     //Static Exchange Evaluator based on https://chessprogramming.wikispaces.com/SEE+-+The+Swap+Algorithm

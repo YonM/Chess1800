@@ -35,7 +35,7 @@ public class MoveAC implements Definitions {
                 | (flag << 16);
     }
 
-    public static int getToIndex(int move) {
+    public static int getFromIndex(int move) {
         return move & SQUARE_MASK;
     }
 
@@ -43,7 +43,7 @@ public class MoveAC implements Definitions {
         return 0x1L << (move & SQUARE_MASK);
     }
 
-    public static int getFromIndex(int move) {
+    public static int getToIndex(int move) {
         return ((move >>> 6) & SQUARE_MASK);
     }
 
