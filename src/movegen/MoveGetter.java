@@ -146,7 +146,7 @@ public class MoveGetter implements Definitions {
                 num_moves_generated++;
                 movelocs &= ~to;
             }
-            knights ^= fromBoard;
+            knights &= ~fromBoard;
         }
         return num_moves_generated;
     }
@@ -169,7 +169,7 @@ public class MoveGetter implements Definitions {
                 num_moves_generated++;
                 movelocs &= ~to;
             }
-            knights ^= fromBoard;
+            knights &= ~fromBoard;
         }
         return num_moves_generated;
     }
@@ -191,7 +191,7 @@ public class MoveGetter implements Definitions {
             long fromBoard = Long.lowestOneBit(pawns);
             int fromIndex = Long.numberOfTrailingZeros(fromBoard);
             if ((fromBoard & BitboardUtilsAC.RANK[RANK_7]) != 0) {
-// promos are possible, no en passant
+                // promos are possible, no en passant
                 if ((fromBoard & BitboardUtilsAC.b_r) == 0 && (fromBoard << 7 & b.blackPieces) != 0) {
                     int toIndex = Long.numberOfTrailingZeros(fromBoard << 7);
                     moves[index + num_moves_generated] =
@@ -295,7 +295,7 @@ public class MoveGetter implements Definitions {
                     num_moves_generated++;
                 }
             }
-            pawns ^= fromBoard;
+            pawns &= ~fromBoard;
         }
         return num_moves_generated;
     }
@@ -310,7 +310,7 @@ public class MoveGetter implements Definitions {
             long fromBoard = Long.lowestOneBit(pawns);
             int fromIndex = Long.numberOfTrailingZeros(fromBoard);
             if ((fromBoard & BitboardUtilsAC.RANK[RANK_2]) != 0) {
-// promos are possible, no en passant
+                // promos are possible, no en passant
                 if ((fromBoard & BitboardUtilsAC.b_l) == 0 && (fromBoard >>> 7 & b.whitePieces) != 0) {
                     int toIndex = Long.numberOfTrailingZeros(fromBoard >>> 7);
                     moves[index + num_moves_generated] =
@@ -415,7 +415,7 @@ public class MoveGetter implements Definitions {
                     num_moves_generated++;
                 }
             }
-            pawns ^= fromBoard;
+            pawns &= ~fromBoard;
         }
         return num_moves_generated;
     }
@@ -440,7 +440,7 @@ public class MoveGetter implements Definitions {
                 num_moves_generated++;
                 movelocs &= ~to;
             }
-            bishops ^= fromBoard;
+            bishops &= ~fromBoard;
         }
         return num_moves_generated;
     }
@@ -465,7 +465,7 @@ public class MoveGetter implements Definitions {
                 num_moves_generated++;
                 movelocs &= ~to;
             }
-            bishops ^= fromBoard;
+            bishops &= ~fromBoard;
         }
         return num_moves_generated;
     }
@@ -488,7 +488,7 @@ public class MoveGetter implements Definitions {
                 num_moves_generated++;
                 movelocs &= ~to;
             }
-            rooks ^= fromBoard;
+            rooks &= ~fromBoard;
         }
         return num_moves_generated;
     }
@@ -511,7 +511,7 @@ public class MoveGetter implements Definitions {
                 num_moves_generated++;
                 movelocs &= ~to;
             }
-            rooks ^= fromBoard;
+            rooks &= ~fromBoard;
         }
         return num_moves_generated;
     }
@@ -536,7 +536,7 @@ public class MoveGetter implements Definitions {
                 num_moves_generated++;
                 movelocs &= ~to;
             }
-            queens ^= fromBoard;
+            queens &= ~fromBoard;
         }
         return num_moves_generated;
     }
@@ -561,7 +561,7 @@ public class MoveGetter implements Definitions {
                 num_moves_generated++;
                 movelocs &= ~to;
             }
-            queens ^= fromBoard;
+            queens &= ~fromBoard;
         }
         return num_moves_generated;
     }

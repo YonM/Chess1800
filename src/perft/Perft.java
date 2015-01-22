@@ -26,7 +26,7 @@ public class Perft implements Definitions {
     * 2 : 2039
     * 3 : 97862
     * 4 : 4085603
-    * 5 : 193690690
+    * 5 : 193690690  // Getting 193707469
     * 6 : 8031647685
     */
     private static String test2 = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
