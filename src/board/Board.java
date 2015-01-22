@@ -1483,8 +1483,8 @@ public class Board implements Definitions {
             numOfCaptures++;
 
             //remove last attacker
-            attackers ^= BoardUtils.BITSET[from];
-            nonRemoved ^= BoardUtils.BITSET[from];
+            attackers &= ~BoardUtils.BITSET[from];
+            nonRemoved &= ~BoardUtils.BITSET[from];
 
             //what direction did the attack come from. If heading!=0, add xray Attackers.
             heading = BoardUtils.HEADINGS[target][from];
