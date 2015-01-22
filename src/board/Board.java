@@ -584,55 +584,55 @@ public class Board implements Definitions {
             case PAWN:
                 fiftyMove = 0;
                 //Check if we need to update en passant square.
-                if (whiteToMove && (from << 16 & to) != 0) ePSquare = Long.numberOfTrailingZeros(from << 8);
-                if (!whiteToMove && (from >>> 16 & to) != 0) ePSquare = Long.numberOfTrailingZeros(from >>> 8);
+                if (whiteToMove && (fromBoard << 16 & toBoard) != 0) ePSquare = Long.numberOfTrailingZeros(fromBoard << 8);
+                if (!whiteToMove && (fromBoard >>> 16 & toBoard) != 0) ePSquare = Long.numberOfTrailingZeros(fromBoard >>> 8);
                 //remove en passant column from key, if en passant is set.
                 if (ePSquare != -1)
                     key ^= Zobrist.passantColumn[ePSquare % 8];
                 //if promotion
                 if (MoveAC.isPromotion(move)) {
                     if (whiteToMove) {
-                        whitePawns ^= from;
+                        whitePawns ^= fromBoard;
                         key ^= Zobrist.getKeyPieceIndex(from, 'P');
                     } else {
-                        blackPawns ^= from;
+                        blackPawns ^= fromBoard;
                         key ^= Zobrist.getKeyPieceIndex(from, 'p');
                     }
                     switch (moveType) {
                         case TYPE_PROMOTION_QUEEN:
                             if (whiteToMove) {
-                                whiteQueens |= to;
+                                whiteQueens |= toBoard;
                                 key ^= Zobrist.getKeyPieceIndex(to, 'Q');
                             } else {
-                                blackQueens |= to;
+                                blackQueens |= toBoard;
                                 key ^= Zobrist.getKeyPieceIndex(to, 'q');
                             }
                             break;
                         case TYPE_PROMOTION_KNIGHT:
                             if (whiteToMove) {
-                                whiteKnights |= to;
+                                whiteKnights |= toBoard;
                                 key ^= Zobrist.getKeyPieceIndex(to, 'N');
                             } else {
-                                blackKnights |= to;
+                                blackKnights |= toBoard;
                                 key ^= Zobrist.getKeyPieceIndex(to, 'n');
 
                             }
                             break;
                         case TYPE_PROMOTION_BISHOP:
                             if (whiteToMove) {
-                                whiteBishops |= to;
+                                whiteBishops |= toBoard;
                                 key ^= Zobrist.getKeyPieceIndex(to, 'B');
                             } else {
-                                blackBishops |= to;
+                                blackBishops |= toBoard;
                                 key ^= Zobrist.getKeyPieceIndex(to, 'b');
                             }
                             break;
                         case TYPE_PROMOTION_ROOK:
                             if (whiteToMove) {
-                                whiteRooks |= to;
+                                whiteRooks |= toBoard;
                                 key ^= Zobrist.getKeyPieceIndex(to, 'R');
                             } else {
-                                blackRooks |= to;
+                                blackRooks |= toBoard;
                                 key ^= Zobrist.getKeyPieceIndex(to, 'r');
                             }
                             break;
