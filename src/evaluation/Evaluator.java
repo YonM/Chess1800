@@ -274,6 +274,7 @@ public class Evaluator implements Definitions {
     private long temp, whitePassedPawns, blackPassedPawns;
 
     public int eval(Board b) {
+        if(b.isDraw()) return 0;
         score = b.material;
         whiteKingSquare = BitboardUtilsAC.getIndexFromBoard(b.whiteKing);
         blackKingSquare = BitboardUtilsAC.getIndexFromBoard(b.blackKing);
@@ -297,25 +298,6 @@ public class Evaluator implements Definitions {
         //Test for end game if white or black total material less than the value of a Rook+ Queen.
         endGame = (whiteTotalMat < 15 || blackTotalMat < 15);
 
-        //Evaluate for draw due to insufficient material
-
-        if (whitePawns == 0 && blackPawns == 0) {
-
-            // king vs king
-            if (whiteTotalMat + blackTotalMat == 0) return 0;
-
-            // king and knight vs king
-            if (((whiteTotalMat == KNIGHT_VALUE) && (whiteKnights == 1) && (blackTotalMat == 0)) ||
-                    ((blackTotalMat == KNIGHT_VALUE)) && (blackKnights == 1) && (whiteTotalMat == 0)) return 0;
-
-            // 2 kings with one or more bishops and all bishops on the same colour
-            if (whiteBishops + blackBishops > 0) {
-                if (whiteKnights + whiteRooks + whiteQueens + blackKnights + blackRooks + blackQueens == 0) {
-                    if ((((b.whiteBishops | b.blackBishops) & BitboardUtilsAC.WHITE_SQUARES) == 0) ||
-                            (((b.whiteBishops | b.blackBishops) & BitboardUtilsAC.BLACK_SQUARES) == 0)) return 0;
-                }
-            }
-        }
 
         /* Evaluate material. Winning side will prefer to exchange pieces.
         *  Add 3 centipawns to score for exchange with unequal material

@@ -81,7 +81,6 @@ public class Board implements Definitions {
     public int[] black_castle_history;
     public long[] key_history;
 
-    public int endOfGame;
 
     //For (un)make move
     private int from, to, piece, moveType;
@@ -96,10 +95,7 @@ public class Board implements Definitions {
     private static final int[] SEE_PIECE_VALUES = {0, 100, 325, 325, 500, 975, 999999};
     private int[] seeGain;
 
-    public int totalWhitePawns;
-    public int totalBlackPawns;
-    public int totalWhitePieces;
-    public int totalBlackPieces;
+
 
     public Board() {
         moves = new int[MAX_GAME_LENGTH * 4];
@@ -375,91 +371,82 @@ public class Board implements Definitions {
     }
 
     public boolean isEndOfGame() {
+        if(isDraw() || isCheckMate()) return true;
+        return false;
+    }
 
-        // Checks if the current position is end-of-game due to:
-        // checkmate, stalemate, 50-move rule, or insufficient material
-        // Is the other king checkmated?
-        if (isOtherKingAttacked()) {
-            if (whiteToMove) JOptionPane.showMessageDialog(null, "1-0 White checkmates");
-            else JOptionPane.showMessageDialog(null, "1-0 Black checkmates");
-            return true;
-        }
-        int i;
-        Search.legalMoves = 0;
-        moves = new int[MAX_MOVES];
-        num_moves = MoveGeneratorAC.getAllMoves(this, moves);
-        for (i = 0; i < num_moves; i++) {
-            makeMove(moves[i]);
-            if (!isOtherKingAttacked()) {
-                Search.legalMoves++;
-                Search.singleMove = moves[i];
-            }
-            unmakeMove();
-        }
+    public boolean isCheckMate(){
+        return isCheck() && MoveGeneratorAC.countAllLegalMoves(this) == 0;
 
-        //Stalemate/Checkmate check.
-        if (Search.legalMoves == 0) {
-            if (isOwnKingAttacked()) {
-                if (whiteToMove) JOptionPane.showMessageDialog(null, "1-0 Black checkmates");
-                else JOptionPane.showMessageDialog(null, "1-0 White checkmates");
-            } else JOptionPane.showMessageDialog(null, "0.5-0.5 Stalemate");
+    }
+
+    public boolean isCheck(){
+        return BitboardMagicAttacksAC.isSquareAttacked(this, whiteKing, true)
+                || BitboardMagicAttacksAC.isSquareAttacked(this, blackKing, false);
+    }
+
+    public boolean isDraw(){
+        // Checks if the current position is a draw due to:
+        // stalemate, insufficient material, 50-move rule or
+        // threefold repetition.
+
+        // Stalemate
+        int legalMoves = MoveGeneratorAC.countAllLegalMoves(this);
+        if (legalMoves == 0 && !isCheck()) {
+//            JOptionPane.showMessageDialog(null, "0.5-0.5 Stalemate");
             return true;
         }
 
-        int whiteKnights, whiteBishops, whiteRooks, whiteQueens, whiteTotalMat;
-        int blackKnights, blackBishops, blackRooks, blackQueens, blackTotalMat;
+        // Evaluate for draw due to insufficient material
+        int whitePawnsTotal, whiteKnightsTotal, whiteBishopsTotal, whiteRooksTotal, whiteQueensTotal, whiteTotalMat;
+        int blackPawnsTotal, blackKnightsTotal, blackBishopsTotal, blackRooksTotal, blackQueensTotal, blackTotalMat;
+        whitePawnsTotal = Long.bitCount(whitePawns);
+        whiteKnightsTotal = Long.bitCount(whiteKnights);
+        whiteBishopsTotal = Long.bitCount(whiteBishops);
+        whiteRooksTotal = Long.bitCount(whiteRooks);
+        whiteQueensTotal = Long.bitCount(whiteQueens);
+        whiteTotalMat = 3 * whiteKnightsTotal + 3 * whiteBishopsTotal + 5 * whiteRooksTotal + 10 * whiteQueensTotal;
 
-        //Check if it's a draw due to insufficient material.
-        if (whitePawns + blackPawns == 0) {
-            whiteKnights = Long.bitCount(this.whiteKnights);
-            whiteBishops = Long.bitCount(this.whiteBishops);
-            whiteRooks = Long.bitCount(this.whiteRooks);
-            whiteQueens = Long.bitCount(this.whiteQueens);
-            whiteTotalMat = 3 * whiteKnights + 3 * whiteBishops + 5 * whiteRooks + 10 * whiteQueens;
-            blackKnights = Long.bitCount(this.blackKnights);
-            blackBishops = Long.bitCount(this.blackBishops);
-            blackRooks = Long.bitCount(this.blackRooks);
-            blackQueens = Long.bitCount(this.blackQueens);
-            blackTotalMat = 3 * blackKnights + 3 * blackBishops + 5 * blackRooks + 10 * blackQueens;
 
-            //King vs king.
-            if (whiteTotalMat + blackTotalMat == 0) {
-                JOptionPane.showMessageDialog(null, "0.5-0.5 Draw due to insufficient material.");
-                return true;
-            }
+        blackPawnsTotal = Long.bitCount(blackPawns);
+        blackKnightsTotal = Long.bitCount(blackKnights);
+        blackBishopsTotal = Long.bitCount(blackBishops);
+        blackRooksTotal = Long.bitCount(blackRooks);
+        blackQueensTotal = Long.bitCount(blackQueens);
+        blackTotalMat = 3 * blackKnightsTotal + 3 * blackBishopsTotal + 5 * blackRooksTotal + 10 * blackQueensTotal;
 
-            //King and knight versus king.
-            if (((whiteTotalMat == 3) && (whiteKnights == 1) && (blackTotalMat == 0) ||
-                    ((blackTotalMat == 3)) && (blackKnights == 1) && (whiteTotalMat == 0))) {
-                JOptionPane.showMessageDialog(null, "0.5-0.5 Draw due to insufficient material.");
-                return true;
-            }
-            //Kings with one or more bishops, all bishops on the same colour.
+        // Check if it's a draw due to insufficient material.
+        if (whitePawnsTotal == 0 && blackPawnsTotal == 0) {
 
-            if (whiteBishops + blackBishops > 0) {
-                if (whiteKnights + whiteRooks + whiteQueens + blackKnights + blackRooks + blackQueens == 0) {
-                    if (((whiteBishops | blackBishops) & BitboardUtilsAC.WHITE_SQUARES) != 0
-                            || ((whiteBishops | blackBishops) & BitboardUtilsAC.BLACK_SQUARES) != 0) {
-                        JOptionPane.showMessageDialog(null, "0.5-0.5 Draw due to insufficient material.");
-                        return true;
-                    }
+            // king vs king
+            if (whiteTotalMat + blackTotalMat == 0) return true;
+
+            // king and knight vs king
+            if (((whiteTotalMat == 3) && (whiteKnights == 1) && (blackTotalMat == 0)) ||
+                    ((blackTotalMat == 3)) && (blackKnights == 1) && (whiteTotalMat == 0)) return true;
+
+            // 2 kings with one or more bishops and all bishops on the same colour
+            if (whiteBishopsTotal + blackBishopsTotal > 0) {
+                if (whiteKnightsTotal + whiteRooksTotal + whiteQueensTotal + blackKnightsTotal + blackRooksTotal + blackQueensTotal == 0) {
+                    if ((((whiteBishops | blackBishops) & BitboardUtilsAC.WHITE_SQUARES) == 0) ||
+                            (((whiteBishops | blackBishops) & BitboardUtilsAC.BLACK_SQUARES) == 0)) return true;
                 }
-
             }
         }
 
         //50Move rule
         if (fiftyMove >= 100) {
-            JOptionPane.showMessageDialog(null, "0.5-0.5 Draw due 50-move rule");
+            //JOptionPane.showMessageDialog(null, "0.5-0.5 Draw due 50-move rule");
             return true;
         }
 
         //Three fold repetition
         if (repetitionCount() >= 3) {
-            JOptionPane.showMessageDialog(null, "0.5 - 0.5 Draw due to repetition");
+            //JOptionPane.showMessageDialog(null, "0.5 - 0.5 Draw due to repetition");
             return true;
 
         }
+
         return false;
     }
 

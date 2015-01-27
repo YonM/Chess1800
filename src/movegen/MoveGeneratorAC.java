@@ -28,6 +28,19 @@ public class MoveGeneratorAC implements Definitions {
         return getAllBlackMoves(b, moves);
     }
 
+    public static int countAllLegalMoves(Board b){
+        int[] moves = new int[MAX_MOVES];
+        int lastIndex = getAllMoves(b, moves);
+        int count = 0;
+        for(int i = 0; i<lastIndex; i++){
+            if(b.makeMove(moves[i])){
+                count++;
+                b.unmakeMove();
+            }
+        }
+        return count;
+    }
+
     private static int getAllWhiteMoves(Board b, int[] moves) {
         int index = 0;
         index += MoveGetter.getWhitePawnMoves(b, moves, index);
