@@ -106,7 +106,9 @@ public interface Definitions {
     public static final int SOUTH = -8;
     public static final int SOUTHWEST = -9;
 
-    //Null move related
+    //Null move + Late Move Reduction related
+    public final static int LATEMOVE_THRESHOLD = 4;
+    public final static int LATEMOVE_DEPTH_THRESHOLD = 3;
     public final static int NULLMOVE = 0;
     public final static int NULLMOVE_REDUCTION = 4;
     public final static int NULLMOVE_LIMIT = KNIGHT_VALUE - 1; //Only do null move when material value(excluding pawn & king)

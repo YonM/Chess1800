@@ -3,6 +3,7 @@ package board;
 import bitboard.BitboardMagicAttacksAC;
 import bitboard.BitboardUtilsAC;
 import definitions.Definitions;
+import evaluation.Evaluator;
 import fen.FENValidator;
 import move.MoveAC;
 import movegen.MoveGeneratorAC;
@@ -371,13 +372,11 @@ public class Board implements Definitions {
     }
 
     public boolean isEndOfGame() {
-        if(isDraw() || isCheckMate()) return true;
-        return false;
+        return isDraw() || isCheckMate();
     }
 
     public boolean isCheckMate(){
         return isCheck() && MoveGeneratorAC.countAllLegalMoves(this) == 0;
-
     }
 
     public boolean isCheck(){
@@ -391,8 +390,17 @@ public class Board implements Definitions {
         // threefold repetition.
 
         // Stalemate
-        int legalMoves = MoveGeneratorAC.countAllLegalMoves(this);
-        if (legalMoves == 0 && !isCheck()) {
+        Search.legalMoves = 0;
+        moves = new int[MAX_MOVES];
+        num_moves = MoveGeneratorAC.getAllMoves(this, moves);
+        for(int i = 0; i< num_moves; i++){
+            if(makeMove(moves[i])){
+                Search.legalMoves++;
+                Search.singleMove = moves[i];
+                unmakeMove();
+            }
+        }
+        if (Search.legalMoves == 0 && !isCheck()) {
 //            JOptionPane.showMessageDialog(null, "0.5-0.5 Stalemate");
             return true;
         }
@@ -844,10 +852,10 @@ public class Board implements Definitions {
         return (whiteToMove) ? whitePieceMaterial() : blackPieceMaterial();
     }
 
-    public boolean isOtherKingAttacked() {
+    /*public boolean isOtherKingAttacked() {
         if (whiteToMove) return BitboardMagicAttacksAC.isSquareAttacked(this, blackKing, !whiteToMove);
         return BitboardMagicAttacksAC.isSquareAttacked(this, whiteKing, !whiteToMove);
-    }
+    }*/
 
     public boolean isOwnKingAttacked() {
         if (whiteToMove) return BitboardMagicAttacksAC.isSquareAttacked(this, whiteKing, whiteToMove);

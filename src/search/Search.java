@@ -18,7 +18,7 @@ public class Search implements Definitions {
     private static int[] triangularLength;
     public static Integer legalMoves;
     public static int singleMove = 0;
-    private static final int MAX_DEPTH = 4;
+    private static final int MAX_DEPTH = 5;
     private static int evals;
     private static int[][] whiteHeuristics;
     private static int[][] blackHeuristics;
@@ -69,16 +69,16 @@ public class Search implements Definitions {
     }
 
     private static int alphaBetaPVS(Board b, int ply, int depth, int alpha, int beta) {
-        int j, val;
         evals++;
         triangularLength[ply] = ply;
         if (depth <= 0) {
             follow_pv = false;
             return quiescenceSearch(b, ply, alpha, beta);
         }
-        //Threefold repetition check
-        if (b.repetitionCount() >= 3) return Evaluator.DRAWSCORE;
 
+        if (b.isEndOfGame()) return Evaluator.eval(b);
+
+        int val;
         //Try Null move
         if (!follow_pv && null_allowed) {
             if (b.movingSidePieceMaterial() > NULLMOVE_LIMIT) {
@@ -101,13 +101,18 @@ public class Search implements Definitions {
         int[] moves = new int[MAX_MOVES];
         num_moves = MoveGeneratorAC.getAllMoves(b, moves);
 
+        int j;
         for (int i = 0; i < num_moves; i++) {
             selectBestMoveFirst(b, ply, depth, i, b.whiteToMove);
 
             if (b.makeMove(moves[i])) {
                 movesFound++;
-                if (pvMovesFound != 0) {
-                    val = -alphaBetaPVS(b, ply + 1, depth - 1, -alpha - 1, -alpha);
+                //Late Move Reduction
+                if(movesFound>=LATEMOVE_THRESHOLD && depth>LATEMOVE_DEPTH_THRESHOLD && !b.isCheck()){
+                    val= -alphaBetaPVS(b, ply + 1, depth - 2, -alpha - 1, -alpha);
+                }
+                else if (pvMovesFound != 0) {
+                    val = -alphaBetaPVS(b, ply + 1, depth - 1, -alpha - 1, -alpha); // PVS Search
                     if ((val > alpha) && (val < beta))
                         val = -alphaBetaPVS(b, ply + 1, depth - 1, -beta, -alpha); //Better move found, normal alpha-beta.
                 } else {
@@ -141,10 +146,10 @@ public class Search implements Definitions {
 
         if (b.fiftyMove >= 100) return DRAWSCORE;                 //Fifty-move rule
 
-        if (movesFound == 0) {
+        /*if (movesFound == 0) {
             if (b.isOwnKingAttacked()) return -CHECKMATE + ply - 1; //Checkmate
             return DRAWSCORE;                                 //Stalemate
-        }
+        }*/
 
         return alpha;
     }

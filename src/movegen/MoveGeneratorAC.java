@@ -34,7 +34,6 @@ public class MoveGeneratorAC implements Definitions {
         int count = 0;
         for(int i = 0; i<lastIndex; i++){
             if(b.makeMove(moves[i])){
-                count++;
                 b.unmakeMove();
             }
         }

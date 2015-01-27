@@ -264,16 +264,17 @@ public class Evaluator implements Definitions {
 
     }
 
-    private int score, square;
-    private int whitePawns, whiteKnights, whiteBishops, whiteRooks, whiteQueens;
-    private int blackPawns, blackKnights, blackBishops, blackRooks, blackQueens;
-    private int whiteKingSquare, blackKingSquare;
-    private int whiteTotalMat, blackTotalMat;
-    private int whiteTotal, blackTotal;
-    private boolean endGame;
-    private long temp, whitePassedPawns, blackPassedPawns;
+    private static int score, square;
+    private static int whitePawns, whiteKnights, whiteBishops, whiteRooks, whiteQueens;
+    private static int blackPawns, blackKnights, blackBishops, blackRooks, blackQueens;
+    private static int whiteKingSquare, blackKingSquare;
+    private static int whiteTotalMat, blackTotalMat;
+    private static int whiteTotal, blackTotal;
+    private static boolean endGame;
+    private static long temp, whitePassedPawns, blackPassedPawns;
 
-    public int eval(Board b) {
+    public static int eval(Board b) {
+        if(b.isCheckMate()) return Integer.MIN_VALUE + b.moveNumber;
         if(b.isDraw()) return 0;
         score = b.material;
         whiteKingSquare = BitboardUtilsAC.getIndexFromBoard(b.whiteKing);
@@ -315,7 +316,7 @@ public class Evaluator implements Definitions {
         return -score;
     }
 
-    private void evaluateWhiteMaterial(Board b) {
+    private static void evaluateWhiteMaterial(Board b) {
         evaluateWhitePawns(b);
         evaluateWhiteKnights(b);
         evaluateWhiteBishops(b);
@@ -325,7 +326,7 @@ public class Evaluator implements Definitions {
     }
 
 
-    private void evaluateBlackMaterial(Board b) {
+    private static void evaluateBlackMaterial(Board b) {
         evaluateBlackPawns(b);
         evaluateBlackKnights(b);
         evaluateBlackBishops(b);
@@ -334,7 +335,7 @@ public class Evaluator implements Definitions {
         evaluateBlackKing(b);
     }
 
-    private void evaluateWhitePawns(Board b) {
+    private static void evaluateWhitePawns(Board b) {
         whitePassedPawns = 0;
         temp = b.whitePawns;
         while (temp != 0) {
@@ -372,7 +373,7 @@ public class Evaluator implements Definitions {
         }
     }
 
-    private void evaluateWhiteKnights(Board b) {
+    private static void evaluateWhiteKnights(Board b) {
         temp = b.whiteKnights;
         while (temp != 0) {
             square = BitboardUtilsAC.getIndexFromBoard(temp);
@@ -382,9 +383,8 @@ public class Evaluator implements Definitions {
         }
     }
 
-    private void evaluateWhiteBishops(Board b) {
-        if (b.whiteBishops != 0)
-            if ((b.whiteBishops & (b.whiteBishops - 1)) != 0)
+    private static void evaluateWhiteBishops(Board b) {
+        if(Long.bitCount(b.whiteBishops)>1)
                 score += BONUS_BISHOP_PAIR;
         temp = b.whiteBishops;
         while (temp != 0) {
@@ -396,7 +396,7 @@ public class Evaluator implements Definitions {
     }
 
 
-    private void evaluateWhiteRooks(Board b) {
+    private static void evaluateWhiteRooks(Board b) {
         temp = b.whiteRooks;
         while (temp != 0) {
             square = BitboardUtilsAC.getIndexFromBoard(temp);
@@ -416,7 +416,7 @@ public class Evaluator implements Definitions {
     }
 
 
-    private void evaluateWhiteQueens(Board b) {
+    private static void evaluateWhiteQueens(Board b) {
         temp = b.whiteQueens;
         while (temp != 0) {
             square = BitboardUtilsAC.getIndexFromBoard(temp);
@@ -427,7 +427,7 @@ public class Evaluator implements Definitions {
     }
 
 
-    private void evaluateWhiteKing(Board b) {
+    private static void evaluateWhiteKing(Board b) {
         if (endGame) {
             score += KING_POS_ENDGAME_W[whiteKingSquare];
         } else {
@@ -441,7 +441,7 @@ public class Evaluator implements Definitions {
         }
     }
 
-    private void evaluateBlackPawns(Board b) {
+    private static void evaluateBlackPawns(Board b) {
         blackPassedPawns = 0;
         temp = b.blackPawns;
         while (temp != 0) {
@@ -479,7 +479,7 @@ public class Evaluator implements Definitions {
         }
     }
 
-    private void evaluateBlackKnights(Board b) {
+    private static void evaluateBlackKnights(Board b) {
         temp = b.blackKnights;
         while (temp != 0) {
             square = BitboardUtilsAC.getIndexFromBoard(temp);
@@ -489,9 +489,8 @@ public class Evaluator implements Definitions {
         }
     }
 
-    private void evaluateBlackBishops(Board b) {
-        if (b.blackBishops != 0)
-            if ((b.blackBishops & (b.blackBishops - 1)) != 0)
+    private static void evaluateBlackBishops(Board b) {
+        if(Long.bitCount(b.blackBishops)>1)
                 score -= BONUS_BISHOP_PAIR;
         temp = b.blackBishops;
         while (temp != 0) {
@@ -502,7 +501,7 @@ public class Evaluator implements Definitions {
         }
     }
 
-    private void evaluateBlackRooks(Board b) {
+    private static void evaluateBlackRooks(Board b) {
         temp = b.blackRooks;
         while (temp != 0) {
             square = BitboardUtilsAC.getIndexFromBoard(temp);
@@ -520,7 +519,7 @@ public class Evaluator implements Definitions {
         }
     }
 
-    private void evaluateBlackQueens(Board b) {
+    private static void evaluateBlackQueens(Board b) {
         temp = b.blackQueens;
         while (temp != 0) {
             square = BitboardUtilsAC.getIndexFromBoard(temp);
@@ -530,7 +529,7 @@ public class Evaluator implements Definitions {
         }
     }
 
-    private void evaluateBlackKing(Board b) {
+    private static void evaluateBlackKing(Board b) {
         if (endGame) {
             score -= KING_POS_ENDGAME_B[blackKingSquare];
         } else {
