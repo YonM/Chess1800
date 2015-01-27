@@ -38,7 +38,7 @@ public class Perft implements Definitions {
         if (loaded) {
             //System.out.println("true");
             long start = System.currentTimeMillis();
-            i = perft(b, 0, 5);
+            i = perft(b, 0, 6);
             long stop = System.currentTimeMillis();
             System.out.println("Found " + i + " nodes in " + (stop - start) + " ms.");
         } else {

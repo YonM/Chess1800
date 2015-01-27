@@ -8,7 +8,6 @@ import board.Board;
  */
 public class BitboardMagicAttacksAC {
 
-    private static boolean initialized;
     public static long[] rook;
     public static long[] rookMask;
     public static long[][] rookMagic;
@@ -75,9 +74,9 @@ public class BitboardMagicAttacksAC {
                     | squareAttackedAuxSliderMask(square, -1, BitboardUtilsAC.b_r) 
                     | squareAttackedAuxSliderMask(square, +1, BitboardUtilsAC.b_l);
 
-            bishop[i] = squareAttackedAuxSlider(square, +9, BitboardUtilsAC.b_u | BitboardUtilsAC.b_l) //
-                    | squareAttackedAuxSlider(square, +7, BitboardUtilsAC.b_u | BitboardUtilsAC.b_r) //
-                    | squareAttackedAuxSlider(square, -7, BitboardUtilsAC.b_d | BitboardUtilsAC.b_l) //
+            bishop[i] = squareAttackedAuxSlider(square, +9, BitboardUtilsAC.b_u | BitboardUtilsAC.b_l) 
+                    | squareAttackedAuxSlider(square, +7, BitboardUtilsAC.b_u | BitboardUtilsAC.b_r) 
+                    | squareAttackedAuxSlider(square, -7, BitboardUtilsAC.b_d | BitboardUtilsAC.b_l) 
                     | squareAttackedAuxSlider(square, -9, BitboardUtilsAC.b_d | BitboardUtilsAC.b_r);
 
             bishopMask[i] = squareAttackedAuxSliderMask(square, +9, BitboardUtilsAC.b_u | BitboardUtilsAC.b_l)
@@ -94,9 +93,18 @@ public class BitboardMagicAttacksAC {
                     | squareAttackedAux(square, -6, BitboardUtilsAC.b_d | BitboardUtilsAC.b2_l)
                     | squareAttackedAux(square, -10, BitboardUtilsAC.b_d | BitboardUtilsAC.b2_r);
 
-            whitePawn[i] = squareAttackedAux(square, 7, BitboardUtilsAC.b_u | BitboardUtilsAC.b_r) //
+            whitePawn[i] = squareAttackedAux(square, 7, BitboardUtilsAC.b_u | BitboardUtilsAC.b_r)
                     | squareAttackedAux(square, 9, BitboardUtilsAC.b_u | BitboardUtilsAC.b_l);
-            blackPawn[i] = squareAttackedAux(square, -7, BitboardUtilsAC.b_d | BitboardUtilsAC.b_l) //
+            blackPawn[i] = squareAttackedAux(square, -7, BitboardUtilsAC.b_d | BitboardUtilsAC.b_l)
+                    | squareAttackedAux(square, -9, BitboardUtilsAC.b_d | BitboardUtilsAC.b_r);
+
+            king[i] = squareAttackedAux(square, +8, BitboardUtilsAC.b_u)
+                    | squareAttackedAux(square, -8, BitboardUtilsAC.b_d)
+                    | squareAttackedAux(square, -1, BitboardUtilsAC.b_r)
+                    | squareAttackedAux(square, +1, BitboardUtilsAC.b_l)
+                    | squareAttackedAux(square, +9, BitboardUtilsAC.b_u | BitboardUtilsAC.b_l)
+                    | squareAttackedAux(square, +7, BitboardUtilsAC.b_u | BitboardUtilsAC.b_r)
+                    | squareAttackedAux(square, -7, BitboardUtilsAC.b_d | BitboardUtilsAC.b_l)
                     | squareAttackedAux(square, -9, BitboardUtilsAC.b_d | BitboardUtilsAC.b_r);
 
             // And now generate magics
@@ -127,7 +135,7 @@ public class BitboardMagicAttacksAC {
         long lsb;
         long result = 0L;
         for (i = 0; i < bits; i++) {
-            lsb = mask & (-mask);
+            lsb = Long.lowestOneBit(mask);
             mask ^= lsb; // Deactivates lsb bit of the mask to get next bit next time
             if ((index & (1 << i)) != 0)
                 result |= lsb; // if bit is set to 1

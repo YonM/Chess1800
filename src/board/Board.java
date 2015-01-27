@@ -206,7 +206,7 @@ public class Board implements Definitions {
             while (st.hasMoreTokens()) {
                 arr.add(st.nextToken());
             }
-// traversing the square-description part of the FEN
+            // traversing the square-description part of the FEN
             int up = 7;
             int out = 0;
             for (int i = 0; i < 8; i++) {
@@ -315,8 +315,8 @@ public class Board implements Definitions {
             // castling
             if(arr.get(9).contains("K")) castleWhite += CANCASTLEOO;
             if(arr.get(9).contains("Q")) castleWhite += CANCASTLEOOO;
-            if(arr.get(9).contains("k")) castleBlack+= CANCASTLEOO;
-            if(arr.get(9).contains("q")) castleBlack+=CANCASTLEOOO;
+            if(arr.get(9).contains("k")) castleBlack += CANCASTLEOO;
+            if(arr.get(9).contains("q")) castleBlack += CANCASTLEOOO;
             // en passant
             ePSquare = BitboardUtilsAC.algebraicLocToInt(arr.get(10));
             // 50mr
@@ -585,7 +585,7 @@ public class Board implements Definitions {
                 //Check if we need to update en passant square.
                 if (whiteToMove && (fromBoard << 16 & toBoard) != 0) ePSquare = Long.numberOfTrailingZeros(fromBoard << 8);
                 if (!whiteToMove && (fromBoard >>> 16 & toBoard) != 0) ePSquare = Long.numberOfTrailingZeros(fromBoard >>> 8);
-                //remove en passant column from key, if en passant is set.
+                //add en passant column to key, if en passant is set.
                 if (ePSquare != -1)
                     key ^= Zobrist.passantColumn[ePSquare % 8];
                 //if promotion
@@ -692,13 +692,13 @@ public class Board implements Definitions {
                 //castling handled
                 if (moveType == TYPE_KINGSIDE_CASTLING) {
                     if (whiteToMove) {
-                        castleWhite = 0;
+                        castleWhite &= ~CANCASTLEOO;
                         rookMask = 0xa0L;
                         rookFromIndex = 7;
                         rookToIndex = 5;
                         key ^= Zobrist.whiteKingSideCastling;
                     } else {
-                        castleBlack = 0;
+                        castleBlack &= ~CANCASTLEOO;
                         rookMask = 0xa000000000000000L;
                         rookFromIndex = 63;
                         rookToIndex = 61;
@@ -707,13 +707,13 @@ public class Board implements Definitions {
                 }
                 if (moveType == TYPE_QUEENSIDE_CASTLING) {
                     if (whiteToMove) {
-                        castleWhite = 0;
+                        castleWhite &= ~CANCASTLEOOO;
                         rookMask = 0x9L;
                         rookFromIndex = 0;
                         rookToIndex = 3;
                         key ^= Zobrist.whiteQueenSideCastling;
                     } else {
-                        castleBlack = 0;
+                        castleBlack &= ~CANCASTLEOOO;
                         rookMask = 0x900000000000000L;
                         rookFromIndex = 56;
                         rookToIndex = 59;
@@ -744,25 +744,25 @@ public class Board implements Definitions {
         if (whiteToMove) {
             if ((fromToBoard & 0x90L) != 0) { // 0x90 is e1 | h1 -- the king or
                                               // king's rook has moved
-                castleWhite -=CANCASTLEOO;
+                castleWhite &= ~CANCASTLEOO;
                 key ^= Zobrist.whiteKingSideCastling;
             }
             if ((fromToBoard & 0x11L) != 0) { // 0x11 is e1 | a1 -- the king or
                                            // queen's rook has moved
-                castleWhite -=CANCASTLEOOO;
+                castleWhite &= ~CANCASTLEOOO;
                 key ^= Zobrist.whiteQueenSideCastling;
             }
         } else {
             if ((fromToBoard & 0x9000000000000000L) != 0) { // 0x90... is 0x90
                                                         // <<'d to
                                                         // black's side
-                castleBlack -= CANCASTLEOO;
+                castleBlack &= ~CANCASTLEOO;
                 key ^= Zobrist.blackKingSideCastling;
             }
             if ((fromToBoard & 0x1100000000000000L) != 0) { // 0x11... is 0x11
                                                          // <<'d to
                                                          // black's side
-                castleBlack -= CANCASTLEOOO;
+                castleBlack &= ~CANCASTLEOOO;
                 key ^= Zobrist.blackQueenSideCastling;
             }
         }
@@ -816,7 +816,7 @@ public class Board implements Definitions {
     }
 
     public void unmakeMove(int moveNumber) {
-        if (moveNumber < 1 || moveNumber < initMoveNumber) return;
+        if (moveNumber < 0 || moveNumber < initMoveNumber) return;
 
         whitePawns = white_pawn_history[moveNumber];
         whiteKnights = white_knight_history[moveNumber];

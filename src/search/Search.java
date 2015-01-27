@@ -19,6 +19,7 @@ public class Search implements Definitions {
     public static Integer legalMoves;
     public static int singleMove = 0;
     private static final int MAX_DEPTH = 4;
+    private static int evals;
     private static int[][] whiteHeuristics;
     private static int[][] blackHeuristics;
     private static int[] lastPV;
@@ -49,6 +50,7 @@ public class Search implements Definitions {
 
         if (legalMoves == 1) return singleMove;
 
+        evals = 0;
         whiteHeuristics = new int[MAX_PLY][MAX_PLY];
         blackHeuristics = new int[MAX_PLY][MAX_PLY];
         lastPV = new int[MAX_PLY];
@@ -67,7 +69,8 @@ public class Search implements Definitions {
     }
 
     private static int alphaBetaPVS(Board b, int ply, int depth, int alpha, int beta) {
-        int i, j, movesFound, pvMovesFound, val;
+        int j, val;
+        evals++;
         triangularLength[ply] = ply;
         if (depth <= 0) {
             follow_pv = false;
@@ -93,12 +96,12 @@ public class Search implements Definitions {
         }
 
         null_allowed = true;
-        movesFound = 0;
-        pvMovesFound = 0;
+        int movesFound = 0;
+        int pvMovesFound = 0;
         int[] moves = new int[MAX_MOVES];
         num_moves = MoveGeneratorAC.getAllMoves(b, moves);
 
-        for (i = 0; i < num_moves; i++) {
+        for (int i = 0; i < num_moves; i++) {
             selectBestMoveFirst(b, ply, depth, i, b.whiteToMove);
 
             if (b.makeMove(moves[i])) {
@@ -136,11 +139,11 @@ public class Search implements Definitions {
                 blackHeuristics[MoveAC.getFromIndex(triangularArray[ply][ply])][MoveAC.getToIndex(triangularArray[ply][ply])] += depth * depth;
         }
 
-        if (b.fiftyMove >= 100) return Evaluator.DRAWSCORE;                 //Fifty-move rule
+        if (b.fiftyMove >= 100) return DRAWSCORE;                 //Fifty-move rule
 
         if (movesFound == 0) {
-            if (b.isOwnKingAttacked()) return -Evaluator.CHECKMATE + ply - 1; //Checkmate
-            return Evaluator.DRAWSCORE;                                 //Stalemate
+            if (b.isOwnKingAttacked()) return -CHECKMATE + ply - 1; //Checkmate
+            return DRAWSCORE;                                 //Stalemate
         }
 
         return alpha;

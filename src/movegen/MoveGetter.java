@@ -370,7 +370,7 @@ public class MoveGetter implements Definitions {
                     num_moves_generated++;
                 }
             } else {
-// no promos to worry about, but there is en passant
+                // no promos to worry about, but there is en passant
                 if (((fromBoard & BitboardUtilsAC.b_l) == 0)
                         && (((fromBoard >>> 7 & b.whitePieces) != 0) || Long.numberOfTrailingZeros(fromBoard >>> 7) == b.ePSquare)) {
                     int toIndex = Long.numberOfTrailingZeros(fromBoard >>> 7);
@@ -427,7 +427,7 @@ public class MoveGetter implements Definitions {
             long fromBoard = Long.lowestOneBit(bishops);
             int fromIndex = Long.numberOfTrailingZeros(fromBoard);
             long movelocs =
-                    BitboardMagicAttacksAC.getBishopAttacks(fromIndex, b.allPieces ^ fromBoard);
+                    BitboardMagicAttacksAC.getBishopAttacks(fromIndex, b.allPieces & ~fromBoard);
             movelocs &= ~b.whitePieces;
             while (movelocs != 0) {
                 long to = Long.lowestOneBit(movelocs);
@@ -452,7 +452,7 @@ public class MoveGetter implements Definitions {
             long fromBoard = Long.lowestOneBit(bishops);
             int fromIndex = Long.numberOfTrailingZeros(fromBoard);
             long movelocs =
-                    BitboardMagicAttacksAC.getBishopAttacks(fromIndex, b.allPieces ^ fromBoard);
+                    BitboardMagicAttacksAC.getBishopAttacks(fromIndex, b.allPieces & ~fromBoard);
             movelocs &= ~b.blackPieces;
             while (movelocs != 0) {
                 long to = Long.lowestOneBit(movelocs);
@@ -476,7 +476,7 @@ public class MoveGetter implements Definitions {
         while (rooks != 0) {
             long fromBoard = Long.lowestOneBit(rooks);
             int fromIndex = Long.numberOfTrailingZeros(fromBoard);
-            long movelocs = BitboardMagicAttacksAC.getRookAttacks(fromIndex, b.allPieces ^ fromBoard);
+            long movelocs = BitboardMagicAttacksAC.getRookAttacks(fromIndex, b.allPieces & ~fromBoard);
             movelocs &= ~b.whitePieces;
             while (movelocs != 0) {
                 long to = Long.lowestOneBit(movelocs);
@@ -499,7 +499,7 @@ public class MoveGetter implements Definitions {
         while (rooks != 0) {
             long fromBoard = Long.lowestOneBit(rooks);
             int fromIndex = Long.numberOfTrailingZeros(fromBoard);
-            long movelocs = BitboardMagicAttacksAC.getRookAttacks(fromIndex, b.allPieces ^ fromBoard);
+            long movelocs = BitboardMagicAttacksAC.getRookAttacks(fromIndex, b.allPieces & ~fromBoard);
             movelocs &= ~b.blackPieces;
             while (movelocs != 0) {
                 long to = Long.lowestOneBit(movelocs);
@@ -523,7 +523,7 @@ public class MoveGetter implements Definitions {
             long fromBoard = Long.lowestOneBit(queens);
             int fromIndex = Long.numberOfTrailingZeros(fromBoard);
             long movelocs =
-                    BitboardMagicAttacksAC.getQueenAttacks(fromIndex, b.allPieces ^ fromBoard);
+                    BitboardMagicAttacksAC.getQueenAttacks(fromIndex, b.allPieces & ~fromBoard);
             movelocs &= ~b.whitePieces;
             while (movelocs != 0) {
                 long to = Long.lowestOneBit(movelocs);
@@ -548,7 +548,7 @@ public class MoveGetter implements Definitions {
             long fromBoard = Long.lowestOneBit(queens);
             int fromIndex = Long.numberOfTrailingZeros(fromBoard);
             long movelocs =
-                    BitboardMagicAttacksAC.getQueenAttacks(fromIndex, b.allPieces ^ fromBoard);
+                    BitboardMagicAttacksAC.getQueenAttacks(fromIndex, b.allPieces & ~fromBoard);
             movelocs &= ~b.blackPieces;
             while (movelocs != 0) {
                 long to = Long.lowestOneBit(movelocs);
@@ -565,6 +565,5 @@ public class MoveGetter implements Definitions {
         }
         return num_moves_generated;
     }
-
 
 }
