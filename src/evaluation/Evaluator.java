@@ -268,7 +268,6 @@ public class Evaluator implements Definitions {
     private static int whitePawns, whiteKnights, whiteBishops, whiteRooks, whiteQueens;
     private static int blackPawns, blackKnights, blackBishops, blackRooks, blackQueens;
     private static int whiteKingSquare, blackKingSquare;
-    private static int whiteTotalMat, blackTotalMat;
     private static int whiteTotal, blackTotal;
     private static boolean endGame;
     private static long temp, whitePassedPawns, blackPassedPawns;
@@ -285,7 +284,6 @@ public class Evaluator implements Definitions {
         whiteBishops = Long.bitCount(b.whiteBishops);
         whiteRooks = Long.bitCount(b.whiteRooks);
         whiteQueens = Long.bitCount(b.whiteQueens);
-        whiteTotalMat = 3 * whiteKnights + 3 * whiteBishops + 5 * whiteRooks + 10 * whiteQueens;
         whiteTotal = whitePawns + whiteKnights + whiteBishops + whiteRooks + whiteQueens;
 
         blackPawns = Long.bitCount(b.blackPawns);
@@ -293,11 +291,10 @@ public class Evaluator implements Definitions {
         blackBishops = Long.bitCount(b.blackBishops);
         blackRooks = Long.bitCount(b.blackRooks);
         blackQueens = Long.bitCount(b.blackQueens);
-        blackTotalMat = 3 * blackKnights + 3 * blackBishops + 5 * blackRooks + 10 * blackQueens;
         blackTotal = blackPawns + blackKnights + blackBishops + blackRooks + blackQueens;
 
         //Test for end game if white or black total material less than the value of a Rook+ Queen.
-        endGame = (whiteTotalMat < 15 || blackTotalMat < 15);
+        endGame = (b.whitePieceMaterial() < (QUEEN_VALUE + ROOK_VALUE) || b.blackPieceMaterial() < (QUEEN_VALUE + ROOK_VALUE));
 
 
         /* Evaluate material. Winning side will prefer to exchange pieces.
@@ -305,9 +302,9 @@ public class Evaluator implements Definitions {
         *  Losing a piece (from balanced material) becomes more severe in the endgame.
         */
 
-        if (whiteTotalMat + whitePawns > blackTotalMat + blackPawns) {
+        if (b.whitePieceMaterial() + PAWN_VALUE *whitePawns > b.blackPieceMaterial() + PAWN_VALUE *blackPawns) {
             score += 45 + 3 * whiteTotal - 6 * blackTotal;
-        } else if (whiteTotalMat + whitePawns < blackTotalMat + blackPawns) {
+        } else if (b.whitePieceMaterial() + PAWN_VALUE *whitePawns < b.blackPieceMaterial() + PAWN_VALUE *blackPawns) {
             score -= 45 + 3 * blackTotal - 6 * whiteTotal;
         }
         evaluateWhiteMaterial(b);
@@ -340,7 +337,7 @@ public class Evaluator implements Definitions {
         temp = b.whitePawns;
         while (temp != 0) {
             square = BitboardUtilsAC.getIndexFromBoard(temp);
-
+            score += PAWN_VALUE;
             score += PAWN_POS_W[square];
             score += PAWN_OPPONENT_DISTANCE[DISTANCE[square][blackKingSquare]];
             if (endGame)
@@ -377,6 +374,7 @@ public class Evaluator implements Definitions {
         temp = b.whiteKnights;
         while (temp != 0) {
             square = BitboardUtilsAC.getIndexFromBoard(temp);
+            score += KNIGHT_VALUE;
             score += KNIGHT_POS_W[square];
             score += KNIGHT_DISTANCE[DISTANCE[square][blackKingSquare]];
             temp ^= BitboardUtilsAC.getSquare[square];
@@ -389,6 +387,7 @@ public class Evaluator implements Definitions {
         temp = b.whiteBishops;
         while (temp != 0) {
             square = BitboardUtilsAC.getIndexFromBoard(temp);
+            score += BISHOP_VALUE;
             score += BISHOP_POS_W[square];
             score += BISHOP_DISTANCE[DISTANCE[square][blackKingSquare]];
             temp ^= BitboardUtilsAC.getSquare[square];
@@ -400,6 +399,7 @@ public class Evaluator implements Definitions {
         temp = b.whiteRooks;
         while (temp != 0) {
             square = BitboardUtilsAC.getIndexFromBoard(temp);
+            score += ROOK_VALUE;
             score += ROOK_POS_W[square];
             score += ROOK_DISTANCE[DISTANCE[square][blackKingSquare]];
             if ((BitboardUtilsAC.COLUMN[square] & whitePassedPawns) != 0)
@@ -420,6 +420,7 @@ public class Evaluator implements Definitions {
         temp = b.whiteQueens;
         while (temp != 0) {
             square = BitboardUtilsAC.getIndexFromBoard(temp);
+            score += QUEEN_VALUE;
             score += QUEEN_POS_W[square];
             score += QUEEN_DISTANCE[DISTANCE[square][blackKingSquare]];
             temp ^= BitboardUtilsAC.getSquare[square];
@@ -446,7 +447,7 @@ public class Evaluator implements Definitions {
         temp = b.blackPawns;
         while (temp != 0) {
             square = BitboardUtilsAC.getIndexFromBoard(temp);
-
+            score -= PAWN_VALUE;
             score -= PAWN_POS_B[square];
             score -= PAWN_OPPONENT_DISTANCE[DISTANCE[square][whiteKingSquare]];
             if (endGame)
@@ -483,6 +484,7 @@ public class Evaluator implements Definitions {
         temp = b.blackKnights;
         while (temp != 0) {
             square = BitboardUtilsAC.getIndexFromBoard(temp);
+            score -= KNIGHT_VALUE;
             score -= KNIGHT_POS_B[square];
             score -= KNIGHT_DISTANCE[DISTANCE[square][whiteKingSquare]];
             temp ^= BitboardUtilsAC.getSquare[square];
@@ -495,6 +497,7 @@ public class Evaluator implements Definitions {
         temp = b.blackBishops;
         while (temp != 0) {
             square = BitboardUtilsAC.getIndexFromBoard(temp);
+            score -= BISHOP_VALUE;
             score -= BISHOP_POS_B[square];
             score -= BISHOP_DISTANCE[DISTANCE[square][whiteKingSquare]];
             temp ^= BitboardUtilsAC.getSquare[square];
@@ -505,6 +508,7 @@ public class Evaluator implements Definitions {
         temp = b.blackRooks;
         while (temp != 0) {
             square = BitboardUtilsAC.getIndexFromBoard(temp);
+            score -= ROOK_VALUE;
             score -= ROOK_POS_B[square];
             score -= ROOK_DISTANCE[DISTANCE[square][whiteKingSquare]];
             if ((BitboardUtilsAC.COLUMN[square] & blackPassedPawns) != 0)
@@ -523,6 +527,7 @@ public class Evaluator implements Definitions {
         temp = b.blackQueens;
         while (temp != 0) {
             square = BitboardUtilsAC.getIndexFromBoard(temp);
+            score -= QUEEN_VALUE;
             score -= QUEEN_POS_B[square];
             score -= QUEEN_DISTANCE[DISTANCE[square][whiteKingSquare]];
             temp ^= BitboardUtilsAC.getSquare[square];
