@@ -1,5 +1,6 @@
 package search;
 
+import bitboard.BitboardUtilsAC;
 import board.Board;
 import definitions.Definitions;
 import evaluation.Evaluator;
@@ -29,7 +30,7 @@ public class Search implements Definitions {
     private int[] lastPV;
     private boolean follow_pv;
     private boolean null_allowed;
-
+    private static final boolean VERBOSE= false;
     //private int lastPVLength;
 
 
@@ -69,16 +70,23 @@ public class Search implements Definitions {
         blackHeuristics = new int[MAX_PLY][MAX_PLY];
         lastPV = new int[MAX_PLY];
         //lastPVLength = 0;
-
+        long start = System.currentTimeMillis();
         for (int currentDepth = 1; currentDepth < MAX_DEPTH; currentDepth++) {
             triangularArray = new int[MAX_GAME_LENGTH][MAX_GAME_LENGTH];
             triangularLength = new int[MAX_GAME_LENGTH];
             follow_pv = true;
             null_allowed = true;
             score = alphaBetaPVS(b, 0, currentDepth, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
+            if(VERBOSE)
+                System.out.println("(" + currentDepth + ") "
+                        + ( (System.currentTimeMillis() - start) / 1000.0) + "s ("
+                        + BitboardUtilsAC.moveToString(lastPV[0]) + ") -- " + evals
+                        + " nodes evaluated.");
             if ((score > (Evaluator.CHECKMATE - currentDepth)) || (score < -(Evaluator.CHECKMATE - currentDepth)))
                 currentDepth = MAX_DEPTH;
         }
+        if(VERBOSE)
+            System.out.println(evals + " positions evaluated.");
         return lastPV[0];
     }
 
@@ -122,7 +130,7 @@ public class Search implements Definitions {
             if (b.makeMove(moves[i])) {
                 movesFound++;
                 //Late Move Reduction
-                if(movesFound>=LATEMOVE_THRESHOLD && depth>LATEMOVE_DEPTH_THRESHOLD && !b.isCheck()){
+                if(movesFound>=LATEMOVE_THRESHOLD && depth>LATEMOVE_DEPTH_THRESHOLD && !b.isCheck()&& !MoveAC.isCapture(moves[i])){
                     val= -alphaBetaPVS(b, ply + 1, depth - 2, -alpha - 1, -alpha);
                 }
                 else if (pvMovesFound != 0) {
@@ -148,6 +156,7 @@ public class Search implements Definitions {
                         triangularArray[ply][j] = triangularArray[ply + 1][j];  //appends latest best PV from deeper plies
 
                     triangularLength[ply] = triangularLength[ply + 1];
+                    if(ply == 0) rememberPV();
                 }
             }
         }
@@ -169,7 +178,7 @@ public class Search implements Definitions {
     }
 
     private void selectBestMoveFirst(Board b, int[] moves, int num_moves, int ply, int depth, int nextIndex, boolean whiteToMove) {
-        int tempMove = 0;
+        int tempMove;
         int best, bestIndex, i;
         // Re-orders the move list so that the PV is selected as the next move to try.
         if (follow_pv && depth > 1) {

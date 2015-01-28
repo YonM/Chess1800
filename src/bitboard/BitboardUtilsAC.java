@@ -1,12 +1,15 @@
 package bitboard;
 
+import definitions.Definitions;
+import move.MoveAC;
+
 /**
  * Created by Yonathan on 07/12/2014.
  * Class provided mostly by Alberto Alonso Rubial's Carballo Chess Engine @ https://github.com/albertoruibal/carballo
  * With tweaks provided by Yonathan Maalo.
  */
 
-public class BitboardUtilsAC {
+public class BitboardUtilsAC implements Definitions{
     public static final long A8 = 0x8000000000000000L;
     public static final long H1 = 0x0000000000000001L;
     public static final long WHITE_SQUARES = 0x55aa55aa55aa55aaL;
@@ -237,7 +240,19 @@ public class BitboardUtilsAC {
         }
         return -1;
     }
-
+    
+    /**
+     * Converts a location in "algebraic notation" (ie. of the form 'a7', 'c5',
+     * etc.) into its integer representation.
+     *
+     * <b>Note:</b> this method may throw a <code>NumberFormatException</code>
+     * if the passed string is malformed-- no error checking occurs in this
+     * method.
+     *
+     * @param loc
+     *            a string representing a location
+     * @return the integer representation of the string
+     */
     public static int algebraicLocToInt(String loc) {
         if (loc.equals("-"))
             return -1;
@@ -246,6 +261,23 @@ public class BitboardUtilsAC {
         return up * 8 + out;
     }
 
+    /**
+     * Converts an integer location in [0, 64) to a string in
+     * "algebraic notation" (ie. of the form 'a7', 'c5).
+     *
+     * @param loc
+     *            an int in [0, 64) representing a location
+     * @return the "algebraic notation" of the location
+     */
+    public static String intToAlgebraicLoc(int loc) {
+        if (loc == -1)
+            return "-";
+        int out = loc % 8;
+        int up = loc / 8;
+        char outc = (char) (out + 'a');
+        char upc = (char) (up + '1');
+        return outc + "" + upc;
+    }
     public static long algebraic2Square(String name) {
         long aux = H1;
         for (int i = 0; i < 64; i++) {
@@ -283,5 +315,58 @@ public class BitboardUtilsAC {
      */
     public static int distance(int index1, int index2) {
         return Math.max(Math.abs((index1 & 7) - (index2 & 7)), Math.abs((index1 >> 3) - (index2 >> 3)));
+    }
+
+    public static String moveToString(int move) {
+       String moveString= "";
+        if(MoveAC.getMoveType(move) == TYPE_KINGSIDE_CASTLING)
+            return "0-0";
+        if(MoveAC.getMoveType(move) == TYPE_QUEENSIDE_CASTLING)
+            return "0-0-0";
+        switch (MoveAC.getPieceMoved(move)) {
+            case KNIGHT:
+                moveString += "N";
+                break;
+            case BISHOP:
+                moveString += "B";
+                break;
+            case ROOK:
+                moveString += "R";
+                break;
+            case QUEEN:
+                moveString += "Q";
+                break;
+            case KING:
+                moveString += "K";
+                break;
+            default:
+                moveString = "ERROR";
+                return moveString;
+        }
+        moveString += intToAlgebraicLoc(MoveAC.getFromIndex(move));
+        if (MoveAC.isCapture(move))
+            moveString += "x";
+        else
+            moveString += "-";
+        moveString += intToAlgebraicLoc(MoveAC.getToIndex(move));
+
+        switch (MoveAC.getMoveType(move)) {
+            case TYPE_EN_PASSANT:
+                moveString += " e.p.";
+                break;
+            case TYPE_PROMOTION_BISHOP:
+                moveString += "=B";
+                break;
+            case TYPE_PROMOTION_KNIGHT:
+                moveString += "=N";
+                break;
+            case TYPE_PROMOTION_ROOK:
+                moveString += "=R";
+                break;
+            case TYPE_PROMOTION_QUEEN:
+                moveString += "=Q";
+                break;
+        }
+        return moveString;
     }
 }
