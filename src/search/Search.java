@@ -30,8 +30,6 @@ public class Search implements Definitions {
     private boolean follow_pv;
     private boolean null_allowed;
 
-    public int num_moves;
-    public int[] moves;
     //private int lastPVLength;
 
 
@@ -115,11 +113,11 @@ public class Search implements Definitions {
         int movesFound = 0;
         int pvMovesFound = 0;
         int[] moves = new int[MAX_MOVES];
-        num_moves = moveGenerator.getAllMoves(b, moves);
+        int num_moves = moveGenerator.getAllMoves(b, moves);
 
         int j;
         for (int i = 0; i < num_moves; i++) {
-            selectBestMoveFirst(b, ply, depth, i, b.whiteToMove);
+            selectBestMoveFirst(b, moves, num_moves, ply, depth, i, b.whiteToMove);
 
             if (b.makeMove(moves[i])) {
                 movesFound++;
@@ -137,15 +135,15 @@ public class Search implements Definitions {
                 b.unmakeMove();
                 if (val >= beta) {
                     if (b.whiteToMove)
-                        whiteHeuristics[MoveAC.getFromIndex(b.moves[i])][MoveAC.getToIndex(b.moves[i])] += depth * depth;
+                        whiteHeuristics[MoveAC.getFromIndex(moves[i])][MoveAC.getToIndex(moves[i])] += depth * depth;
                     else
-                        blackHeuristics[MoveAC.getFromIndex(b.moves[i])][MoveAC.getToIndex(b.moves[i])] += depth * depth;
+                        blackHeuristics[MoveAC.getFromIndex(moves[i])][MoveAC.getToIndex(moves[i])] += depth * depth;
                     return beta;
                 }
                 if (val > alpha) {
                     alpha = val;
                     pvMovesFound++;
-                    triangularArray[ply][ply] = b.moves[i];    //save the move
+                    triangularArray[ply][ply] = moves[i];    //save the move
                     for (j = ply + 1; j < triangularLength[ply + 1]; j++)
                         triangularArray[ply][j] = triangularArray[ply + 1][j];  //appends latest best PV from deeper plies
 
@@ -170,49 +168,49 @@ public class Search implements Definitions {
         return alpha;
     }
 
-    private void selectBestMoveFirst(Board b, int ply, int depth, int nextIndex, boolean whiteToMove) {
+    private void selectBestMoveFirst(Board b, int[] moves, int num_moves, int ply, int depth, int nextIndex, boolean whiteToMove) {
         int tempMove = 0;
         int best, bestIndex, i;
         // Re-orders the move list so that the PV is selected as the next move to try.
         if (follow_pv && depth > 1) {
             for (i = nextIndex; i < num_moves; i++) {
-                if (b.moves[i] == lastPV[ply]) {
-                    tempMove = b.moves[i];
-                    b.moves[i] = b.moves[nextIndex];
-                    b.moves[nextIndex] = tempMove;
+                if (moves[i] == lastPV[ply]) {
+                    tempMove = moves[i];
+                    moves[i] = moves[nextIndex];
+                    moves[nextIndex] = tempMove;
                     return;
                 }
             }
         }
 
         if (whiteToMove) {
-            best = whiteHeuristics[MoveAC.getFromIndex(b.moves[nextIndex])][MoveAC.getToIndex(b.moves[nextIndex])];
+            best = whiteHeuristics[MoveAC.getFromIndex(moves[nextIndex])][MoveAC.getToIndex(moves[nextIndex])];
             bestIndex = nextIndex;
             for (i = nextIndex + 1; i < num_moves; i++) {
-                if (whiteHeuristics[MoveAC.getFromIndex(b.moves[i])][MoveAC.getToIndex(b.moves[i])] > best) {
-                    best = whiteHeuristics[MoveAC.getFromIndex(b.moves[i])][MoveAC.getToIndex(b.moves[i])];
+                if (whiteHeuristics[MoveAC.getFromIndex(moves[i])][MoveAC.getToIndex(moves[i])] > best) {
+                    best = whiteHeuristics[MoveAC.getFromIndex(moves[i])][MoveAC.getToIndex(moves[i])];
                     bestIndex = i;
                 }
             }
             if (bestIndex > nextIndex) {
-                tempMove = b.moves[bestIndex];
-                b.moves[bestIndex] = b.moves[nextIndex];
-                b.moves[nextIndex] = tempMove;
+                tempMove = moves[bestIndex];
+                moves[bestIndex] = moves[nextIndex];
+                moves[nextIndex] = tempMove;
             }
 
         } else {
-            best = blackHeuristics[MoveAC.getFromIndex(b.moves[nextIndex])][MoveAC.getToIndex(b.moves[nextIndex])];
+            best = blackHeuristics[MoveAC.getFromIndex(moves[nextIndex])][MoveAC.getToIndex(moves[nextIndex])];
             bestIndex = nextIndex;
             for (i = nextIndex + 1; i < num_moves; i++) {
-                if (blackHeuristics[MoveAC.getFromIndex(b.moves[i])][MoveAC.getToIndex(b.moves[i])] > best) {
-                    best = blackHeuristics[MoveAC.getFromIndex(b.moves[i])][MoveAC.getToIndex(b.moves[i])];
+                if (blackHeuristics[MoveAC.getFromIndex(moves[i])][MoveAC.getToIndex(moves[i])] > best) {
+                    best = blackHeuristics[MoveAC.getFromIndex(moves[i])][MoveAC.getToIndex(moves[i])];
                     bestIndex = i;
                 }
             }
             if (bestIndex > nextIndex) {
-                tempMove = b.moves[bestIndex];
-                b.moves[bestIndex] = b.moves[nextIndex];
-                b.moves[nextIndex] = tempMove;
+                tempMove = moves[bestIndex];
+                moves[bestIndex] = moves[nextIndex];
+                moves[nextIndex] = tempMove;
             }
         }
     }
