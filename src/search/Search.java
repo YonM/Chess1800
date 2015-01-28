@@ -3,6 +3,7 @@ package search;
 import board.Board;
 import definitions.Definitions;
 import evaluation.Evaluator;
+import move.Move;
 import move.MoveAC;
 import movegen.MoveGeneratorAC;
 
@@ -14,35 +15,50 @@ import movegen.MoveGeneratorAC;
  */
 public class Search implements Definitions {
 
-    private static int[][] triangularArray;
-    private static int[] triangularLength;
-    public static Integer legalMoves;
-    public static int singleMove = 0;
-    private static final int MAX_DEPTH = 5;
-    private static int evals;
-    private static int[][] whiteHeuristics;
-    private static int[][] blackHeuristics;
-    private static int[] lastPV;
-    private static boolean follow_pv;
-    private static boolean null_allowed;
+    private static Search instance;
+    private int[][] triangularArray;
+    private int[] triangularLength;
+    public Integer legalMoves;
+    public int singleMove = 0;
+    private final int MAX_DEPTH = 5;
+    private MoveGeneratorAC moveGenerator;
+    private Evaluator evaluator;
+    private int evals;
+    private int[][] whiteHeuristics;
+    private int[][] blackHeuristics;
+    private int[] lastPV;
+    private boolean follow_pv;
+    private boolean null_allowed;
 
-    public static int num_moves;
-    public static int[] moves;
-    //private static int lastPVLength;
+    public int num_moves;
+    public int[] moves;
+    //private int lastPVLength;
 
-    private static Evaluator evaluator;
 
-    static {
-        triangularArray = new int[MAX_GAME_LENGTH][MAX_GAME_LENGTH];
-        triangularLength = new int[MAX_GAME_LENGTH];
+
+    public static Search getInstance() {
+        if(instance==null){
+            instance = new Search();
+            return instance;
+        }
+        return instance;
     }
 
-    public static void setEvaluator(Evaluator eval) {
+
+    public Search()
+    {
+        triangularArray = new int[MAX_GAME_LENGTH][MAX_GAME_LENGTH];
+        triangularLength = new int[MAX_GAME_LENGTH];
+        evaluator = Evaluator.getInstance();
+        moveGenerator = MoveGeneratorAC.getInstance();
+    }
+
+    public void setEvaluator(Evaluator eval) {
         evaluator = eval;
     }
 
 
-    public static int findBestMove(Board b) {
+    public int findBestMove(Board b) {
         int score;
         legalMoves = 0;
 
@@ -68,7 +84,7 @@ public class Search implements Definitions {
         return lastPV[0];
     }
 
-    private static int alphaBetaPVS(Board b, int ply, int depth, int alpha, int beta) {
+    private int alphaBetaPVS(Board b, int ply, int depth, int alpha, int beta) {
         evals++;
         triangularLength[ply] = ply;
         if (depth <= 0) {
@@ -76,7 +92,7 @@ public class Search implements Definitions {
             return quiescenceSearch(b, ply, alpha, beta);
         }
 
-        if (b.isEndOfGame()) return Evaluator.eval(b);
+        if (b.isEndOfGame()) return evaluator.eval(b);
 
         int val;
         //Try Null move
@@ -99,7 +115,7 @@ public class Search implements Definitions {
         int movesFound = 0;
         int pvMovesFound = 0;
         int[] moves = new int[MAX_MOVES];
-        num_moves = MoveGeneratorAC.getAllMoves(b, moves);
+        num_moves = moveGenerator.getAllMoves(b, moves);
 
         int j;
         for (int i = 0; i < num_moves; i++) {
@@ -154,7 +170,7 @@ public class Search implements Definitions {
         return alpha;
     }
 
-    private static void selectBestMoveFirst(Board b, int ply, int depth, int nextIndex, boolean whiteToMove) {
+    private void selectBestMoveFirst(Board b, int ply, int depth, int nextIndex, boolean whiteToMove) {
         int tempMove = 0;
         int best, bestIndex, i;
         // Re-orders the move list so that the PV is selected as the next move to try.
@@ -201,7 +217,7 @@ public class Search implements Definitions {
         }
     }
 
-    private static int quiescenceSearch(Board b, int ply, int alpha, int beta) {
+    private int quiescenceSearch(Board b, int ply, int alpha, int beta) {
         triangularLength[ply] = ply;
 
         //Check if we are in check.
@@ -216,7 +232,7 @@ public class Search implements Definitions {
         // generate captures & promotions:
         // genCaptures returns a sorted move list
         int[] captures = new int[MAX_MOVES];
-        int num_captures = MoveGeneratorAC.genCaptures(b, captures);
+        int num_captures = moveGenerator.genCaptures(b, captures);
 
         for (int i = 0; i < num_captures; i++) {
             b.makeMove(captures[i]);
@@ -240,11 +256,12 @@ public class Search implements Definitions {
     }
 
 
-    private static void rememberPV() {
+    private void rememberPV() {
         int i;
         //lastPVLength = triangularLength[0];
         for (i = 0; i < triangularLength[0]; i++) {
             lastPV[i] = triangularArray[0][i];
         }
     }
+
 }

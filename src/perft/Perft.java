@@ -49,11 +49,11 @@ public class Perft implements Definitions {
 
     private static int perft(Board b, int ply, int depth) {
         if (depth == 0) return 1;
-
+        MoveGeneratorAC moveGenerator = MoveGeneratorAC.getInstance();
 
         //Move[] moves = new Move [MAX_MOVES];
         int [] moves = new int[MAX_MOVES];
-        int num_moves = MoveGeneratorAC.getAllMoves(b,moves);
+        int num_moves = moveGenerator.getAllMoves(b,moves);
         int count = 0;
 
         for (int i = 0; i < num_moves; i++) {

@@ -22,27 +22,27 @@ import definitions.Definitions;
 public class Evaluator implements Definitions {
 
     //Bonus/Penalty constants
-    private final static int PENALTY_DOUBLED_PAWN = 10;
-    private final static int PENALTY_ISOLATED_PAWN = 20;
-    private final static int PENALTY_BACKWARD_PAWN = 8;
-    private final static int BONUS_PASSED_PAWN = 20;
-    private final static int BONUS_BISHOP_PAIR = 50;
-    private final static int BONUS_ROOK_BEHIND_PASSED_PAWN = 20;
-    private final static int BONUS_ROOK_ON_OPEN_FILE = 20;
-    private final static int BONUS_TWO_ROOKS_ON_OPEN_FILE = 20;
-    private final static int BONUS_PAWN_SHIELD_STRONG = 9;
-    private final static int BONUS_PAWN_SHIELD_WEAK = 4;
+    private final int PENALTY_DOUBLED_PAWN = 10;
+    private final int PENALTY_ISOLATED_PAWN = 20;
+    private final int PENALTY_BACKWARD_PAWN = 8;
+    private final int BONUS_PASSED_PAWN = 20;
+    private final int BONUS_BISHOP_PAIR = 50;
+    private final int BONUS_ROOK_BEHIND_PASSED_PAWN = 20;
+    private final int BONUS_ROOK_ON_OPEN_FILE = 20;
+    private final int BONUS_TWO_ROOKS_ON_OPEN_FILE = 20;
+    private final int BONUS_PAWN_SHIELD_STRONG = 9;
+    private final int BONUS_PAWN_SHIELD_WEAK = 4;
 
     //King Distance Safety
-    private final static int[] PAWN_OWN_DISTANCE = {0, 8, 4, 2, 0, 0, 0, 0};
-    private final static int[] PAWN_OPPONENT_DISTANCE = {0, 2, 1, 0, 0, 0, 0, 0};
-    private final static int[] KNIGHT_DISTANCE = {0, 4, 4, 0, 0, 0, 0, 0};
-    private final static int[] BISHOP_DISTANCE = {0, 5, 4, 3, 2, 1, 0, 0};
-    private final static int[] ROOK_DISTANCE = {0, 7, 5, 4, 3, 0, 0, 0};
-    private final static int[] QUEEN_DISTANCE = {0, 10, 8, 5, 4, 0, 0, 0};
-    private final static int[][] DISTANCE;
+    private final int[] PAWN_OWN_DISTANCE = {0, 8, 4, 2, 0, 0, 0, 0};
+    private final int[] PAWN_OPPONENT_DISTANCE = {0, 2, 1, 0, 0, 0, 0, 0};
+    private final int[] KNIGHT_DISTANCE = {0, 4, 4, 0, 0, 0, 0, 0};
+    private final int[] BISHOP_DISTANCE = {0, 5, 4, 3, 2, 1, 0, 0};
+    private final int[] ROOK_DISTANCE = {0, 7, 5, 4, 3, 0, 0, 0};
+    private final int[] QUEEN_DISTANCE = {0, 10, 8, 5, 4, 0, 0, 0};
+    private final int[][] DISTANCE;
 
-    public final static int[] MIRROR = {
+    public final int[] MIRROR = {
             56, 57, 58, 59, 60, 61, 62, 63,
             48, 49, 50, 51, 52, 53, 54, 55,
             40, 41, 42, 43, 44, 45, 46, 47,
@@ -54,15 +54,15 @@ public class Evaluator implements Definitions {
     };
 
     //PIECE SQUARE TABLES
-    private static final int[] PAWN_POS_W;
-    private static final int[] KNIGHT_POS_W;
-    private static final int[] BISHOP_POS_W;
-    private static final int[] ROOK_POS_W;
-    private static final int[] QUEEN_POS_W;
-    private static final int[] KING_POS_W;
-    private static final int[] KING_POS_ENDGAME_W;
+    private final int[] PAWN_POS_W;
+    private final int[] KNIGHT_POS_W;
+    private final int[] BISHOP_POS_W;
+    private final int[] ROOK_POS_W;
+    private final int[] QUEEN_POS_W;
+    private final int[] KING_POS_W;
+    private final int[] KING_POS_ENDGAME_W;
 
-    private static final int[] PAWN_POS_B = {
+    private final int[] PAWN_POS_B = {
             0, 0, 0, 0, 0, 0, 0, 0,
             5, 10, 15, 20, 20, 15, 10, 5,
             4, 8, 12, 16, 16, 12, 8, 4,
@@ -73,7 +73,7 @@ public class Evaluator implements Definitions {
             0, 0, 0, 0, 0, 0, 0, 0
     };
 
-    private static final int[] KNIGHT_POS_B = {
+    private final int[] KNIGHT_POS_B = {
             -10, -10, -10, -10, -10, -10, -10, -10,
             -10, 0, 0, 0, 0, 0, 0, -10,
             -10, 0, 5, 5, 5, 5, 0, -10,
@@ -84,7 +84,7 @@ public class Evaluator implements Definitions {
             -10, -30, -10, -10, -10, -10, -30, -10
     };
 
-    private static final int[] BISHOP_POS_B = {
+    private final int[] BISHOP_POS_B = {
             -10, -10, -10, -10, -10, -10, -10, -10,
             -10, 0, 0, 0, 0, 0, 0, -10,
             -10, 0, 5, 5, 5, 5, 0, -10,
@@ -95,7 +95,7 @@ public class Evaluator implements Definitions {
             -10, -10, -20, -10, -10, -20, -10, -10
     };
 
-    private static final int[] ROOK_POS_B = {
+    private final int[] ROOK_POS_B = {
             0, 0, 0, 0, 0, 0, 0, 0,
             15, 15, 15, 15, 15, 15, 15, 15,
             0, 0, 0, 0, 0, 0, 0, 0,
@@ -106,7 +106,7 @@ public class Evaluator implements Definitions {
             -10, 0, 0, 10, 10, 0, 0, -10
     };
 
-    private static final int[] QUEEN_POS_B = {
+    private final int[] QUEEN_POS_B = {
             -10, -10, -10, -10, -10, -10, -10, -10,
             -10, 0, 0, 0, 0, 0, 0, -10,
             -10, 0, 5, 5, 5, 5, 0, -10,
@@ -117,7 +117,7 @@ public class Evaluator implements Definitions {
             -10, -10, -20, -10, -10, -20, -10, -10
     };
 
-    private static final int[] KING_POS_B = {
+    private final int[] KING_POS_B = {
             -40, -40, -40, -40, -40, -40, -40, -40,
             -40, -40, -40, -40, -40, -40, -40, -40,
             -40, -40, -40, -40, -40, -40, -40, -40,
@@ -128,7 +128,7 @@ public class Evaluator implements Definitions {
             0, 20, 40, -20, 0, -20, 40, 20
     };
 
-    private static final int[] KING_POS_ENDGAME_B = {
+    private final int[] KING_POS_ENDGAME_B = {
             0, 10, 20, 30, 30, 20, 10, 0,
             10, 20, 30, 40, 40, 30, 20, 10,
             20, 30, 40, 50, 50, 40, 30, 20,
@@ -140,20 +140,31 @@ public class Evaluator implements Definitions {
     };
 
     //Pawn structure tables
-    private static final long[] PASSED_WHITE;
-    private static final long[] ISOLATED_WHITE;
-    private static final long[] BACKWARD_WHITE;
-    private static final long[] STRONG_SAFE_WHITE;
-    private static final long[] WEAK_SAFE_WHITE;
+    private final long[] PASSED_WHITE;
+    private final long[] ISOLATED_WHITE;
+    private final long[] BACKWARD_WHITE;
+    private final long[] STRONG_SAFE_WHITE;
+    private final long[] WEAK_SAFE_WHITE;
 
-    private static final long[] PASSED_BLACK;
-    private static final long[] ISOLATED_BLACK;
-    private static final long[] BACKWARD_BLACK;
-    private static final long[] STRONG_SAFE_BLACK;
-    private static final long[] WEAK_SAFE_BLACK;
+    private final long[] PASSED_BLACK;
+    private final long[] ISOLATED_BLACK;
+    private final long[] BACKWARD_BLACK;
+    private final long[] STRONG_SAFE_BLACK;
+    private final long[] WEAK_SAFE_BLACK;
 
-    //Static initializer
-    static {
+    private static Evaluator instance;
+    private BitboardMagicAttacksAC magics;
+
+    public static Evaluator getInstance(){
+        if(instance==null){
+            instance = new Evaluator();
+            return instance;
+        }
+        return instance;
+    }
+
+    public Evaluator(){
+        magics = BitboardMagicAttacksAC.getInstance();
         //White Piece Square Tables
         PAWN_POS_W = new int[64];
         KNIGHT_POS_W = new int[64];
@@ -264,15 +275,15 @@ public class Evaluator implements Definitions {
 
     }
 
-    private static int score, square;
-    private static int whitePawns, whiteKnights, whiteBishops, whiteRooks, whiteQueens;
-    private static int blackPawns, blackKnights, blackBishops, blackRooks, blackQueens;
-    private static int whiteKingSquare, blackKingSquare;
-    private static int whiteTotal, blackTotal;
-    private static boolean endGame;
-    private static long temp, whitePassedPawns, blackPassedPawns;
+    private int score, square;
+    private int whitePawns, whiteKnights, whiteBishops, whiteRooks, whiteQueens;
+    private int blackPawns, blackKnights, blackBishops, blackRooks, blackQueens;
+    private int whiteKingSquare, blackKingSquare;
+    private int whiteTotal, blackTotal;
+    private boolean endGame;
+    private long temp, whitePassedPawns, blackPassedPawns;
 
-    public static int eval(Board b) {
+    public int eval(Board b) {
         if(b.isCheckMate()) return Integer.MIN_VALUE + b.moveNumber;
         if(b.isDraw()) return 0;
         score = b.material;
@@ -313,7 +324,7 @@ public class Evaluator implements Definitions {
         return -score;
     }
 
-    private static void evaluateWhiteMaterial(Board b) {
+    private void evaluateWhiteMaterial(Board b) {
         evaluateWhitePawns(b);
         evaluateWhiteKnights(b);
         evaluateWhiteBishops(b);
@@ -323,7 +334,7 @@ public class Evaluator implements Definitions {
     }
 
 
-    private static void evaluateBlackMaterial(Board b) {
+    private void evaluateBlackMaterial(Board b) {
         evaluateBlackPawns(b);
         evaluateBlackKnights(b);
         evaluateBlackBishops(b);
@@ -332,7 +343,7 @@ public class Evaluator implements Definitions {
         evaluateBlackKing(b);
     }
 
-    private static void evaluateWhitePawns(Board b) {
+    private void evaluateWhitePawns(Board b) {
         whitePassedPawns = 0;
         temp = b.whitePawns;
         while (temp != 0) {
@@ -362,7 +373,7 @@ public class Evaluator implements Definitions {
                  *  2. No pawns left that can defend the pawn.
                 */
 
-                if ((BitboardMagicAttacksAC.whitePawn[square + 8] & b.blackPawns) != 0)
+                if ((magics.whitePawn[square + 8] & b.blackPawns) != 0)
                     if ((BACKWARD_WHITE[square] & b.whitePawns) == 0)
                         score -= PENALTY_BACKWARD_PAWN;
             }
@@ -370,7 +381,7 @@ public class Evaluator implements Definitions {
         }
     }
 
-    private static void evaluateWhiteKnights(Board b) {
+    private void evaluateWhiteKnights(Board b) {
         temp = b.whiteKnights;
         while (temp != 0) {
             square = BitboardUtilsAC.getIndexFromBoard(temp);
@@ -381,7 +392,7 @@ public class Evaluator implements Definitions {
         }
     }
 
-    private static void evaluateWhiteBishops(Board b) {
+    private void evaluateWhiteBishops(Board b) {
         if(Long.bitCount(b.whiteBishops)>1)
                 score += BONUS_BISHOP_PAIR;
         temp = b.whiteBishops;
@@ -395,7 +406,7 @@ public class Evaluator implements Definitions {
     }
 
 
-    private static void evaluateWhiteRooks(Board b) {
+    private void evaluateWhiteRooks(Board b) {
         temp = b.whiteRooks;
         while (temp != 0) {
             square = BitboardUtilsAC.getIndexFromBoard(temp);
@@ -416,7 +427,7 @@ public class Evaluator implements Definitions {
     }
 
 
-    private static void evaluateWhiteQueens(Board b) {
+    private void evaluateWhiteQueens(Board b) {
         temp = b.whiteQueens;
         while (temp != 0) {
             square = BitboardUtilsAC.getIndexFromBoard(temp);
@@ -428,7 +439,7 @@ public class Evaluator implements Definitions {
     }
 
 
-    private static void evaluateWhiteKing(Board b) {
+    private void evaluateWhiteKing(Board b) {
         if (endGame) {
             score += KING_POS_ENDGAME_W[whiteKingSquare];
         } else {
@@ -442,7 +453,7 @@ public class Evaluator implements Definitions {
         }
     }
 
-    private static void evaluateBlackPawns(Board b) {
+    private void evaluateBlackPawns(Board b) {
         blackPassedPawns = 0;
         temp = b.blackPawns;
         while (temp != 0) {
@@ -472,7 +483,7 @@ public class Evaluator implements Definitions {
                  *  2. No pawns left that can defend the pawn.
                 */
 
-                if ((BitboardMagicAttacksAC.blackPawn[square + 8] & b.blackPawns) != 0)
+                if ((magics.blackPawn[square + 8] & b.blackPawns) != 0)
                     if ((BACKWARD_BLACK[square] & b.blackPawns) == 0)
                         score += PENALTY_BACKWARD_PAWN;
             }
@@ -480,7 +491,7 @@ public class Evaluator implements Definitions {
         }
     }
 
-    private static void evaluateBlackKnights(Board b) {
+    private void evaluateBlackKnights(Board b) {
         temp = b.blackKnights;
         while (temp != 0) {
             square = BitboardUtilsAC.getIndexFromBoard(temp);
@@ -491,7 +502,7 @@ public class Evaluator implements Definitions {
         }
     }
 
-    private static void evaluateBlackBishops(Board b) {
+    private void evaluateBlackBishops(Board b) {
         if(Long.bitCount(b.blackBishops)>1)
                 score -= BONUS_BISHOP_PAIR;
         temp = b.blackBishops;
@@ -504,7 +515,7 @@ public class Evaluator implements Definitions {
         }
     }
 
-    private static void evaluateBlackRooks(Board b) {
+    private void evaluateBlackRooks(Board b) {
         temp = b.blackRooks;
         while (temp != 0) {
             square = BitboardUtilsAC.getIndexFromBoard(temp);
@@ -523,7 +534,7 @@ public class Evaluator implements Definitions {
         }
     }
 
-    private static void evaluateBlackQueens(Board b) {
+    private void evaluateBlackQueens(Board b) {
         temp = b.blackQueens;
         while (temp != 0) {
             square = BitboardUtilsAC.getIndexFromBoard(temp);
@@ -534,7 +545,7 @@ public class Evaluator implements Definitions {
         }
     }
 
-    private static void evaluateBlackKing(Board b) {
+    private void evaluateBlackKing(Board b) {
         if (endGame) {
             score -= KING_POS_ENDGAME_B[blackKingSquare];
         } else {

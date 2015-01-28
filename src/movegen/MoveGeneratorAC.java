@@ -12,6 +12,13 @@ import org.apache.commons.lang3.ArrayUtils;
  */
 public class MoveGeneratorAC implements Definitions {
 
+    private static MoveGeneratorAC instance;
+    public MoveGetter moveGetter;
+    
+    
+    public MoveGeneratorAC(){
+        moveGetter= MoveGetter.getInstance();
+    }
     /**
      * Gets all <i>pseudo-legal</i> moves available for the side to move. If the
      * generated moves need to be legal (and not simply pseudo-legal), then
@@ -22,13 +29,13 @@ public class MoveGeneratorAC implements Definitions {
      * @return the number of <i>pseudo-legal</i> moves generated, with the
      * actual moves written onto the passed array.
      */
-    public static int getAllMoves(Board b, int[] moves) {
+    public int getAllMoves(Board b, int[] moves) {
         if (b.whiteToMove)
             return getAllWhiteMoves(b, moves);
         return getAllBlackMoves(b, moves);
     }
 
-    public static int countAllLegalMoves(Board b){
+    public int countAllLegalMoves(Board b){
         int[] moves = new int[MAX_MOVES];
         int lastIndex = getAllMoves(b, moves);
         int count = 0;
@@ -40,30 +47,30 @@ public class MoveGeneratorAC implements Definitions {
         return count;
     }
 
-    private static int getAllWhiteMoves(Board b, int[] moves) {
+    private int getAllWhiteMoves(Board b, int[] moves) {
         int index = 0;
-        index += MoveGetter.getWhitePawnMoves(b, moves, index);
-        index += MoveGetter.getWhiteKnightMoves(b, moves, index);
-        index += MoveGetter.getWhiteKingMoves(b, moves, index);
-        index += MoveGetter.getWhiteRookMoves(b, moves, index);
-        index += MoveGetter.getWhiteBishopMoves(b, moves, index);
-        index += MoveGetter.getWhiteQueenMoves(b, moves, index);
+        index += moveGetter.getWhitePawnMoves(b, moves, index);
+        index += moveGetter.getWhiteKnightMoves(b, moves, index);
+        index += moveGetter.getWhiteKingMoves(b, moves, index);
+        index += moveGetter.getWhiteRookMoves(b, moves, index);
+        index += moveGetter.getWhiteBishopMoves(b, moves, index);
+        index += moveGetter.getWhiteQueenMoves(b, moves, index);
         return index;
     }
 
-    private static int getAllBlackMoves(Board b, int[] moves) {
+    private int getAllBlackMoves(Board b, int[] moves) {
         int index = 0;
-        index += MoveGetter.getBlackPawnMoves(b, moves, index);
-        index += MoveGetter.getBlackKnightMoves(b, moves, index);
-        index += MoveGetter.getBlackKingMoves(b, moves, index);
-        index += MoveGetter.getBlackRookMoves(b, moves, index);
-        index += MoveGetter.getBlackBishopMoves(b, moves, index);
-        index += MoveGetter.getBlackQueenMoves(b, moves, index);
+        index += moveGetter.getBlackPawnMoves(b, moves, index);
+        index += moveGetter.getBlackKnightMoves(b, moves, index);
+        index += moveGetter.getBlackKingMoves(b, moves, index);
+        index += moveGetter.getBlackRookMoves(b, moves, index);
+        index += moveGetter.getBlackBishopMoves(b, moves, index);
+        index += moveGetter.getBlackQueenMoves(b, moves, index);
         return index;
     }
 
     // Pseudo-Legal capture generator.
-    public static int genCaptures(Board b, int[] captures) {
+    public int genCaptures(Board b, int[] captures) {
         int[] captureValues = new int[MAX_MOVES];
         int num_captures = getAllCaptures(b, captures);
         int val;
@@ -94,7 +101,7 @@ public class MoveGeneratorAC implements Definitions {
         return 0;
     }
 
-    private static int getAllCaptures(Board b, int[] captures) {
+    private int getAllCaptures(Board b, int[] captures) {
         int lastIndex= getAllMoves(b, captures);
         int num_captures=0;
         for(int i=0; i< lastIndex; i++){
@@ -103,5 +110,13 @@ public class MoveGeneratorAC implements Definitions {
         }
         return num_captures;
 
+    }
+
+    public static MoveGeneratorAC getInstance() {
+        if(instance==null){
+            instance = new MoveGeneratorAC();
+            return instance;
+        }
+        return instance;
     }
 }

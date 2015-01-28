@@ -96,7 +96,9 @@ public class Board implements Definitions {
     private static final int[] SEE_PIECE_VALUES = {0, 100, 325, 325, 500, 975, 999999};
     private int[] seeGain;
 
-
+    public Search search;
+    public BitboardMagicAttacksAC magics;
+    public MoveGeneratorAC moveGenerator;
 
     public Board() {
         moves = new int[MAX_GAME_LENGTH * 4];
@@ -127,6 +129,9 @@ public class Board implements Definitions {
         white_castle_history = new int[MAX_GAME_LENGTH];
         black_castle_history = new int[MAX_GAME_LENGTH];
         key_history = new long[MAX_GAME_LENGTH];
+        search = Search.getInstance();
+        magics = BitboardMagicAttacksAC.getInstance();
+        moveGenerator = MoveGeneratorAC.getInstance();
     }
 
     public void initialize() {
@@ -376,12 +381,12 @@ public class Board implements Definitions {
     }
 
     public boolean isCheckMate(){
-        return isCheck() && MoveGeneratorAC.countAllLegalMoves(this) == 0;
+        return isCheck() && moveGenerator.countAllLegalMoves(this) == 0;
     }
 
     public boolean isCheck(){
-        return BitboardMagicAttacksAC.isSquareAttacked(this, whiteKing, true)
-                || BitboardMagicAttacksAC.isSquareAttacked(this, blackKing, false);
+        return magics.isSquareAttacked(this, whiteKing, true)
+                || magics.isSquareAttacked(this, blackKing, false);
     }
 
     public boolean isDraw(){
@@ -390,17 +395,17 @@ public class Board implements Definitions {
         // threefold repetition.
 
         // Stalemate
-        Search.legalMoves = 0;
+        search.legalMoves = 0;
         moves = new int[MAX_MOVES];
-        num_moves = MoveGeneratorAC.getAllMoves(this, moves);
+        num_moves = moveGenerator.getAllMoves(this, moves);
         for(int i = 0; i< num_moves; i++){
             if(makeMove(moves[i])){
-                Search.legalMoves++;
-                Search.singleMove = moves[i];
+                search.legalMoves++;
+                search.singleMove = moves[i];
                 unmakeMove();
             }
         }
-        if (Search.legalMoves == 0 && !isCheck()) {
+        if (search.legalMoves == 0 && !isCheck()) {
 //            JOptionPane.showMessageDialog(null, "0.5-0.5 Stalemate");
             return true;
         }
@@ -858,8 +863,8 @@ public class Board implements Definitions {
     }*/
 
     public boolean isOwnKingAttacked() {
-        if (whiteToMove) return BitboardMagicAttacksAC.isSquareAttacked(this, whiteKing, whiteToMove);
-        return BitboardMagicAttacksAC.isSquareAttacked(this, blackKing, whiteToMove);
+        if (whiteToMove) return magics.isSquareAttacked(this, whiteKing, whiteToMove);
+        return magics.isSquareAttacked(this, blackKing, whiteToMove);
     }
 
     //Static Exchange Evaluator based on https://chessprogramming.wikispaces.com/SEE+-+The+Swap+Algorithm
@@ -882,7 +887,7 @@ public class Board implements Definitions {
                 (whiteRooks | blackRooks) | (whiteQueens | blackQueens);
         long fromSquare = MoveAC.getFromSquare(fromIndex);
         long all = allPieces;
-        long attacks = BitboardMagicAttacksAC.getIndexAttacks(this, toIndex);
+        long attacks = magics.getIndexAttacks(this, toIndex);
         long fromCandidates;
 
         seeGain[d] = SEE_PIECE_VALUES[capturedPiece];
@@ -896,7 +901,7 @@ public class Board implements Definitions {
             attacks ^= fromSquare; // reset bit in set to traverse
             all ^= fromSquare;  // reset bit in temporary occupancy (for x-Rays)
 
-            if ((fromSquare & mayXray) != 0) attacks |= BitboardMagicAttacksAC.getXrayAttacks(this, toIndex, all);
+            if ((fromSquare & mayXray) != 0) attacks |= magics.getXrayAttacks(this, toIndex, all);
 
             //Find the next attacker from least valuable to most valuable.
 
