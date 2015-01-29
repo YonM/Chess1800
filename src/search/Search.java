@@ -112,7 +112,7 @@ public class Search implements Definitions {
                 beta = INFINITY;
                 continue;
             }
-            alpha = score -60;
+            alpha = score - 60;
             beta = score + 60;
             reSearchAlphaCount = 0;
             reSearchBetaCount = 0;

@@ -310,5 +310,4 @@ public class BitboardMagicAttacksAC {
                 | (getBishopAttacks(index, all) & ((b.whiteBishops & b.blackBishops) | (b.whiteQueens | b.blackQueens)));
     }
 
-
 }

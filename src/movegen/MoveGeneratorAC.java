@@ -35,12 +35,25 @@ public class MoveGeneratorAC implements Definitions {
         return getAllBlackMoves(b, moves);
     }
 
+    public int getAllLegalMoves(Board b, int[] moves) {
+        int lastIndex = getAllMoves(b, moves);
+        int j = 0;
+        for (int i = 0; i < lastIndex; i++) {
+            if (b.makeMove(moves[i])) {
+                moves[j++] = moves[i];
+                b.unmakeMove();
+            }
+        }
+        return j;
+    }
+
     public int countAllLegalMoves(Board b){
         int[] moves = new int[MAX_MOVES];
         int lastIndex = getAllMoves(b, moves);
         int count = 0;
         for(int i = 0; i<lastIndex; i++){
             if(b.makeMove(moves[i])){
+                count++;
                 b.unmakeMove();
             }
         }

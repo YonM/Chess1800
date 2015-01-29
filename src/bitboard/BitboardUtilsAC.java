@@ -1,5 +1,6 @@
 package bitboard;
 
+import board.Board;
 import definitions.Definitions;
 import move.MoveAC;
 
@@ -368,5 +369,37 @@ public class BitboardUtilsAC implements Definitions{
                 break;
         }
         return moveString;
+    }
+
+    public static String getSAN(Board b, int move) {
+        String san;
+        if (MoveAC.getMoveType(move) == TYPE_KINGSIDE_CASTLING) {
+            san = "O-O";
+            b.makeMove(move);
+            if (b.isCheckMate())
+                san += "#";
+            else if (b.isCheck())
+                san += "+";
+            b.unmakeMove();
+            return san;
+        }
+        if (MoveAC.getMoveType(move) == TYPE_QUEENSIDE_CASTLING) {
+            san = "O-O-O";
+            b.makeMove(move);
+            if (b.isCheckMate())
+                san += "#";
+            else if (b.isCheck())
+                san += "+";
+            b.unmakeMove();
+            return san;
+        }
+        int moveType = MoveAC.getMoveType(move);
+        int piece = MoveAC.getPieceMoved(move);
+        int fromIndex = MoveAC.getFromIndex(move);
+        int toIndex = MoveAC.getToIndex(move);
+        int from_col = fromIndex % 8;
+        int from_row = fromIndex / 8;
+
+        boolean amb_file = false, amb_rank = false, amb_move = false;
     }
 }
