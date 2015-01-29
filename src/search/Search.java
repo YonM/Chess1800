@@ -71,12 +71,47 @@ public class Search implements Definitions {
         lastPV = new int[MAX_PLY];
         //lastPVLength = 0;
         long start = System.currentTimeMillis();
-        for (int currentDepth = 1; currentDepth < MAX_DEPTH; currentDepth++) {
+        int alpha = Integer.MIN_VALUE + 1;
+        int beta = Integer.MAX_VALUE - 1;
+        int reSearchAlphaCount = 0;
+        int reSearchBetaCount = 0;
+        for (int currentDepth = 1; currentDepth < MAX_DEPTH;) {
             triangularArray = new int[MAX_GAME_LENGTH][MAX_GAME_LENGTH];
             triangularLength = new int[MAX_GAME_LENGTH];
             follow_pv = true;
             null_allowed = true;
-            score = alphaBetaPVS(b, 0, currentDepth, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
+            score = alphaBetaPVS(b, 0, currentDepth, alpha, beta);
+            if (score <= alpha){
+                if(reSearchAlphaCount == 0){
+                    alpha -=100;
+                    reSearchAlphaCount++;
+                }
+                else if(reSearchAlphaCount == 1){
+                    alpha -= 200;
+                    reSearchAlphaCount++;
+                }else{
+                        alpha = Integer.MIN_VALUE + 1;
+                        reSearchAlphaCount++;
+                }
+                continue;
+            }else if(score >= beta){
+                if(reSearchBetaCount == 0){
+                    beta += 100;
+                    reSearchBetaCount++;
+                }
+                else if(reSearchBetaCount == 1){
+                    beta += 200;
+                    reSearchBetaCount++;
+                }else{
+                    beta = Integer.MAX_VALUE - 1;
+                    reSearchBetaCount++;
+                }
+                continue;
+            } else if(score == 0){
+                alpha = Integer.MIN_VALUE + 1;
+                beta = Integer.MAX_VALUE - 1;
+                continue;
+            }
             if(VERBOSE)
                 System.out.println("(" + currentDepth + ") "
                         + ( (System.currentTimeMillis() - start) / 1000.0) + "s ("
@@ -128,18 +163,25 @@ public class Search implements Definitions {
         int bestScore = 0;
         selectBestMoveFirst(b, moves, num_moves, ply, depth, 0);
         //try the first move with unchanged window.
+        int j;
         if(b.makeMove(moves[0])){
             movesFound++;
             bestScore = -alphaBetaPVS(b, ply+1, depth-1, -beta,-alpha);
             b.unmakeMove();
             if(bestScore > alpha){
-                pvMovesFound++;
                 if(bestScore >= beta)
                     return bestScore; // fail soft
+                pvMovesFound++;
+                triangularArray[ply][ply] = moves[0];    //save the move
+                for (j = ply + 1; j < triangularLength[ply + 1]; j++)
+                    triangularArray[ply][j] = triangularArray[ply + 1][j];  //appends latest best PV from deeper plies
+
+                triangularLength[ply] = triangularLength[ply + 1];
+                if (ply == 0) rememberPV();
+
                 alpha = bestScore;  // alpha improved
             }
         }
-        int j;
         for (int i = 1; i < num_moves; i++) {
             selectBestMoveFirst(b, moves, num_moves, ply, depth, i);
 
@@ -160,8 +202,15 @@ public class Search implements Definitions {
                     //System.out.println("shouldn't get to this window");
                 }
                 b.unmakeMove();
-                if (score > alpha) {
-                    alpha = score;
+                if (score > bestScore) {
+                    if (score >= beta) {
+                        if (b.whiteToMove)
+                            whiteHeuristics[MoveAC.getFromIndex(moves[i])][MoveAC.getToIndex(moves[i])] += depth * depth;
+                        else
+                            blackHeuristics[MoveAC.getFromIndex(moves[i])][MoveAC.getToIndex(moves[i])] += depth * depth;
+                        return score;
+                    }
+                    bestScore = score;
                     pvMovesFound++;
                     triangularArray[ply][ply] = moves[i];    //save the move
                     for (j = ply + 1; j < triangularLength[ply + 1]; j++)
@@ -170,13 +219,7 @@ public class Search implements Definitions {
                     triangularLength[ply] = triangularLength[ply + 1];
                     if (ply == 0) rememberPV();
 
-                    if (score >= beta) {
-                        if (b.whiteToMove)
-                            whiteHeuristics[MoveAC.getFromIndex(moves[i])][MoveAC.getToIndex(moves[i])] += depth * depth;
-                        else
-                            blackHeuristics[MoveAC.getFromIndex(moves[i])][MoveAC.getToIndex(moves[i])] += depth * depth;
-                        return score;
-                    }
+
                 }
 
             }

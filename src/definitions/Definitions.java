@@ -19,16 +19,16 @@ public interface Definitions {
     public final static int A8 = 56, B8 = 57, C8 = 58, D8 = 59, E8 = 60, F8 = 61, G8 = 62, H8 = 63;
 
     //For Attack generation
-    public static final int[] RANKSHIFT = {
-            1, 1, 1, 1, 1, 1, 1, 1,
-            9, 9, 9, 9, 9, 9, 9, 9,
-            17, 17, 17, 17, 17, 17, 17, 17,
-            25, 25, 25, 25, 25, 25, 25, 25,
-            33, 33, 33, 33, 33, 33, 33, 33,
-            41, 41, 41, 41, 41, 41, 41, 41,
-            49, 49, 49, 49, 49, 49, 49, 49,
-            57, 57, 57, 57, 57, 57, 57, 57
-    };
+//    public static final int[] RANKSHIFT = {
+//            1, 1, 1, 1, 1, 1, 1, 1,
+//            9, 9, 9, 9, 9, 9, 9, 9,
+//            17, 17, 17, 17, 17, 17, 17, 17,
+//            25, 25, 25, 25, 25, 25, 25, 25,
+//            33, 33, 33, 33, 33, 33, 33, 33,
+//            41, 41, 41, 41, 41, 41, 41, 41,
+//            49, 49, 49, 49, 49, 49, 49, 49,
+//            57, 57, 57, 57, 57, 57, 57, 57
+//    };
 
     public static final int RANK_1 = 0;
     public static final int RANK_2 = 1;
@@ -75,16 +75,16 @@ public interface Definitions {
     public static final int TYPE_PROMOTION_ROOK = 7;
 
     //Pre generated castling moves
-    public static final int WHITE_OOO_CASTLE = MoveAC.genMove(E1, C1, KING, false, MoveAC.TYPE_QUEENSIDE_CASTLING);
-    public static final int BLACK_OOO_CASTLE = MoveAC.genMove(E8, C8, KING, false, MoveAC.TYPE_QUEENSIDE_CASTLING);
-    public static final int WHITE_OO_CASTLE = MoveAC.genMove(E1, G1, KING, false, MoveAC.TYPE_KINGSIDE_CASTLING);
-    public static final int BLACK_OO_CASTLE = MoveAC.genMove(E8, G8, KING, false, MoveAC.TYPE_KINGSIDE_CASTLING);
+//    public static final int WHITE_OOO_CASTLE = MoveAC.genMove(E1, C1, KING, false, MoveAC.TYPE_QUEENSIDE_CASTLING);
+//    public static final int BLACK_OOO_CASTLE = MoveAC.genMove(E8, C8, KING, false, MoveAC.TYPE_QUEENSIDE_CASTLING);
+//    public static final int WHITE_OO_CASTLE = MoveAC.genMove(E1, G1, KING, false, MoveAC.TYPE_KINGSIDE_CASTLING);
+//    public static final int BLACK_OO_CASTLE = MoveAC.genMove(E8, G8, KING, false, MoveAC.TYPE_KINGSIDE_CASTLING);
 
     //Castling values
     public final int CANCASTLEOO = 1;
     public final int CANCASTLEOOO = 2;
 
-    //Material value
+    //Material value for evaluation
     public final static int PAWN_VALUE = 100;
     public final static int KNIGHT_VALUE = 325;
     public final static int BISHOP_VALUE = 325;
@@ -94,17 +94,11 @@ public interface Definitions {
     public final static int CHECKMATE = KING_VALUE;
     public final static int DRAWSCORE = 0;
 
+    public final static int INFINITY = KING_VALUE +1;
+
     //For SEE & Quiescence Search
-    public static final int OFFSET = 128;
     public static final int MINCAPTVAL = 1;
-    public static final int WEST = -1;
-    public static final int NORTHWEST = +7;
-    public static final int NORTH = +8;
-    public static final int NORTHEAST = +9;
-    public static final int EAST = +1;
-    public static final int SOUTHEAST = -7;
-    public static final int SOUTH = -8;
-    public static final int SOUTHWEST = -9;
+
 
     //Null move + Late Move Reduction related
     public final static int LATEMOVE_THRESHOLD = 4;
