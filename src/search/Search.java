@@ -71,8 +71,8 @@ public class Search implements Definitions {
         lastPV = new int[MAX_PLY];
         //lastPVLength = 0;
         long start = System.currentTimeMillis();
-        int alpha = Integer.MIN_VALUE + 1;
-        int beta = Integer.MAX_VALUE - 1;
+        int alpha = -INFINITY;
+        int beta = INFINITY;
         int reSearchAlphaCount = 0;
         int reSearchBetaCount = 0;
         for (int currentDepth = 1; currentDepth < MAX_DEPTH;) {
@@ -90,7 +90,7 @@ public class Search implements Definitions {
                     alpha -= 200;
                     reSearchAlphaCount++;
                 }else{
-                        alpha = Integer.MIN_VALUE + 1;
+                        alpha = -INFINITY;
                         reSearchAlphaCount++;
                 }
                 continue;
@@ -103,15 +103,22 @@ public class Search implements Definitions {
                     beta += 200;
                     reSearchBetaCount++;
                 }else{
-                    beta = Integer.MAX_VALUE - 1;
+                    beta = INFINITY;
                     reSearchBetaCount++;
                 }
                 continue;
             } else if(score == 0){
-                alpha = Integer.MIN_VALUE + 1;
-                beta = Integer.MAX_VALUE - 1;
+                alpha = -INFINITY;
+                beta = INFINITY;
                 continue;
             }
+            alpha = score -60;
+            beta = score + 60;
+            reSearchAlphaCount = 0;
+            reSearchBetaCount = 0;
+            if(alpha < -INFINITY) alpha = -INFINITY;
+            if(beta> INFINITY) beta = INFINITY;
+            currentDepth++;
             if(VERBOSE)
                 System.out.println("(" + currentDepth + ") "
                         + ( (System.currentTimeMillis() - start) / 1000.0) + "s ("
@@ -135,7 +142,9 @@ public class Search implements Definitions {
 
         if (b.isEndOfGame()) {
             follow_pv = false;
-            return evaluator.eval(b);
+            int eval = evaluator.eval(b);
+            if(eval == DRAWSCORE) return eval;
+            return eval +ply -1;
         }
 
         int score;
