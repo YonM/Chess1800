@@ -6,6 +6,7 @@ import definitions.Definitions;
 import evaluation.Evaluator;
 import move.MoveAC;
 import movegen.MoveGeneratorAC;
+import utilities.SANUtils;
 
 /**
  * Created by Yonathan on 02/02/2015.
@@ -13,8 +14,7 @@ import movegen.MoveGeneratorAC;
  */
 public class MTDF implements Search, Definitions{
     private static MTDF instance;
-    private int[][] triangularArray;
-    private int[] triangularLength;
+    private SANUtils sanUtils;
     public Integer legalMoves;
     public int singleMove = 0;
     private final int MAX_DEPTH = 5;
@@ -27,9 +27,7 @@ public class MTDF implements Search, Definitions{
     private boolean follow_pv;
     private boolean null_allowed;
     private static final boolean VERBOSE= false;
-    //private int lastPVLength;
-
-
+    private int firstGuess;
 
     public static MTDF getInstance() {
         if(instance==null){
@@ -42,10 +40,9 @@ public class MTDF implements Search, Definitions{
 
     public MTDF()
     {
-        triangularArray = new int[MAX_GAME_LENGTH][MAX_GAME_LENGTH];
-        triangularLength = new int[MAX_GAME_LENGTH];
         evaluator = Evaluator.getInstance();
         moveGenerator = MoveGeneratorAC.getInstance();
+        sanUtils = SANUtils.getInstance();
     }
 
     public void setEvaluator(Evaluator eval) {
@@ -65,72 +62,44 @@ public class MTDF implements Search, Definitions{
         whiteHeuristics = new int[MAX_PLY][MAX_PLY];
         blackHeuristics = new int[MAX_PLY][MAX_PLY];
         lastPV = new int[MAX_PLY];
-        //lastPVLength = 0;
         long start = System.currentTimeMillis();
-        int alpha = -INFINITY;
-        int beta = INFINITY;
-        int reSearchAlphaCount = 0;
-        int reSearchBetaCount = 0;
+
         for (int currentDepth = 1; currentDepth < MAX_DEPTH;) {
-            triangularArray = new int[MAX_GAME_LENGTH][MAX_GAME_LENGTH];
-            triangularLength = new int[MAX_GAME_LENGTH];
             follow_pv = true;
             null_allowed = true;
-            score = alphaBetaM(b, 0, currentDepth, alpha, beta);
-            if (score <= alpha){
-                if(reSearchAlphaCount == 0){
-                    alpha -=100;
-                    reSearchAlphaCount++;
-                }
-                else if(reSearchAlphaCount == 1){
-                    alpha -= 200;
-                    reSearchAlphaCount++;
-                }else{
-                    alpha = -INFINITY;
-                    reSearchAlphaCount++;
-                }
-                continue;
-            }else if(score >= beta){
-                if(reSearchBetaCount == 0){
-                    beta += 100;
-                    reSearchBetaCount++;
-                }
-                else if(reSearchBetaCount == 1){
-                    beta += 200;
-                    reSearchBetaCount++;
-                }else{
-                    beta = INFINITY;
-                    reSearchBetaCount++;
-                }
-                continue;
-            } else if(score == 0){
-                alpha = -INFINITY;
-                beta = INFINITY;
-                continue;
-            }
-            alpha = score - 60;
-            beta = score + 60;
-            reSearchAlphaCount = 0;
-            reSearchBetaCount = 0;
-            if(alpha < -INFINITY) alpha = -INFINITY;
-            if(beta> INFINITY) beta = INFINITY;
+            firstGuess = memoryEnhancedTestDriver(b, currentDepth, firstGuess);
             currentDepth++;
             if(VERBOSE)
                 System.out.println("(" + currentDepth + ") "
                         + ( (System.currentTimeMillis() - start) / 1000.0) + "s ("
-                        + BitboardUtilsAC.moveToString(lastPV[0]) + ") -- " + evals
+                        + sanUtils.moveToString(lastPV[0]) + ") -- " + evals
                         + " nodes evaluated.");
-            if ((score > (CHECKMATE - currentDepth)) || (score < -(CHECKMATE - currentDepth)))
-                currentDepth = MAX_DEPTH;
+            /*if ((score > (CHECKMATE - currentDepth)) || (score < -(CHECKMATE - currentDepth)))
+                currentDepth = MAX_DEPTH;*/
         }
         if(VERBOSE)
             System.out.println(evals + " positions evaluated.");
-        return lastPV[0];
+        return firstGuess;
+    }
+
+    private int memoryEnhancedTestDriver(Board b, int currentDepth, int first) {
+        int g = first;
+        int upperBound = INFINITY;
+        int lowerBound = -INFINITY;
+        int beta;
+        do{
+            if(g == lowerBound) beta = g+1;
+            else beta = g;
+            g = alphaBetaM(b, 0, currentDepth, beta-1, beta);
+            if(g<beta) upperBound = g;
+            else lowerBound = g;
+
+        }while(lowerBound <= upperBound);
+        return g;
     }
 
     private int alphaBetaM(Board b, int ply, int depth, int alpha, int beta) {
         evals++;
-        triangularLength[ply] = ply;
         if (depth <= 0) {
             follow_pv = false;
             return quiescenceSearch(b, ply, alpha, beta);

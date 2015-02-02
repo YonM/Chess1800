@@ -6,6 +6,7 @@ import definitions.Definitions;
 import evaluation.Evaluator;
 import move.MoveAC;
 import movegen.MoveGeneratorAC;
+import utilities.SANUtils;
 
 /**
  * Created by Yonathan on 21/12/2014.
@@ -16,6 +17,7 @@ import movegen.MoveGeneratorAC;
 public class PVS implements Definitions, Search {
 
     private static PVS instance;
+    private SANUtils sanUtils;
     private int[][] triangularArray;
     private int[] triangularLength;
     public Integer legalMoves;
@@ -49,6 +51,7 @@ public class PVS implements Definitions, Search {
         triangularLength = new int[MAX_GAME_LENGTH];
         evaluator = Evaluator.getInstance();
         moveGenerator = MoveGeneratorAC.getInstance();
+        sanUtils = SANUtils.getInstance();
     }
 
     public void setEvaluator(Evaluator eval) {
@@ -121,7 +124,7 @@ public class PVS implements Definitions, Search {
             if(VERBOSE)
                 System.out.println("(" + currentDepth + ") "
                         + ( (System.currentTimeMillis() - start) / 1000.0) + "s ("
-                        + BitboardUtilsAC.moveToString(lastPV[0]) + ") -- " + evals
+                        + sanUtils.moveToString(lastPV[0]) + ") -- " + evals
                         + " nodes evaluated.");
             if ((score > (CHECKMATE - currentDepth)) || (score < -(CHECKMATE - currentDepth)))
                 currentDepth = MAX_DEPTH;

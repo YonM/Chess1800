@@ -1,4 +1,4 @@
-package Utilities;
+package utilities;
 
 import board.Board;
 import definitions.Definitions;
@@ -180,44 +180,6 @@ public class BitboardUtilsAC implements Definitions{
         return sb.toString();
     }
 
-    /**
-     * Flips board vertically
-     * https://chessprogramming.wikispaces.com/Flipping+Mirroring+and+Rotating
-     *
-     * @param in
-     * @return
-     */
-    public static long vflip(long in) {
-        final long k1 = 0x00FF00FF00FF00FFL;
-        final long k2 = 0x0000FFFF0000FFFFL;
-        in = ((in >>> 8) & k1) | ((in & k1) << 8);
-        in = ((in >>> 16) & k2) | ((in & k2) << 16);
-        in = (in >>> 32) | (in << 32);
-        return in;
-    }
-
-    /**
-     * Counts the number of bits of one long
-     * http://chessprogramming.wikispaces.com/Population+Count
-     *
-     * @param x
-     * @return
-     */
-    public static int popCount(long x) {
-        if (x == 0)
-            return 0;
-        final long k1 = 0x5555555555555555L;
-        final long k2 = 0x3333333333333333L;
-        final long k4 = 0x0f0f0f0f0f0f0f0fL;
-        final long kf = 0x0101010101010101L;
-        x = x - ((x >> 1) & k1); // put count of each 2 bits into those 2 bits
-        x = (x & k2) + ((x >> 2) & k2); // put count of each 4 bits into those 4
-// bits
-        x = (x + (x >> 4)) & k4; // put count of each 8 bits into those 8 bits
-        x = (x * kf) >> 56; // returns 8 most significant bits of x + (x<<8) +
-// (x<<16) + (x<<24) + ...
-        return (int) x;
-    }
 
     /**
      * Convert a bitboard square to algebraic notation Number depends of rotated
@@ -261,49 +223,5 @@ public class BitboardUtilsAC implements Definitions{
         int up = Integer.parseInt(loc.charAt(1) + "") - 1;
         return up * 8 + out;
     }
-
-
-
-    public static long algebraic2Square(String name) {
-        long aux = H1;
-        for (int i = 0; i < 64; i++) {
-            if (name.equals(squareNames[i]))
-                return aux;
-            aux <<= 1;
-        }
-        return 0;
-    }
-
-    /**
-     * gets the column (0..7) of the square
-     *
-     * @param square
-     * @return
-     */
-    public static int getColumn(long square) {
-        for (int column = 0; column < 8; column++) {
-            if ((COLUMN[column] & square) != 0) {
-                return column;
-            }
-        }
-        return 0;
-    }
-
-    /**
-     * Gets a long with the less significative bit of the board
-     */
-    public static long lsb(long board) {
-        return board & (-board);
-    }
-
-    /**
-     * Distance between two indexes
-     */
-    public static int distance(int index1, int index2) {
-        return Math.max(Math.abs((index1 & 7) - (index2 & 7)), Math.abs((index1 >> 3) - (index2 >> 3)));
-    }
-
-
-
 
 }

@@ -1,4 +1,4 @@
-package Utilities;
+package utilities;
 
 import board.Board;
 import definitions.Definitions;
