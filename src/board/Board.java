@@ -3,14 +3,12 @@ package board;
 import bitboard.BitboardMagicAttacksAC;
 import bitboard.BitboardUtilsAC;
 import definitions.Definitions;
-import evaluation.Evaluator;
 import fen.FENValidator;
 import move.MoveAC;
 import movegen.MoveGeneratorAC;
-import search.Search;
+import search.PVS;
 import zobrist.Zobrist;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
@@ -96,7 +94,7 @@ public class Board implements Definitions {
     private static final int[] SEE_PIECE_VALUES = {0, 100, 325, 325, 500, 975, 999999};
     private int[] seeGain;
 
-    public Search search;
+    public PVS search;
     public BitboardMagicAttacksAC magics;
     public MoveGeneratorAC moveGenerator;
 
@@ -129,7 +127,7 @@ public class Board implements Definitions {
         white_castle_history = new int[MAX_GAME_LENGTH];
         black_castle_history = new int[MAX_GAME_LENGTH];
         key_history = new long[MAX_GAME_LENGTH];
-        search = Search.getInstance();
+        search = PVS.getInstance();
         magics = BitboardMagicAttacksAC.getInstance();
         moveGenerator = MoveGeneratorAC.getInstance();
     }

@@ -4,6 +4,7 @@ import bitboard.BitboardUtilsAC;
 import board.Board;
 import move.MoveAC;
 import movegen.MoveGeneratorAC;
+import search.PVS;
 import search.Search;
 
 import java.util.Observable;
@@ -21,7 +22,7 @@ public class BoardModel extends Observable{
         this.b=b;
         this.view=view;
         moveGenerator = MoveGeneratorAC.getInstance();
-        search = Search.getInstance();
+        search = PVS.getInstance();
     }
     public void makeMove(int move) {
         if (b.moveNumber % 2 == 0)
@@ -32,7 +33,7 @@ public class BoardModel extends Observable{
         int from = MoveAC.getFromIndex(move);
         int to = MoveAC.getToIndex(move);
         b.makeMove(move);
-        v.setLastMove(from % 8, 7 - from / 8, to % 8, 7 - to / 8);
+        view.setLastMove(from % 8, 7 - from / 8, to % 8, 7 - to / 8);
         //	System.out.println(b);
         setChanged();
         notifyObservers();
@@ -52,5 +53,10 @@ public class BoardModel extends Observable{
 
             }
         }
+    }
+
+
+    public char get(int loc) {
+        return b.getPieceAt(loc);
     }
 }
