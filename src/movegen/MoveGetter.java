@@ -1,7 +1,7 @@
 package movegen;
 
 import bitboard.BitboardMagicAttacksAC;
-import bitboard.BitboardUtilsAC;
+import utilities.BitboardUtilsAC;
 import board.Board;
 import definitions.Definitions;
 import move.MoveAC;

@@ -1,6 +1,6 @@
 package search;
 
-import bitboard.BitboardUtilsAC;
+import utilities.BitboardUtilsAC;
 import board.Board;
 import definitions.Definitions;
 import evaluation.Evaluator;

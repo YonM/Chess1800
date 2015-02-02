@@ -1,5 +1,6 @@
 package bitboard;
 
+import utilities.BitboardUtilsAC;
 import board.Board;
 
 /**
@@ -75,7 +76,7 @@ public class BitboardMagicAttacksAC {
         byte i = 0;
         while (square != 0) {
 
-            rook[i] = squareAttackedAuxSlider(square, +8, BitboardUtilsAC.b_u) 
+            rook[i] = squareAttackedAuxSlider(square, +8, BitboardUtilsAC.b_u)
                     | squareAttackedAuxSlider(square, -8, BitboardUtilsAC.b_d) 
                     | squareAttackedAuxSlider(square, -1, BitboardUtilsAC.b_r) 
                     | squareAttackedAuxSlider(square, +1, BitboardUtilsAC.b_l);

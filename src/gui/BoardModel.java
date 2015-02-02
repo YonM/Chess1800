@@ -1,6 +1,6 @@
 package gui;
 
-import bitboard.BitboardUtilsAC;
+import utilities.BitboardUtilsAC;
 import board.Board;
 import move.MoveAC;
 import movegen.MoveGeneratorAC;

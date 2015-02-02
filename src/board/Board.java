@@ -1,7 +1,7 @@
 package board;
 
 import bitboard.BitboardMagicAttacksAC;
-import bitboard.BitboardUtilsAC;
+import utilities.BitboardUtilsAC;
 import definitions.Definitions;
 import fen.FENValidator;
 import move.MoveAC;
