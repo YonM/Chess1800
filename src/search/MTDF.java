@@ -12,7 +12,7 @@ import movegen.MoveGeneratorAC;
  * MTD(f) based A.I for the secondary AI.
  */
 public class MTDF implements Search, Definitions{
-    private static PVS instance;
+    private static MTDF instance;
     private int[][] triangularArray;
     private int[] triangularLength;
     public Integer legalMoves;
@@ -31,9 +31,9 @@ public class MTDF implements Search, Definitions{
 
 
 
-    public static PVS getInstance() {
+    public static MTDF getInstance() {
         if(instance==null){
-            instance = new PVS();
+            instance = new MTDF();
             return instance;
         }
         return instance;
@@ -76,7 +76,7 @@ public class MTDF implements Search, Definitions{
             triangularLength = new int[MAX_GAME_LENGTH];
             follow_pv = true;
             null_allowed = true;
-            score = alphaBetaPVS(b, 0, currentDepth, alpha, beta);
+            score = alphaBetaM(b, 0, currentDepth, alpha, beta);
             if (score <= alpha){
                 if(reSearchAlphaCount == 0){
                     alpha -=100;
@@ -128,7 +128,7 @@ public class MTDF implements Search, Definitions{
         return lastPV[0];
     }
 
-    private int alphaBetaPVS(Board b, int ply, int depth, int alpha, int beta) {
+    private int alphaBetaM(Board b, int ply, int depth, int alpha, int beta) {
         evals++;
         triangularLength[ply] = ply;
         if (depth <= 0) {
@@ -150,7 +150,7 @@ public class MTDF implements Search, Definitions{
                 if (!b.isOwnKingAttacked()) {
                     null_allowed = false;
                     b.makeNullMove();
-                    score = -alphaBetaPVS(b, ply, depth - NULLMOVE_REDUCTION, -beta, -beta + 1);
+                    score = -alphaBetaM(b, ply, depth - NULLMOVE_REDUCTION, -beta, -beta + 1);
                     b.unmakeMove();
                     null_allowed = true;
                     if (score >= beta) {
@@ -171,7 +171,7 @@ public class MTDF implements Search, Definitions{
         int j;
         if(b.makeMove(moves[0])){
             movesFound++;
-            bestScore = -alphaBetaPVS(b, ply+1, depth-1, -beta,-alpha);
+            bestScore = -alphaBetaM(b, ply + 1, depth - 1, -beta, -alpha);
             b.unmakeMove();
             if(bestScore > alpha){
                 if(bestScore >= beta)
@@ -194,16 +194,16 @@ public class MTDF implements Search, Definitions{
                 movesFound++;
                 //Late Move Reduction
                 if(movesFound>=LATEMOVE_THRESHOLD && depth>LATEMOVE_DEPTH_THRESHOLD && !b.isCheck()&& !MoveAC.isCapture(moves[i])){
-                    score= -alphaBetaPVS(b, ply + 1, depth - 2, -alpha - 1, -alpha);
+                    score= -alphaBetaM(b, ply + 1, depth - 2, -alpha - 1, -alpha);
                 }
                 else if (pvMovesFound != 0) {
-                    score = -alphaBetaPVS(b, ply + 1, depth - 1, -alpha - 1, -alpha); // PVS Search
+                    score = -alphaBetaM(b, ply + 1, depth - 1, -alpha - 1, -alpha); // PVS Search
                     if ((score > alpha) && (score < beta))
-                        score = -alphaBetaPVS(b, ply + 1, depth - 1, -beta, -alpha); //Better move found, normal alpha-beta.
+                        score = -alphaBetaM(b, ply + 1, depth - 1, -beta, -alpha); //Better move found, normal alpha-beta.
                     if(score > alpha)
                         alpha = score;
                 } else {
-                    score = -alphaBetaPVS(b, ply + 1, depth - 1, -beta, -alpha); // Normal alpha-beta
+                    score = -alphaBetaM(b, ply + 1, depth - 1, -beta, -alpha); // Normal alpha-beta
                     //System.out.println("shouldn't get to this window");
                 }
                 b.unmakeMove();
@@ -297,7 +297,7 @@ public class MTDF implements Search, Definitions{
         triangularLength[ply] = ply;
 
         //Check if we are in check.
-        if (b.isOwnKingAttacked()) return alphaBetaPVS(b, ply, 1, alpha, beta);
+        if (b.isOwnKingAttacked()) return alphaBetaM(b, ply, 1, alpha, beta);
 
         //Standing pat
         int val;
