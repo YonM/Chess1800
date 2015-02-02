@@ -943,6 +943,10 @@ public class Board implements Definitions {
         return whiteToMove ? blackPieces : whitePieces;
     }
 
+    public boolean validateHashMove(int move) {
+        return false;
+    }
+
     /*public long getAllPieces(){
         return allPieces;
     }*/
