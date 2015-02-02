@@ -45,7 +45,7 @@ public class PVS implements Definitions, Search {
     }
 
 
-    public PVS()
+    private PVS()
     {
         triangularArray = new int[MAX_GAME_LENGTH][MAX_GAME_LENGTH];
         triangularLength = new int[MAX_GAME_LENGTH];

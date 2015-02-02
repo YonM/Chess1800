@@ -38,7 +38,7 @@ public class MTDF implements Search, Definitions{
     }
 
 
-    public MTDF()
+    private MTDF()
     {
         evaluator = Evaluator.getInstance();
         moveGenerator = MoveGeneratorAC.getInstance();

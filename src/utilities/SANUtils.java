@@ -22,7 +22,7 @@ public class SANUtils implements Definitions {
         return instance;
     }
 
-    public SANUtils() {
+    private SANUtils() {
         moveGen = MoveGeneratorAC.getInstance();
     }
 

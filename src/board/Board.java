@@ -944,7 +944,9 @@ public class Board implements Definitions {
     }
 
     public boolean validateHashMove(int move) {
-        return false;
+        if(!makeMove(move)) return false;
+        unmakeMove(move);
+        return true;
     }
 
     /*public long getAllPieces(){

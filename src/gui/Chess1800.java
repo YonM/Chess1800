@@ -116,10 +116,9 @@ public class Chess1800 extends JFrame implements Definitions, ActionListener{
         timer.start();
     }
 
+    private void showTimesOnTitlebar() {
 
-
-
-
+    }
 
 
     @Override

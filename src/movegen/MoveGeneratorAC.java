@@ -16,7 +16,7 @@ public class MoveGeneratorAC implements Definitions {
     public MoveGetter moveGetter;
     
     
-    public MoveGeneratorAC(){
+    private MoveGeneratorAC(){
         moveGetter= MoveGetter.getInstance();
     }
     /**
