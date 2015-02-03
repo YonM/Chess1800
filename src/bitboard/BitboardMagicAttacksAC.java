@@ -55,7 +55,7 @@ public class BitboardMagicAttacksAC {
         return instance;
     }
 
-    public BitboardMagicAttacksAC()
+    private BitboardMagicAttacksAC()
     {
         generateAttacks();
     }
@@ -199,7 +199,7 @@ public class BitboardMagicAttacksAC {
     private boolean isIndexAttacked(Board b, int i, boolean white) {
         if (i < 0 || i > 63)
             return false;
-        long others = b.getOpponentPieces();
+        long others = white ? b.blackPieces: b.whitePieces;
         long all = b.allPieces;
         if (((white ? whitePawn[i] : blackPawn[i])
                 & (b.whitePawns | b.blackPawns) & others) != 0)
@@ -209,10 +209,10 @@ public class BitboardMagicAttacksAC {
         if ((knight[i] & (b.whiteKnights | b.blackKnights) & others) != 0)
             return true;
         if ((getRookAttacks(i, all)
-                & ((b.whiteRooks | b.blackRooks) | (b.whiteQueens | b.blackQueens)) & others) != 0)
+                & ( (b.whiteRooks | b.blackRooks) | (b.whiteQueens | b.blackQueens) ) & others) != 0)
             return true;
         if ((getBishopAttacks(i, all)
-                & ((b.whiteBishops | b.blackBishops) | (b.whiteQueens | b.blackQueens)) & others) != 0)
+                & ( (b.whiteBishops | b.blackBishops) | (b.whiteQueens | b.blackQueens) ) & others) != 0)
             return true;
         return false;
     }

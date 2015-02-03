@@ -105,7 +105,7 @@ public interface Definitions {
     public final static int LATEMOVE_DEPTH_THRESHOLD = 3;
     public final static int NULLMOVE = 0;
     public final static int NULLMOVE_REDUCTION = 4;
-    public final static int NULLMOVE_LIMIT = KNIGHT_VALUE - 1; //Only do null move when material value(excluding pawn & king)
+    public final static int NULLMOVE_THRESHOLD = KNIGHT_VALUE - 1; //Only do null move when material value(excluding pawn & king)
     // is below the value of a Knight.
 
     //Maximum moves per position and max game length.

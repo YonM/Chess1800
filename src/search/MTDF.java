@@ -1,6 +1,5 @@
 package search;
 
-import utilities.BitboardUtilsAC;
 import board.Board;
 import definitions.Definitions;
 import evaluation.Evaluator;
@@ -115,7 +114,7 @@ public class MTDF implements Search, Definitions{
         int score;
         //Try Null move
         if (!follow_pv && null_allowed) {
-            if (b.movingSidePieceMaterial() > NULLMOVE_LIMIT) {
+            if (b.movingSidePieceMaterial() > NULLMOVE_THRESHOLD) {
                 if (!b.isOwnKingAttacked()) {
                     null_allowed = false;
                     b.makeNullMove();

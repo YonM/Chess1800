@@ -1,6 +1,5 @@
 package search;
 
-import utilities.BitboardUtilsAC;
 import board.Board;
 import definitions.Definitions;
 import evaluation.Evaluator;
@@ -152,7 +151,7 @@ public class PVS implements Definitions, Search {
         int score;
         //Try Null move
         if (!follow_pv && null_allowed) {
-            if (b.movingSidePieceMaterial() > NULLMOVE_LIMIT) {
+            if (b.movingSidePieceMaterial() > NULLMOVE_THRESHOLD) {
                 if (!b.isOwnKingAttacked()) {
                     null_allowed = false;
                     b.makeNullMove();
@@ -175,22 +174,31 @@ public class PVS implements Definitions, Search {
         selectBestMoveFirst(b, moves, num_moves, ply, depth, 0);
         //try the first move with unchanged window.
         int j;
-        if(b.makeMove(moves[0])){
-            movesFound++;
-            bestScore = -alphaBetaPVS(b, ply+1, depth-1, -beta,-alpha);
-            b.unmakeMove();
-            if(bestScore > alpha){
-                if(bestScore >= beta)
-                    return bestScore; // fail soft
-                pvMovesFound++;
-                triangularArray[ply][ply] = moves[0];    //save the move
-                for (j = ply + 1; j < triangularLength[ply + 1]; j++)
-                    triangularArray[ply][j] = triangularArray[ply + 1][j];  //appends latest best PV from deeper plies
+        if(num_moves != 0) {
+            if (b.makeMove(moves[0])) {
+                movesFound++;
+                bestScore = -alphaBetaPVS(b, ply + 1, depth - 1, -beta, -alpha);
+                b.unmakeMove();
+                if (bestScore > alpha) {
+                    if (bestScore >= beta){
 
-                triangularLength[ply] = triangularLength[ply + 1];
-                if (ply == 0) rememberPV();
+                        if (b.whiteToMove)
+                            whiteHeuristics[MoveAC.getFromIndex(moves[0])][MoveAC.getToIndex(moves[0])] += depth * depth;
+                        else
+                            blackHeuristics[MoveAC.getFromIndex(moves[0])][MoveAC.getToIndex(moves[0])] += depth * depth;
+                        return bestScore;  // fail soft
+                    }
 
-                alpha = bestScore;  // alpha improved
+                    pvMovesFound++;
+                    triangularArray[ply][ply] = moves[0];    //save the move
+                    for (j = ply + 1; j < triangularLength[ply + 1]; j++)
+                        triangularArray[ply][j] = triangularArray[ply + 1][j];  //appends latest best PV from deeper plies
+
+                    triangularLength[ply] = triangularLength[ply + 1];
+                    if (ply == 0) rememberPV();
+
+                    alpha = bestScore;  // alpha improved
+                }
             }
         }
         for (int i = 1; i < num_moves; i++) {
