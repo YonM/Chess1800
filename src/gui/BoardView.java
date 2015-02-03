@@ -1,5 +1,7 @@
 package gui;
 
+import definitions.Definitions;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.Observable;
@@ -7,11 +9,12 @@ import java.util.Observer;
 
 /**
  * Created by Yonathan on 29/01/2015.
+ * Based on Ulysse Carion's Godot. Source @ https://github.com/ucarion
  */
 public class BoardView extends JPanel implements Observer {
 
+    private static final int WIDTH = 50;
     private BoardModel b;
-
     private int prevXfrom;
     private int prevYfrom;
     private int prevXto;
@@ -29,15 +32,19 @@ public class BoardView extends JPanel implements Observer {
     private static ImageIcon white_rook = new ImageIcon("icons\\white_rook.gif");
     private static ImageIcon white_queen = new ImageIcon("icons\\white_queen.gif");
     private static ImageIcon white_king = new ImageIcon("icons\\white_king.gif");
+    private static ImageIcon error_icon = new ImageIcon("icons\\error.png");
 
     @Override
     public void update(Observable o, Object arg) {
         b = (BoardModel) o;
         repaint();
-
     }
 
     public void setLastMove(int x1, int y1, int x2, int y2) {
+        prevXfrom = x1;
+        prevYfrom = y1;
+        prevXto = x2;
+        prevYto = y2;
     }
 
     @Override
@@ -103,9 +110,8 @@ public class BoardView extends JPanel implements Observer {
                         white_king.paintIcon(this, g, x, y);
                         break;
                     default:
-                        //error.paintIcon(this,g,x,y);
+                        error_icon.paintIcon(this, g, x, y);
                         break;
-
                 }
             }
         }

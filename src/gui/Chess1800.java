@@ -13,15 +13,16 @@ import java.awt.event.MouseListener;
 /**
  * Created by Yonathan on 29/01/2015.
  * The main class of the project.
+ * Based on Ulysse Carion's Godot. Source @ https://github.com/ucarion
  */
 public class Chess1800 extends JFrame implements Definitions, ActionListener{
 
-
+    private static final int WIDTH = 50;
     private static final int LOWER_BUFFER = 51;
     private static final int SIDE_BUFFER = 5;
 
     private static final boolean PLAYER_IS_WHITE = true;
-    private static final int NUM_MINUTES = 1;
+    private static final int NUM_MINUTES = 10;
     private static final boolean CAN_UNDO = true;
 
     private BoardModel model;
@@ -29,18 +30,24 @@ public class Chess1800 extends JFrame implements Definitions, ActionListener{
 
     private Timer timer;
 
-    private int fromx;
-    private int fromy;
-    private int tox;
-    private int toy;
+    private int fromX;
+    private int fromY;
+    private int toX;
+    private int toY;
 
     private boolean player_turn;
 
     private int player_time;
     private int engine_time;
 
+    private enum STATE{
+        MENU,
+        GAME
+    };
+    private STATE State = STATE.MENU;
+
     public Chess1800() {
-        super("Godot chess GUI v.0.1");
+        super("Chess 1800");
         setResizable(false);
         setSize(WIDTH * 8 + SIDE_BUFFER, WIDTH * 8 + LOWER_BUFFER);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -68,7 +75,7 @@ public class Chess1800 extends JFrame implements Definitions, ActionListener{
         mBar.add(m);
 
         m = new JMenu("Engine");
-        i = new JMenuItem("Godot");
+        i = new JMenuItem("Chess 1800");
         i.addActionListener(this);
         m.add(i);
         mBar.add(m);
@@ -88,21 +95,19 @@ public class Chess1800 extends JFrame implements Definitions, ActionListener{
 
             @Override
             public void mousePressed(MouseEvent e) {
-                fromx = e.getX();
-                fromy = e.getY();
+                fromX = e.getX();
+                fromY = e.getY();
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                tox = e.getX();
-                toy = e.getY();
+                toX = e.getX();
+                toY = e.getY();
 
-                model.makeMove(fromx / WIDTH, tox / WIDTH, fromy / WIDTH, toy / WIDTH);
+                model.makeMove(fromX / WIDTH, toX / WIDTH, fromY / WIDTH, toY / WIDTH);
 
-                if (fromx / WIDTH != tox / WIDTH || fromy / WIDTH != toy / WIDTH)
+                if (fromX / WIDTH != toX / WIDTH || fromY / WIDTH != toY / WIDTH)
                     player_turn = false;
-
-                //view.setLastMove(fromx / WIDTH, fromy / WIDTH, tox / WIDTH, toy / WIDTH);
             }
         });
 
@@ -117,12 +122,69 @@ public class Chess1800 extends JFrame implements Definitions, ActionListener{
     }
 
     private void showTimesOnTitlebar() {
+        if (PLAYER_IS_WHITE)
+            setTitle("White: " + (player_time / 1000.0) + " -- Black: "
+                    + (engine_time / 1000.0));
+        else
+            setTitle("White: " + (engine_time / 1000.0) + " -- Black: "
+                    + (player_time / 1000.0));
 
     }
 
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == timer) {
+            if (player_time < 0) {
+                JOptionPane.showMessageDialog(null, "Player lost on time.");
+                System.exit(0);
+            }
+            else if (engine_time < 0) {
+                JOptionPane.showMessageDialog(null, "Engine lost on time.");
+                System.exit(0);
+            }
+
+            showTimesOnTitlebar();
+
+            if (player_turn) {
+                player_time -= 100;
+            }
+            else {
+                timer.stop();
+                long start = System.currentTimeMillis();
+                model.makeEngineMove();
+                long stop = System.currentTimeMillis();
+                engine_time -= (stop - start);
+                player_turn = true;
+                timer.start();
+            }
+            if (model.whiteWins()) {
+                if (PLAYER_IS_WHITE) {
+                    JOptionPane.showMessageDialog(null, "Player wins by checkmate.");
+                    System.exit(0);
+                }
+                else {
+                    JOptionPane.showMessageDialog(null, "Engine wins by checkmate.");
+                    System.exit(0);
+                }
+            }
+            else if (model.blackWins()) {
+                if (PLAYER_IS_WHITE) {
+                    JOptionPane.showMessageDialog(null, "Engine wins by checkmate.");
+                    System.exit(0);
+                }
+                else {
+                    JOptionPane.showMessageDialog(null, "Player wins by checkmate.");
+                    System.exit(0);
+                }
+            }
+            else if (model.isDraw()) {
+                JOptionPane.showMessageDialog(null, "Draw");
+                System.exit(0);
+            }
+        }
+        else if (e.getActionCommand().equals("Undo move") && CAN_UNDO)
+            model.unmakeMove();
 
     }
 }
