@@ -3,8 +3,13 @@ package gui;
 import board.Board;
 import definitions.Definitions;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JFrame;
+import javax.swing.Timer;
+import javax.swing.JMenuBar;
+import javax.swing.JMenu;
+import javax.swing.JOptionPane;
+import javax.swing.JMenuItem;
+import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -22,7 +27,7 @@ public class Chess1800 extends JFrame implements Definitions, ActionListener{
     private static final int SIDE_BUFFER = 5;
 
     private static final boolean PLAYER_IS_WHITE = true;
-    private static final int NUM_MINUTES = 10;
+    private static final int NUM_MINUTES = 1;
     private static final boolean CAN_UNDO = true;
 
     private BoardModel model;
@@ -119,6 +124,11 @@ public class Chess1800 extends JFrame implements Definitions, ActionListener{
         showTimesOnTitlebar();
 
         timer.start();
+    }
+
+    public static void main(String[] args) {
+        Chess1800 ch = new Chess1800();
+        ch.setVisible(true);
     }
 
     private void showTimesOnTitlebar() {

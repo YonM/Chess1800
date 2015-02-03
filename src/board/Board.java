@@ -139,68 +139,6 @@ public class Board implements Definitions {
     public boolean initializeFromFEN(String fen) {
         if (FENValidator.isValidFEN(fen)) {
             clearBitboards();
-            /*String[] tokens = fen.split("[ \\t\\n\\x0B\\f\\r]+");
-            String board = tokens[0];
-            int rank = 7;
-            int file = 0;
-            for (char c : board.toCharArray()) {
-                if (Character.isDigit(c)) {
-                    for (int j = 0; j < Character.digit(c, 10); j++) file++;
-
-                } else {
-                    if(rank==7){
-                        System.out.println("as expected");
-                        System.out.println(file);
-                    }
-                    //if(((rank * 8) + file) == 64) System.out.println("HOW " + rank + " : " + file);
-                    long square=0;
-                    if(!(rank ==7 & file==8))square = BitboardUtilsAC.getSquare[rank * 8 + file];
-                    switch (c) {
-                        case '/':
-                            rank--;
-                            file = 0;
-                            break;
-                        case 'P':
-                            whitePawns |= square;
-                            break;
-                        case 'N':
-                            whiteKnights |= square;
-                            break;
-                        case 'B':
-                            whiteBishops |= square;
-                            break;
-                        case 'R':
-                            whiteRooks |= square;
-                            break;
-                        case 'Q':
-                            whiteQueens |= square;
-                            break;
-                        case 'K':
-                            System.out.println("king added " + square);
-                            whiteKing |= square;
-                            break;
-                        case 'p':
-                            blackPawns |= square;
-                            break;
-                        case 'n':
-                            blackKnights |= square;
-                            break;
-                        case 'b':
-                            blackBishops |= square;
-                            break;
-                        case 'r':
-                            blackRooks |= square;
-                            break;
-                        case 'q':
-                            blackQueens |= square;
-                            break;
-                        case 'k':
-                            blackKing |= square;
-                            break;
-                    }
-                    if (c != '/') file++;
-                }
-            }*/
             StringTokenizer st = new StringTokenizer(fen, "/ ");
             ArrayList<String> arr = new ArrayList<String>();
             while (st.hasMoreTokens()) {
@@ -208,7 +146,7 @@ public class Board implements Definitions {
             }
             // traversing the square-description part of the FEN
             int up = 7;
-            int out = 0;
+            int out;
             for (int i = 0; i < 8; i++) {
                 out = 0;
                 for (char c : arr.get(i).toCharArray()) {
@@ -263,52 +201,6 @@ public class Board implements Definitions {
                 up--;
             }
             updateAggregateBitboards();
-
-            /*whiteToMove = tokens[1].toCharArray()[0] == 'w';
-            castleWhite = 0;
-            castleBlack = 0;
-            ePSquare = -1;
-            fiftyMove = 0;
-            moveNumber = 1;
-            //For castling
-            if (tokens.length > 2) {
-                String castleInfo = tokens[2];
-                if (castleInfo.contains("K")) {
-                    castleWhite += CANCASTLEOO;
-                }
-                if (castleInfo.contains("Q")) {
-                    castleWhite += CANCASTLEOOO;
-                }
-                if (castleInfo.contains("k")) {
-                    castleBlack += CANCASTLEOO;
-                }
-                if (castleInfo.contains("q")) {
-                    castleBlack += CANCASTLEOOO;
-                }
-                if (tokens.length > 3) {
-                    char[] enPassant = tokens[3].toCharArray();
-
-                    if (enPassant[0] != ('-')) {
-                        ePSquare = (enPassant[0] - 96) * 8 + enPassant[1]; //Converts rank & file to index
-                    }
-                }
-                if (tokens.length > 4) {
-                    try {
-                        fiftyMove = Integer.parseInt(tokens[4]);
-                    } catch (Exception ignore) {
-
-                    }
-                }
-                if (tokens.length > 5) {
-                    try {
-                        moveNumber = Integer.parseInt(tokens[5]);
-                        initMoveNumber = moveNumber;
-                    } catch (Exception ignore) {
-
-                    }
-                }
-
-            }*/
             // and now we deal with turn, ep, 50mr, and move number
             // turn
             whiteToMove = arr.get(8).equals("w");
@@ -341,12 +233,10 @@ public class Board implements Definitions {
             System.out.println("Black castling: " + castleBlack);
             System.out.println("ePSquare: " + ePSquare);*/
             return true;
-        } else {
-            //if fen is not valid
-            return false;
-        }
+        }// END if
 
-
+        //if fen is not valid
+        return false;
     }
 
 

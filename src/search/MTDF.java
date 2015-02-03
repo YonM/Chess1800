@@ -146,11 +146,11 @@ public class MTDF implements Search, Definitions{
                 if(bestScore >= beta)
                     return bestScore; // fail soft
                 pvMovesFound++;
-                triangularArray[ply][ply] = moves[0];    //save the move
+               /* triangularArray[ply][ply] = moves[0];    //save the move
                 for (j = ply + 1; j < triangularLength[ply + 1]; j++)
                     triangularArray[ply][j] = triangularArray[ply + 1][j];  //appends latest best PV from deeper plies
 
-                triangularLength[ply] = triangularLength[ply + 1];
+                triangularLength[ply] = triangularLength[ply + 1];*/
                 if (ply == 0) rememberPV();
 
                 alpha = bestScore;  // alpha improved
@@ -186,11 +186,11 @@ public class MTDF implements Search, Definitions{
                     }
                     bestScore = score;
                     pvMovesFound++;
-                    triangularArray[ply][ply] = moves[i];    //save the move
+                    /*triangularArray[ply][ply] = moves[i];    //save the move
                     for (j = ply + 1; j < triangularLength[ply + 1]; j++)
                         triangularArray[ply][j] = triangularArray[ply + 1][j];  //appends latest best PV from deeper plies
 
-                    triangularLength[ply] = triangularLength[ply + 1];
+                    triangularLength[ply] = triangularLength[ply + 1];*/
                     if (ply == 0) rememberPV();
 
 
@@ -198,12 +198,12 @@ public class MTDF implements Search, Definitions{
 
             }
         }
-        if (pvMovesFound != 0) {
+        /*if (pvMovesFound != 0) {
             if (b.whiteToMove)
                 whiteHeuristics[MoveAC.getFromIndex(triangularArray[ply][ply])][MoveAC.getToIndex(triangularArray[ply][ply])] += depth * depth;
             else
                 blackHeuristics[MoveAC.getFromIndex(triangularArray[ply][ply])][MoveAC.getToIndex(triangularArray[ply][ply])] += depth * depth;
-        }
+        }*/
 
         if (b.fiftyMove >= 100) return DRAWSCORE;                 //Fifty-move rule
 
@@ -263,7 +263,7 @@ public class MTDF implements Search, Definitions{
     }
 
     private int quiescenceSearch(Board b, int ply, int alpha, int beta) {
-        triangularLength[ply] = ply;
+        //triangularLength[ply] = ply;
 
         //Check if we are in check.
         if (b.isOwnKingAttacked()) return alphaBetaM(b, ply, 1, alpha, beta);
@@ -288,11 +288,11 @@ public class MTDF implements Search, Definitions{
 
             if (val > alpha) {
                 alpha = val;
-                triangularArray[ply][ply] = captures[i];
+                /*triangularArray[ply][ply] = captures[i];
                 for (int j = ply + 1; j < triangularLength[ply + 1]; j++) {
                     triangularArray[ply][j] = triangularArray[ply + 1][j];
                 }
-                triangularLength[ply] = triangularLength[ply + 1];
+                triangularLength[ply] = triangularLength[ply + 1];*/
             }
 
 
@@ -304,9 +304,9 @@ public class MTDF implements Search, Definitions{
     private void rememberPV() {
         int i;
         //lastPVLength = triangularLength[0];
-        for (i = 0; i < triangularLength[0]; i++) {
+        /*for (i = 0; i < triangularLength[0]; i++) {
             lastPV[i] = triangularArray[0][i];
-        }
+        }*/
     }
 
 }

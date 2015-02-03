@@ -361,7 +361,7 @@ public class Evaluator implements Definitions {
             }
 
             //Doubled pawn penalty
-            if ((b.whitePawns ^ BitboardUtilsAC.getSquare[square] & BitboardUtilsAC.COLUMN[square]) != 0)
+            if ((b.whitePawns ^ BitboardUtilsAC.getSquare[square] & BitboardUtilsAC.COLUMN[square % 8]) != 0)
                 score -= PENALTY_DOUBLED_PAWN;
 
             //Isolated pawn penalty
@@ -413,8 +413,8 @@ public class Evaluator implements Definitions {
             score += ROOK_VALUE;
             score += ROOK_POS_W[square];
             score += ROOK_DISTANCE[DISTANCE[square][blackKingSquare]];
-            if ((BitboardUtilsAC.COLUMN[square] & whitePassedPawns) != 0)
-                if (square < BitboardUtilsAC.getLastIndexFromBoard((BitboardUtilsAC.COLUMN[square] & whitePassedPawns)))
+            if ((BitboardUtilsAC.COLUMN[square % 8] & whitePassedPawns) != 0)
+                if (square < BitboardUtilsAC.getLastIndexFromBoard((BitboardUtilsAC.COLUMN[square % 8] & whitePassedPawns)))
                     score += BONUS_ROOK_BEHIND_PASSED_PAWN;
 
             if ((BitboardUtilsAC.COLUMN[square % 8] & b.blackPawns) == 0) {
@@ -471,7 +471,7 @@ public class Evaluator implements Definitions {
             }
 
             //Doubled pawn penalty
-            if ((b.blackPawns ^ BitboardUtilsAC.getSquare[square] & BitboardUtilsAC.COLUMN[square]) != 0)
+            if ((b.blackPawns ^ BitboardUtilsAC.getSquare[square] & BitboardUtilsAC.COLUMN[square % 8]) != 0)
                 score += PENALTY_DOUBLED_PAWN;
 
             //Isolated pawn penalty
@@ -522,8 +522,8 @@ public class Evaluator implements Definitions {
             score -= ROOK_VALUE;
             score -= ROOK_POS_B[square];
             score -= ROOK_DISTANCE[DISTANCE[square][whiteKingSquare]];
-            if ((BitboardUtilsAC.COLUMN[square] & blackPassedPawns) != 0)
-                if (square < BitboardUtilsAC.getLastIndexFromBoard((BitboardUtilsAC.COLUMN[square] & blackPassedPawns)))
+            if ((BitboardUtilsAC.COLUMN[square % 8] & blackPassedPawns) != 0)
+                if (square < BitboardUtilsAC.getLastIndexFromBoard((BitboardUtilsAC.COLUMN[square % 8] & blackPassedPawns)))
                     score -= BONUS_ROOK_BEHIND_PASSED_PAWN;
             if ((BitboardUtilsAC.COLUMN[square % 8] & b.whitePawns) == 0) {
                 score -= BONUS_ROOK_ON_OPEN_FILE;

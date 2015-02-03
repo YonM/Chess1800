@@ -2,8 +2,10 @@ package gui;
 
 import definitions.Definitions;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JPanel;
+import javax.swing.ImageIcon;
+import java.awt.Graphics;
+import java.awt.Color;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -32,7 +34,6 @@ public class BoardView extends JPanel implements Observer {
     private static ImageIcon white_rook = new ImageIcon("icons\\white_rook.gif");
     private static ImageIcon white_queen = new ImageIcon("icons\\white_queen.gif");
     private static ImageIcon white_king = new ImageIcon("icons\\white_king.gif");
-    private static ImageIcon error_icon = new ImageIcon("icons\\error.png");
 
     @Override
     public void update(Observable o, Object arg) {
@@ -108,9 +109,6 @@ public class BoardView extends JPanel implements Observer {
                         break;
                     case 'K':
                         white_king.paintIcon(this, g, x, y);
-                        break;
-                    default:
-                        error_icon.paintIcon(this, g, x, y);
                         break;
                 }
             }
