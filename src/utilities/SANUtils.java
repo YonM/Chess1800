@@ -171,8 +171,8 @@ public class SANUtils implements Definitions {
                 moveString += "K";
                 break;
             default:
-                moveString = "ERROR";
-                return moveString;
+                moveString = "";
+                break;
         }
         moveString += intToAlgebraicLoc(MoveAC.getFromIndex(move));
         if (MoveAC.isCapture(move))

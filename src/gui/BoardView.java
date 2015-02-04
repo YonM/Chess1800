@@ -110,6 +110,9 @@ public class BoardView extends JPanel implements Observer {
                     case 'K':
                         white_king.paintIcon(this, g, x, y);
                         break;
+                    default:
+                        //empty square
+                        break;
                 }
             }
         }

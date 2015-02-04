@@ -121,7 +121,7 @@ public class Chess1800 extends JFrame implements Definitions, ActionListener{
 
         player_turn = PLAYER_IS_WHITE;
 
-        showTimesOnTitlebar();
+        showTimesOnTitleBar();
 
         timer.start();
     }
@@ -131,7 +131,7 @@ public class Chess1800 extends JFrame implements Definitions, ActionListener{
         ch.setVisible(true);
     }
 
-    private void showTimesOnTitlebar() {
+    private void showTimesOnTitleBar() {
         if (PLAYER_IS_WHITE)
             setTitle("White: " + (player_time / 1000.0) + " -- Black: "
                     + (engine_time / 1000.0));
@@ -154,7 +154,7 @@ public class Chess1800 extends JFrame implements Definitions, ActionListener{
                 System.exit(0);
             }
 
-            showTimesOnTitlebar();
+            showTimesOnTitleBar();
 
             if (player_turn) {
                 player_time -= 100;

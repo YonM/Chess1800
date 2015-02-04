@@ -30,7 +30,7 @@ public class PVS implements Definitions, Search {
     private int[] lastPV;
     private boolean follow_pv;
     private boolean null_allowed;
-    private static final boolean VERBOSE= false;
+    private static final boolean VERBOSE= true;
     //private int lastPVLength;
 
 
@@ -94,6 +94,7 @@ public class PVS implements Definitions, Search {
                         alpha = -INFINITY;
                         reSearchAlphaCount++;
                 }
+                if(VERBOSE) System.out.println("reSearchAlphaCount: " + reSearchAlphaCount +"\n" + "alpha: " +alpha);
                 continue;
             }else if(score >= beta){
                 if(reSearchBetaCount == 0){
@@ -107,6 +108,7 @@ public class PVS implements Definitions, Search {
                     beta = INFINITY;
                     reSearchBetaCount++;
                 }
+                if(VERBOSE)System.out.println("reSearchBetaCount: " + reSearchBetaCount +"\n" + "beta: " +beta);
                 continue;
             } else if(score == 0){
                 alpha = -INFINITY;
@@ -118,7 +120,7 @@ public class PVS implements Definitions, Search {
             reSearchAlphaCount = 0;
             reSearchBetaCount = 0;
             if(alpha < -INFINITY) alpha = -INFINITY;
-            if(beta> INFINITY) beta = INFINITY;
+            if(beta > INFINITY) beta = INFINITY;
             currentDepth++;
             if(VERBOSE)
                 System.out.println("(" + currentDepth + ") "
@@ -141,6 +143,7 @@ public class PVS implements Definitions, Search {
             return quiescenceSearch(b, ply, alpha, beta);
         }
 
+        //End of game check, evaluate the board if so to check if it's a draw or checkmate.
         if (b.isEndOfGame()) {
             follow_pv = false;
             int eval = evaluator.eval(b);
