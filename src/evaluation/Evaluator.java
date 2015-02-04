@@ -284,7 +284,7 @@ public class Evaluator implements Definitions {
     private long temp, whitePassedPawns, blackPassedPawns;
 
     public int eval(Board b) {
-        if(b.isCheckMate()) return CHECKMATE;
+        if(b.isCheckMate()) return -CHECKMATE;
         if(b.isDraw()) return DRAWSCORE;
         score = b.material;
         whiteKingSquare = BitboardUtilsAC.getIndexFromBoard(b.whiteKing);

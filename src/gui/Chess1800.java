@@ -27,7 +27,7 @@ public class Chess1800 extends JFrame implements Definitions, ActionListener{
     private static final int SIDE_BUFFER = 5;
 
     private static final boolean PLAYER_IS_WHITE = true;
-    private static final int NUM_MINUTES = 1;
+    private static final int NUM_MINUTES = 10;
     private static final boolean CAN_UNDO = true;
 
     private BoardModel model;

@@ -101,7 +101,7 @@ public interface Definitions {
 
 
     //Null move + Late Move Reduction related
-    public final static int LATEMOVE_THRESHOLD = 6;
+    public final static int LATEMOVE_THRESHOLD = 4;
     public final static int LATEMOVE_DEPTH_THRESHOLD = 3;
     public final static int NULLMOVE = 0;
     public final static int NULLMOVE_REDUCTION = 4;

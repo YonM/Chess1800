@@ -196,7 +196,7 @@ public class BitboardMagicAttacksAC {
         return isIndexAttacked(b, BitboardUtilsAC.square2Index(square), white);
     }
 
-    private boolean isIndexAttacked(Board b, int i, boolean white) {
+    private boolean isIndexAttacked(Board b, byte i, boolean white) {
         if (i < 0 || i > 63)
             return false;
         long others = white ? b.blackPieces: b.whitePieces;

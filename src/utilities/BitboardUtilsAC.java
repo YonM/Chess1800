@@ -113,7 +113,7 @@ public class BitboardUtilsAC implements Definitions{
                     "a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1"});
 
     // To use with square2Index
-    public static final int[] bitTable = {63, 30, 3, 32, 25, 41, 22, 33, 15, 50, 42, 13, 11, 53, 19, 34, 61, 29, 2, 51, 21, 43, 45, 10, 18, 47, 1, 54, 9, 57,
+    public static final byte[] bitTable = {63, 30, 3, 32, 25, 41, 22, 33, 15, 50, 42, 13, 11, 53, 19, 34, 61, 29, 2, 51, 21, 43, 45, 10, 18, 47, 1, 54, 9, 57,
             0, 35, 62, 31, 40, 4, 49, 5, 52, 26, 60, 6, 23, 44, 46, 27, 56, 16, 7, 39, 48, 24, 59, 14, 12, 55, 38, 28, 58, 20, 37, 17, 36, 8};
 
     static {
@@ -124,7 +124,7 @@ public class BitboardUtilsAC implements Definitions{
     /**
      * Converts a square to its index 0=H1, 63=A8
      */
-    public static int square2Index(long square) {
+    public static byte square2Index(long square) {
         long b = square ^ (square - 1);
         int fold = (int) (b ^ (b >>> 32));
         return bitTable[(fold * 0x783a9b23) >>> 26];

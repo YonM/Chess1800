@@ -32,9 +32,6 @@ public class PVS implements Definitions, Search {
     private boolean pv_found;
     private boolean null_allowed;
     private static final boolean VERBOSE= true;
-    //private int lastPVLength;
-
-
 
     public static PVS getInstance() {
         if(instance==null){
@@ -43,7 +40,6 @@ public class PVS implements Definitions, Search {
         }
         return instance;
     }
-
 
     private PVS()
     {
@@ -71,7 +67,6 @@ public class PVS implements Definitions, Search {
         whiteHeuristics = new int[MAX_PLY][MAX_PLY];
         blackHeuristics = new int[MAX_PLY][MAX_PLY];
         lastPV = new int[MAX_PLY];
-        //lastPVLength = 0;
         long start = System.currentTimeMillis();
         int alpha = -INFINITY;
         int beta = INFINITY;
@@ -84,8 +79,18 @@ public class PVS implements Definitions, Search {
             null_allowed = true;
             pv_found= false;
             score = alphaBetaPVS(b, 0, currentDepth, alpha, beta);
+
+            if(VERBOSE) {
+                if (score == alpha) System.out.println("alpha baby");
+                if (score == beta) System.out.println("beta baby");
+            }
+
             if(pv_found) {
+
                 if (score <= alpha) {
+                    if (VERBOSE)
+                        System.out.println("reSearchAlphaCount: " + reSearchAlphaCount + "\n" + "alpha: " + alpha + "\n" + "reSearchBetaCount: " + reSearchBetaCount + "\n" + "beta: " + beta);
+
                     if (reSearchAlphaCount == 0) {
                         alpha -= 100;
                         reSearchAlphaCount++;
@@ -96,10 +101,12 @@ public class PVS implements Definitions, Search {
                         alpha = -INFINITY;
                         reSearchAlphaCount++;
                     }
-                    if (VERBOSE)
-                        System.out.println("reSearchAlphaCount: " + reSearchAlphaCount + "\n" + "alpha: " + alpha + "\n" + "reSearchBetaCount: " + reSearchBetaCount + "\n" + "beta: " + beta);
                     continue;
-                } else if (score >= beta) {
+                }
+                else if (score >= beta) {
+                    if (VERBOSE)
+                        System.out.println("reSearchBetaCount: " + reSearchBetaCount + "\n" + "beta: " + beta + "\n" + "reSearchAlphaCount: " + reSearchAlphaCount + "\n" + "alpha: " + alpha);
+
                     if (reSearchBetaCount == 0) {
                         beta += 100;
                         reSearchBetaCount++;
@@ -110,10 +117,9 @@ public class PVS implements Definitions, Search {
                         beta = INFINITY;
                         reSearchBetaCount++;
                     }
-                    if (VERBOSE)
-                        System.out.println("reSearchBetaCount: " + reSearchBetaCount + "\n" + "beta: " + beta + "\n" + "reSearchAlphaCount: " + reSearchAlphaCount + "\n" + "alpha: " + alpha);
                     continue;
-                } else if (score == 0) {
+                }
+                else if (score == 0) {
                     alpha = -INFINITY;
                     beta = INFINITY;
                     continue;
@@ -131,6 +137,7 @@ public class PVS implements Definitions, Search {
                         + ( (System.currentTimeMillis() - start) / 1000.0) + "s ("
                         + sanUtils.moveToString(lastPV[0]) + ") -- " + evals
                         + " nodes evaluated.");
+            // stop searching if the current depth leads to a forced mate:
             if ((score > (CHECKMATE - currentDepth)) || (score < -(CHECKMATE - currentDepth))) {
                 System.out.println("depth jumped");
                 currentDepth = MAX_DEPTH;
@@ -211,28 +218,31 @@ public class PVS implements Definitions, Search {
                 }
             }
         }
+        else{
+            System.out.println("no moves");
+        }
         for (int i = 1; i < num_moves; i++) {
             selectBestMoveFirst(b, moves, num_moves, ply, depth, i);
 
             if (b.makeMove(moves[i])) {
                 movesFound++;
                 //Late Move Reduction
-                if(movesFound>LATEMOVE_THRESHOLD && depth>LATEMOVE_DEPTH_THRESHOLD && !b.isCheck()&& !MoveAC.isCapture(moves[i])){
+                /*if(movesFound>LATEMOVE_THRESHOLD && depth>LATEMOVE_DEPTH_THRESHOLD && !b.isCheck()&& !MoveAC.isCapture(moves[i])){
                     score= -alphaBetaPVS(b, ply + 1, depth - 2, -alpha - 1, -alpha);
-                }
-                else if (pvMovesFound != 0) {
-                    if(movesFound==1)System.out.println("pv found & " + movesFound);
+                }*/
+//                if (pvMovesFound != 0) {
+//                    if(movesFound==1)System.out.println("pv found & " + movesFound);
 
                     score = -alphaBetaPVS(b, ply + 1, depth - 1, -alpha - 1, -alpha); // PVS Search
                     if ((score > alpha) && (score < beta))
-                        System.out.println("better move");
                         score = -alphaBetaPVS(b, ply + 1, depth - 1, -beta, -alpha); //Better move found, normal alpha-beta.
                         if(score > alpha)
                             alpha = score;
-                } else {
+//                }
+                /* else {
                     score = -alphaBetaPVS(b, ply + 1, depth - 1, -beta, -alpha); // Normal alpha-beta
                     //System.out.println("shouldn't get to this window");
-                }
+                }*/
                 b.unmakeMove();
                 if (score > bestScore) {
                     if (score >= beta) {
@@ -354,7 +364,7 @@ public class PVS implements Definitions, Search {
 
 
         }
-        return alpha;
+        return val;
     }
 
 
@@ -363,5 +373,4 @@ public class PVS implements Definitions, Search {
             lastPV[i] = triangularArray[0][i];
         }
     }
-
 }

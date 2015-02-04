@@ -296,7 +296,7 @@ public class MTDF implements Search, Definitions{
 
 
         }
-        return alpha;
+        return val;
     }
 
 
