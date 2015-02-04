@@ -47,17 +47,16 @@ public class MoveGeneratorAC implements Definitions {
         return j;
     }
 
-    public int countAllLegalMoves(Board b){
+    public boolean legalMovesAvailable(Board b){
         int[] moves = new int[MAX_MOVES];
         int lastIndex = getAllMoves(b, moves);
-        int count = 0;
         for(int i = 0; i<lastIndex; i++){
             if(b.makeMove(moves[i])){
-                count++;
                 b.unmakeMove();
+                return true;
             }
         }
-        return count;
+        return false;
     }
 
     private int getAllWhiteMoves(Board b, int[] moves) {
@@ -82,7 +81,7 @@ public class MoveGeneratorAC implements Definitions {
         return index;
     }
 
-    // Pseudo-Legal capture generator.
+    // Pseudo-Legal capture generator. Based on godot.
     public int genCaptures(Board b, int[] captures) {
         int[] captureValues = new int[MAX_MOVES];
         int num_captures = getAllCaptures(b, captures);
@@ -90,6 +89,7 @@ public class MoveGeneratorAC implements Definitions {
         int insertIndex;
         for(int i = 0; i < num_captures; i++){
             val = b.sEE(captures[i]);
+            captureValues[i] = val;
             if(val< MINCAPTVAL){
                 ArrayUtils.remove(captures, i);
                 ArrayUtils.remove(captureValues, i);

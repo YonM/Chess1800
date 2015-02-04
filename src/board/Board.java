@@ -269,7 +269,7 @@ public class Board implements Definitions {
     }
 
     public boolean isCheckMate(){
-        return isCheck() && moveGenerator.countAllLegalMoves(this) == 0;
+        return isCheck() && !moveGenerator.legalMovesAvailable(this);
     }
 
     public boolean isCheck(){

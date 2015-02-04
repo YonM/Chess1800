@@ -1,7 +1,6 @@
 package gui;
 
 import search.MTDF;
-import utilities.BitboardUtilsAC;
 import board.Board;
 import move.MoveAC;
 import movegen.MoveGeneratorAC;
@@ -52,12 +51,12 @@ public class BoardModel extends Observable{
                         + (char) ('8' - y2);
 
         int[] moves = new int[Board.MAX_MOVES];
-        int num_moves = moveGenerator.getAllMoves(b, moves);
+        int num_moves = moveGenerator.getAllLegalMoves(b, moves);
         for (int i = 0; i < num_moves; i++) {
             if (s.equals(sanUtils.intToAlgebraicLoc(MoveAC.getFromIndex(moves[i])) + "-"
                     + sanUtils.intToAlgebraicLoc(MoveAC.getToIndex(moves[i])))) {
                 makeMove(moves[i]);
-
+                break;
             }
         }
     }
