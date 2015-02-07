@@ -93,7 +93,6 @@ public interface Definitions {
     public final static int KING_VALUE = 999999;
     public final static int CHECKMATE = KING_VALUE;
     public final static int DRAWSCORE = 0;
-
     public final static int INFINITY = KING_VALUE +1;
 
     //For SEE & Quiescence Search

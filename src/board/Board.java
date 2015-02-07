@@ -288,9 +288,11 @@ public class Board implements Definitions {
         num_moves = moveGenerator.getAllMoves(this, moves);
         for(int i = 0; i< num_moves; i++){
             if(makeMove(moves[i])){
+//                System.out.println("legal moves incremented");
                 search.legalMoves++;
                 search.singleMove = moves[i];
                 unmakeMove();
+                if(search.legalMoves > 1) break;
             }
         }
         if (search.legalMoves == 0 && !isCheck()) {
@@ -347,7 +349,6 @@ public class Board implements Definitions {
             return true;
 
         }
-
         return false;
     }
 
@@ -433,22 +434,21 @@ public class Board implements Definitions {
         if (capture) {
             fiftyMove = 0;
             long pieceToRemove = toBoard;
-            int pieceToRemoveIndex = to;
-            //Remove piece at to location
-            if (moveType == MoveAC.TYPE_EN_PASSANT) {
+            int pieceToRemoveIndex = to; //Remove piece at 'to' index.
+
+            if (moveType == MoveAC.TYPE_EN_PASSANT) { //Shift piece and index to remove if the move type is an en-passant.
                 pieceToRemove = (whiteToMove) ? (toBoard >>> 8) : (toBoard << 8);
                 pieceToRemoveIndex = (whiteToMove) ? (to - 8) : (to + 8);
             }
             char pieceRemoved = getPieceAt(pieceToRemoveIndex);
-            if (whiteToMove) { // captured a black
-//                System.out.println("captured black");
+            if (whiteToMove) { // captured a black piece
                 blackPawns &= ~pieceToRemove;
                 blackKnights &= ~pieceToRemove;
                 blackBishops &= ~pieceToRemove;
                 blackRooks &= ~pieceToRemove;
                 blackQueens &= ~pieceToRemove;
                 blackKing &= ~pieceToRemove;
-            } else { // captured a white
+            } else { // captured a white piece
                 whitePawns &= ~pieceToRemove;
                 whiteKnights &= ~pieceToRemove;
                 whiteBishops &= ~pieceToRemove;

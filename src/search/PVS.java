@@ -21,7 +21,7 @@ public class PVS implements Definitions, Search {
     private int[] triangularLength;
     public Integer legalMoves;
     public int singleMove = 0;
-    private final int MAX_DEPTH = 5;
+    private final int MAX_DEPTH = 6;
     private MoveGeneratorAC moveGenerator;
     private Evaluator evaluator;
     private int evals;
@@ -43,8 +43,6 @@ public class PVS implements Definitions, Search {
 
     private PVS()
     {
-        triangularArray = new int[MAX_GAME_LENGTH][MAX_GAME_LENGTH];
-        triangularLength = new int[MAX_GAME_LENGTH];
         evaluator = Evaluator.getInstance();
         moveGenerator = MoveGeneratorAC.getInstance();
         sanUtils = SANUtils.getInstance();
@@ -59,9 +57,14 @@ public class PVS implements Definitions, Search {
         int score;
         legalMoves = 0;
 
-        if (b.isEndOfGame()) return NULLMOVE;
+        if (b.isEndOfGame()){
+            System.out.println("end of game");
+            return NULLMOVE;
+        }
 
-        if (legalMoves == 1) return singleMove;
+        if (legalMoves == 1) {
+            return singleMove;
+        }
 
         evals = 0;
         whiteHeuristics = new int[MAX_PLY][MAX_PLY];
@@ -139,11 +142,12 @@ public class PVS implements Definitions, Search {
                         + " nodes evaluated.");
             // stop searching if the current depth leads to a forced mate:
             if ((score > (CHECKMATE - currentDepth)) || (score < -(CHECKMATE - currentDepth))) {
+                System.out.println("cut search");
                 currentDepth = MAX_DEPTH;
             }
         }
         if(VERBOSE)
-            System.out.println(evals + " positions evaluated.");
+            System.out.println(evals + " positions evaluated. Move returned->" + lastPV[0]);
         return lastPV[0];
     }
 
@@ -187,27 +191,25 @@ public class PVS implements Definitions, Search {
         int num_moves = moveGenerator.getAllMoves(b, moves);
         int bestScore = 0;
         selectBestMoveFirst(b, moves, num_moves, ply, depth, 0);
+
         //try the first move with unchanged window.
-        int j;
-        if(num_moves != 0) {
-            if (b.makeMove(moves[0])) {
+        int j,pvIndex=0;
+        for (int i = 0;i<num_moves;i++) {
+            if (b.makeMove(moves[i])) {
+                pvIndex=i;
                 movesFound++;
                 bestScore = -alphaBetaPVS(b, ply + 1, depth - 1, -beta, -alpha);
                 b.unmakeMove();
+                if (bestScore >= beta) { //beta cutoff
+                    if (b.whiteToMove)
+                        whiteHeuristics[MoveAC.getFromIndex(moves[i])][MoveAC.getToIndex(moves[i])] += depth * depth;
+                    else
+                        blackHeuristics[MoveAC.getFromIndex(moves[i])][MoveAC.getToIndex(moves[i])] += depth * depth;
+                    return bestScore;  // fail soft
+                }
                 if (bestScore > alpha) {
-
-                    if (bestScore >= beta){ //beta cutoff
-
-                        if (b.whiteToMove)
-                            whiteHeuristics[MoveAC.getFromIndex(moves[0])][MoveAC.getToIndex(moves[0])] += depth * depth;
-                        else
-                            blackHeuristics[MoveAC.getFromIndex(moves[0])][MoveAC.getToIndex(moves[0])] += depth * depth;
-                        return bestScore;  // fail soft
-                    }
-
                     pvMovesFound++;
-//                    pv_found = true;
-                    triangularArray[ply][ply] = moves[0];    //save the move
+                    triangularArray[ply][ply] = moves[i];    //save the move
                     for (j = ply + 1; j < triangularLength[ply + 1]; j++)
                         triangularArray[ply][j] = triangularArray[ply + 1][j];  //appends latest best PV from deeper plies
 
@@ -215,34 +217,35 @@ public class PVS implements Definitions, Search {
                     if (ply == 0) rememberPV();
                     alpha = bestScore;  // alpha improved
                 }
+                break; //First legal move only.
             }
         }
-        else{
-            System.out.println("no moves");
-        }
-        for (int i = 1; i < num_moves; i++) {
+        for (int i = pvIndex; i < num_moves; i++) {
             selectBestMoveFirst(b, moves, num_moves, ply, depth, i);
 
             if (b.makeMove(moves[i])) {
                 movesFound++;
-                //Late Move Reduction
-                /*if(movesFound>LATEMOVE_THRESHOLD && depth>LATEMOVE_DEPTH_THRESHOLD && !b.isCheck()&& !MoveAC.isCapture(moves[i])){
+                    //Late Move Reduction
+                if(movesFound>LATEMOVE_THRESHOLD && depth>LATEMOVE_DEPTH_THRESHOLD && !b.isCheck()&& !MoveAC.isCapture(moves[i])){
                     score= -alphaBetaPVS(b, ply + 1, depth - 2, -alpha - 1, -alpha);
-                }*/
+                }
 //                if (pvMovesFound != 0) {
 //                    if(movesFound==1)System.out.println("pv found & " + movesFound);
-
+                else {
                     score = -alphaBetaPVS(b, ply + 1, depth - 1, -alpha - 1, -alpha); // PVS Search
-                    if ((score > alpha) && (score < beta))
-                        score = -alphaBetaPVS(b, ply + 1, depth - 1, -beta, -alpha); //Better move found, normal alpha-beta.
-                        if(score > alpha)
-                            alpha = score;
+                }
+                if ((score > alpha) && (score < beta)) {
+                    score = -alphaBetaPVS(b, ply + 1, depth - 1, -beta, -alpha); //Better move found, normal alpha-beta.
+                    if (score > alpha)
+                        alpha = score;
+                }
 //                }
                 /* else {
                     score = -alphaBetaPVS(b, ply + 1, depth - 1, -beta, -alpha); // Normal alpha-beta
                     //System.out.println("shouldn't get to this window");
                 }*/
                 b.unmakeMove();
+
                 if (score > bestScore) {
                     if (score >= beta) {
                         if (b.whiteToMove)
@@ -288,6 +291,7 @@ public class PVS implements Definitions, Search {
         if (follow_pv && depth > 1) {
             for (i = nextIndex; i < num_moves; i++) {
                 if (moves[i] == lastPV[ply]) {
+                    if(moves[i]==0) System.out.println("oops");
                     tempMove = moves[i];
                     moves[i] = moves[nextIndex];
                     moves[nextIndex] = tempMove;
@@ -335,25 +339,27 @@ public class PVS implements Definitions, Search {
         if (b.isOwnKingAttacked()) return alphaBetaPVS(b, ply, 1, alpha, beta);
 
         //Standing pat
-        int val;
-        val = evaluator.eval(b);
-        if (val >= beta) return val;
-        if (val > alpha) alpha = val;
+        int bestScore;
+        bestScore = evaluator.eval(b);
+        if (bestScore >= beta) return bestScore;
+        if (bestScore > alpha) alpha = bestScore;
 
         // generate captures & promotions:
         // genCaptures returns a sorted move list
         int[] captures = new int[MAX_MOVES];
         int num_captures = moveGenerator.genCaptures(b, captures);
 
+        int score;
         for (int i = 0; i < num_captures; i++) {
             b.makeMove(captures[i]);
-            val = -quiescenceSearch(b, ply + 1, -beta, -alpha);
+            score = -quiescenceSearch(b, ply + 1, -beta, -alpha);
             b.unmakeMove(captures[i]);
 
-            if (val >= beta) return val;
+            if (score >= beta) return score;
+            if(score > alpha) alpha=score;
 
-            if (val > alpha) {
-                alpha = val;
+            if (score > bestScore) {
+                bestScore = score;
                 triangularArray[ply][ply] = captures[i];
                 for (int j = ply + 1; j < triangularLength[ply + 1]; j++) {
                     triangularArray[ply][j] = triangularArray[ply + 1][j];
@@ -363,7 +369,7 @@ public class PVS implements Definitions, Search {
 
 
         }
-        return val;
+        return bestScore;
     }
 
 
