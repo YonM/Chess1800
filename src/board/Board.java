@@ -413,6 +413,8 @@ public class Board implements Definitions {
         * (3) Check if king is in check, if he is, undo move
         *
         */
+        saveHistory(moveNumber);
+
         from = MoveAC.getFromIndex(move);
         to = MoveAC.getToIndex(move);
         piece = MoveAC.getPieceMoved(move);
@@ -422,14 +424,10 @@ public class Board implements Definitions {
         toBoard = BitboardUtilsAC.getSquare[to];
         fromToBoard = fromBoard | toBoard;
 
-        saveHistory(moveNumber);
         fiftyMove++;
         moveNumber++;
         //key ^= Zobrist.getKeyPieceIndex(from, PIECENAMES[piece]) ^ Zobrist.getKeyPieceIndex(to, PIECENAMES[piece]);
         if ((fromBoard & getMyPieces()) == 0) {
-            /*System.out.println("From board: " + Long.toBinaryString(fromBoard));
-            System.out.println("My pieces: " +Long.toBinaryString(getMyPieces()));
-            System.out.println("not mine");*/
             return false;
         }
         if (capture) {
@@ -626,7 +624,8 @@ public class Board implements Definitions {
                     }
                 break;
             default:
-                throw new RuntimeException("Unreachable");
+                return false;
+                //throw new RuntimeException("Unreachable" + " & piece:" +piece +"  move=" + move);
         }
         updateAggregateBitboards();
         if (whiteToMove) {
@@ -655,6 +654,7 @@ public class Board implements Definitions {
             }
         }
         if (isOwnKingAttacked()) {
+            //if(piece==BISHOP && whiteToMove) System.out.println("cant do this");
             unmakeMove();
             return false;
         }

@@ -130,6 +130,13 @@ public class BitboardUtilsAC implements Definitions{
         return bitTable[(fold * 0x783a9b23) >>> 26];
     }
 
+    /**
+     * And viceversa
+     */
+    public static long index2Square(int index) {
+        return H1 << index;
+    }
+
     public static int getIndexFromBoard(long board) {
         return (Long.numberOfTrailingZeros(Long.lowestOneBit(board)));
     }
@@ -138,12 +145,7 @@ public class BitboardUtilsAC implements Definitions{
         return (Long.numberOfTrailingZeros(Long.highestOneBit(board)));
     }
 
-    /**
-     * And viceversa
-     */
-    public static long index2Square(int index) {
-        return H1 << index;
-    }
+
 
     /**
      * Changes element 0 with 63 and consecutively: this way array constants are

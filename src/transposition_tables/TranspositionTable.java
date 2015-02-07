@@ -112,25 +112,29 @@ public class TranspositionTable implements Definitions{
      *
      * @param b
      * The position to collect pv from
-     * @param current_depth
+//     * @param current_depth
      * How deep the pv goes (avoids situations where keys point to
      * each other infinitely)
      * @return collectString The moves in a string
      */
-    public int[] collectPV(Board b, int current_depth) {
+    public int[] collectPV(Board b) {
         int[] arrayPV = new int[MAX_PLY];
         int move = getMove(b.key);
-        // int i = current_depth;
         int i = 20;
         int index = 0;
+        int pv_error=0;
         while (i > 0) {
             if (move == 0 || !b.validateHashMove(move))
                 break;
             arrayPV[index] = move;
-            b.makeMove(move);
-            move = getMove(b.key);
-            i--;
-            index++;
+            if (b.makeMove(move)) {
+                move = getMove(b.key);
+                i--;
+                index++;
+            }else{
+                if(++pv_error==1)System.out.println("pv error");
+            }
+
         }
         // Unmake the moves
         for (i = index - 1; i >= 0; i--) {

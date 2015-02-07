@@ -29,7 +29,7 @@ public class PVS implements Definitions, Search {
     private int[][] blackHeuristics;
     private int[] lastPV;
     private boolean follow_pv;
-    private boolean pv_found;
+//    private boolean pv_found;
     private boolean null_allowed;
     private static final boolean VERBOSE= true;
 
@@ -72,12 +72,12 @@ public class PVS implements Definitions, Search {
         int beta = INFINITY;
         int reSearchAlphaCount = 0;
         int reSearchBetaCount = 0;
-        for (int currentDepth = 1; currentDepth < MAX_DEPTH;) {
+        for (int currentDepth = 1; currentDepth <= MAX_DEPTH; currentDepth++) {
             triangularArray = new int[MAX_GAME_LENGTH][MAX_GAME_LENGTH];
             triangularLength = new int[MAX_GAME_LENGTH];
             follow_pv = true;
             null_allowed = true;
-            pv_found= false;
+//            pv_found= false;
             score = alphaBetaPVS(b, 0, currentDepth, alpha, beta);
 
             if(VERBOSE) {
@@ -85,7 +85,7 @@ public class PVS implements Definitions, Search {
                 if (score == beta) System.out.println("beta baby");
             }
 
-            if(pv_found) {
+            /*if(pv_found) {
 
                 if (score <= alpha) {
                     if (VERBOSE)
@@ -130,8 +130,8 @@ public class PVS implements Definitions, Search {
                 reSearchBetaCount = 0;
                 if (alpha < -INFINITY) alpha = -INFINITY;
                 if (beta > INFINITY) beta = INFINITY;
-            }
-            currentDepth++;
+            }*/
+
             if(VERBOSE)
                 System.out.println("(" + currentDepth + ") "
                         + ( (System.currentTimeMillis() - start) / 1000.0) + "s ("
@@ -139,7 +139,6 @@ public class PVS implements Definitions, Search {
                         + " nodes evaluated.");
             // stop searching if the current depth leads to a forced mate:
             if ((score > (CHECKMATE - currentDepth)) || (score < -(CHECKMATE - currentDepth))) {
-                System.out.println("depth jumped");
                 currentDepth = MAX_DEPTH;
             }
         }
@@ -207,7 +206,7 @@ public class PVS implements Definitions, Search {
                     }
 
                     pvMovesFound++;
-                    pv_found = true;
+//                    pv_found = true;
                     triangularArray[ply][ply] = moves[0];    //save the move
                     for (j = ply + 1; j < triangularLength[ply + 1]; j++)
                         triangularArray[ply][j] = triangularArray[ply + 1][j];  //appends latest best PV from deeper plies
@@ -254,7 +253,7 @@ public class PVS implements Definitions, Search {
                     }
                     bestScore = score;
                     pvMovesFound++;
-                    pv_found= true;
+//                    pv_found= true;
                     triangularArray[ply][ply] = moves[i];    //save the move
                     for (j = ply + 1; j < triangularLength[ply + 1]; j++)
                         triangularArray[ply][j] = triangularArray[ply + 1][j];  //appends latest best PV from deeper plies
