@@ -229,8 +229,6 @@ public class PVS implements Definitions, Search {
                 if(movesFound>LATEMOVE_THRESHOLD && depth>LATEMOVE_DEPTH_THRESHOLD && !b.isCheck()&& !MoveAC.isCapture(moves[i])){
                     score= -alphaBetaPVS(b, ply + 1, depth - 2, -alpha - 1, -alpha);
                 }
-//                if (pvMovesFound != 0) {
-//                    if(movesFound==1)System.out.println("pv found & " + movesFound);
                 else {
                     score = -alphaBetaPVS(b, ply + 1, depth - 1, -alpha - 1, -alpha); // PVS Search
                 }
@@ -239,11 +237,7 @@ public class PVS implements Definitions, Search {
                     if (score > alpha)
                         alpha = score;
                 }
-//                }
-                /* else {
-                    score = -alphaBetaPVS(b, ply + 1, depth - 1, -beta, -alpha); // Normal alpha-beta
-                    //System.out.println("shouldn't get to this window");
-                }*/
+
                 b.unmakeMove();
 
                 if (score > bestScore) {
@@ -256,7 +250,6 @@ public class PVS implements Definitions, Search {
                     }
                     bestScore = score;
                     pvMovesFound++;
-//                    pv_found= true;
                     triangularArray[ply][ply] = moves[i];    //save the move
                     for (j = ply + 1; j < triangularLength[ply + 1]; j++)
                         triangularArray[ply][j] = triangularArray[ply + 1][j];  //appends latest best PV from deeper plies
@@ -275,11 +268,6 @@ public class PVS implements Definitions, Search {
         }
 
         if (b.fiftyMove >= 100) return DRAWSCORE;                 //Fifty-move rule
-
-        /*if (movesFound == 0) {
-            if (b.isOwnKingAttacked()) return -CHECKMATE + ply - 1; //Checkmate
-            return DRAWSCORE;                                 //Stalemate
-        }*/
 
         return bestScore;
     }

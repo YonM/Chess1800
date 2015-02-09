@@ -9,20 +9,20 @@ import definitions.Definitions;
  * Based on Mediocre Chess by Jonatan Pettersson sources @ http://sourceforge.net/projects/mediocrechess/
  */
 public class TranspositionTable implements Definitions{
-    public int[] hashtable; // Used for transposition table
+    public int[] hashTable; // Used for transposition table
     public final int HASHSIZE; // The number of slots either table will have
 
     public static final int SLOTS = 4;
     public TranspositionTable(int sizeInMb) {
         this.HASHSIZE = sizeInMb * 1024 * 1024 * 8 / 32 / SLOTS;
-        hashtable = new int[HASHSIZE * SLOTS];
+        hashTable = new int[HASHSIZE * SLOTS];
     }
 
     /**
      * Clears the transposition table
      */
     public void clear() {
-        hashtable = new int[HASHSIZE * SLOTS];
+        hashTable = new int[HASHSIZE * SLOTS];
     } // END clear()
 
 
@@ -39,12 +39,12 @@ public class TranspositionTable implements Definitions{
     public void record(long zobrist, int depth, int flag, int eval, int move) {
         // Always replace scheme
         int hashKey = (int) (zobrist % HASHSIZE) * SLOTS;
-        hashtable[hashKey] = 0 | (eval + 0x1FFFF)
+        hashTable[hashKey] = 0 | (eval + 0x1FFFF)
                 | ((1) << 18) | (flag << 20)
                 | (depth << 22);
-        hashtable[hashKey + 1] = move;
-        hashtable[hashKey + 2] = (int) (zobrist >> 32);
-        hashtable[hashKey + 3] = (int) (zobrist & 0xFFFFFFFF);
+        hashTable[hashKey + 1] = move;
+        hashTable[hashKey + 2] = (int) (zobrist >> 32);
+        hashTable[hashKey + 3] = (int) (zobrist & 0xFFFFFFFF);
     }
 
     /**
@@ -55,8 +55,8 @@ public class TranspositionTable implements Definitions{
      */
     public boolean entryExists(long zobrist) {
         int hashKey = (int) (zobrist % HASHSIZE) * SLOTS;
-        return hashtable[hashKey + 2] == (int) (zobrist >> 32) && hashtable[hashKey + 3] == (int) (zobrist & 0xFFFFFFFF) &&
-                hashtable[hashKey] != 0;
+        return hashTable[hashKey + 2] == (int) (zobrist >> 32) && hashTable[hashKey + 3] == (int) (zobrist & 0xFFFFFFFF) &&
+                hashTable[hashKey] != 0;
     } // END entryExists
 
     /**
@@ -66,8 +66,8 @@ public class TranspositionTable implements Definitions{
      */
     public int getEval(long zobrist) {
         int hashKey = (int) (zobrist % HASHSIZE) * SLOTS;
-        if (hashtable[hashKey + 2] == (int) (zobrist >> 32) && hashtable[hashKey + 3] == (int) (zobrist & 0xFFFFFFFF))
-            return ((hashtable[hashKey] & 0x3FFFF) - 0x1FFFF);
+        if (hashTable[hashKey + 2] == (int) (zobrist >> 32) && hashTable[hashKey + 3] == (int) (zobrist & 0xFFFFFFFF))
+            return ((hashTable[hashKey] & 0x3FFFF) - 0x1FFFF);
         return 0;
     } // END getEval
 
@@ -78,8 +78,8 @@ public class TranspositionTable implements Definitions{
      */
     public int getFlag(long zobrist) {
         int hashKey = (int) (zobrist % HASHSIZE) * SLOTS;
-        if (hashtable[hashKey + 2] == (int) (zobrist >> 32) && hashtable[hashKey + 3] == (int) (zobrist & 0xFFFFFFFF))
-            return ((hashtable[hashKey] >> 20) & 3);
+        if (hashTable[hashKey + 2] == (int) (zobrist >> 32) && hashTable[hashKey + 3] == (int) (zobrist & 0xFFFFFFFF))
+            return ((hashTable[hashKey] >> 20) & 3);
         return 0;
     } // END getFlag
 
@@ -90,8 +90,8 @@ public class TranspositionTable implements Definitions{
      */
     public int getMove(long zobrist) {
         int hashKey = (int) (zobrist % HASHSIZE) * SLOTS;
-        if (hashtable[hashKey + 2] == (int) (zobrist >> 32) && hashtable[hashKey + 3] == (int) (zobrist & 0xFFFFFFFF))
-            return hashtable[hashKey + 1];
+        if (hashTable[hashKey + 2] == (int) (zobrist >> 32) && hashTable[hashKey + 3] == (int) (zobrist & 0xFFFFFFFF))
+            return hashTable[hashKey + 1];
         return 0;
     } // END getMove
 
@@ -102,8 +102,8 @@ public class TranspositionTable implements Definitions{
      */
     public int getDepth(long zobrist) {
         int hashKey = (int) (zobrist % HASHSIZE) * SLOTS;
-        if (hashtable[hashKey + 2] == (int) (zobrist >> 32) && hashtable[hashKey + 3] == (int) (zobrist & 0xFFFFFFFF))
-            return (hashtable[hashKey] >> 22);
+        if (hashTable[hashKey + 2] == (int) (zobrist >> 32) && hashTable[hashKey + 3] == (int) (zobrist & 0xFFFFFFFF))
+            return (hashTable[hashKey] >> 22);
         return 0;
     } // END getDepth
 
