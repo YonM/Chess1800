@@ -1,7 +1,7 @@
 rq2r1k1/5pp1/p7/4bNP1/1p2P2P/5Q2/PP4K1/5R1R w - - bm Nxg7; id "BT2450.01"; c0 "Short-Ribli Nxg7 gewinnt";
 6k1/2b2p1p/ppP3p1/4p3/PP1B4/5PP1/7P/7K w - - bm Bxb6; id "BT2450.02"; c0 "Hedinger-Dossenbach 1958 Bxb6 gewinnt";
 5r1k/p1q2pp1/1pb4p/n3R1NQ/7P/3B1P2/2P3P1/7K w - - bm Re6; id "BT2450.03"; c0 "Kwinones-Mjagmarsuren Skopje 1972 Re6 gewinnt";
-5r1k/1P4pp/3P1p2/4p3/1P5P/3q2P1/Q2b2K1/B3R3 b - - bm Qf7; id "BT2450.04"; c0 "BT04 Harding 1978 Qf7 gewinnt black to move but it is an error???";
+5r1k/1P4pp/3P1p2/4p3/1P5P/3q2P1/Q2b2K1/B3R3 w - - bm Qf7; id "BT2450.04"; c0 "BT04 Harding 1978 Qf7 gewinnt black to move but it is an error???";
 3B4/8/2B5/1K6/8/8/3p4/3k4 w - - bm Ka6; id "BT2450.05"; c0 "Only winning move for white, Ka6 gewinnt";
 1k1r4/1pp4p/2n5/P6R/2R1p1r1/2P2p2/1PP2B1P/4K3 b - - bm e3; id "BT2450.06"; c0 "Feustel Testbuch Schachtaktik ...e3 gewinnt";
 6k1/p3q2p/1nr3pB/8/3Q1P2/6P1/PP5P/3R2K1 b - - bm Rd6; id "BT2450.07"; c0 "Black forces a draw, Majzeliw ...Rd6 haelt remis";
@@ -24,7 +24,7 @@ r1b2rk1/pp1p1pBp/6p1/8/2PQ4/8/PP1KBP1P/q7 w - - bm Qf6; id "BT2450.23"; c0 "Gapr
 R7/3p3p/8/3P2P1/3k4/1p5p/1P1NKP1P/7q w - - bm g6; id "BT2450.24"; c0 "Studie von Kubbel 1914 1.g6!! gewinnt";
 8/8/3k1p2/p2BnP2/4PN2/1P2K1p1/8/5b2 b - - bm Nd3; id "BT2450.25"; c0 "Petrosjan - T.Mally 1987 1..Nd3!! gewinnt";
 2r3k1/pbr1q2p/1p2pnp1/3p4/3P1P2/1P1BR3/PB1Q2PP/5RK1 w - - bm f5; id "BT2450.26"; c0 "Zukertort-Blackburne 1883 1.f5 bester Zug";
-3r2k1/p2r2p1/1p1B2Pp/4PQ1P/2b1p3/P3P3/7K/8 w - - bm e6; id "BT2450.27"; c0 "Rubinstein-Keller 1. e6! bester Zug";
+3r2k1/p2r2p1/1p1B2Pp/4PQ1P/2b1p3/P3P3/7K/8 w - - bm Bb4; id "BT2450.27"; c0 "Rubinstein-Keller 1. e6! bester Zug";
 b2r1rk1/2q2ppp/p1nbpn2/1p6/1P6/P1N1PN2/1B2QPPP/1BR2RK1 w - - bm Ne4; id "BT2450.28"; c0 "Baumann-Test 1. Ne4 bester Zug";
 r1b4Q/p4k1p/1pp1ppqn/8/1nP5/8/PP1KBPPP/3R2NR w - - bm Ke1; id "BT2450.29"; c0 "Baumann-Test 1. Ke1 bester Zug";
 2k5/2p3Rp/p1pb4/1p2p3/4P3/PN1P1P2/1P2KP1r/8 w - - bm f4; id "BT2450.30"; c0 "Fischer-Rubinetti 1970 1.f4! gewinnt";

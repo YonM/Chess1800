@@ -21,14 +21,34 @@ public class MTDF implements Search, Definitions{
     private MoveGeneratorAC moveGenerator;
     private Evaluator evaluator;
     private TranspositionTable transpositionTable;
+
+    // Number of  nodes evaluated
     private int evals;
+
+    // History Heuristic
     private int[][] whiteHeuristics;
     private int[][] blackHeuristics;
+
+    // PV related, lastPV[0] will hold the best move.
     private int[] lastPV;
     private boolean follow_pv;
+
+    // Null move
     private boolean null_allowed;
+
+    // For printing extra information to the command line.
     private static final boolean VERBOSE= false;
+
+    // MTD(f)
     private int firstGuess;
+
+    // Timing information
+    private long startTime;
+    private int timeForMove;
+    private int nextTimeCheck;
+    private static int TIME_CHECK_INTERVAL=10000;
+    private boolean useFixedDepth;
+    private boolean stopSearch;
 
     public static MTDF getInstance() {
         if(instance==null){
@@ -52,13 +72,17 @@ public class MTDF implements Search, Definitions{
     }
 
 
-    public int findBestMove(Board b) {
+    public int findBestMove(Board b, int depth, int timeLeft, int increment, int moveTime) {
+        startTime = System.currentTimeMillis();
+
         legalMoves = 0;
 
         if (b.isEndOfGame()) return NULLMOVE;
 
         if (legalMoves == 1) return singleMove;
 
+        if(moveTime==0) timeForMove = calculateTime(b,timeLeft,increment);
+        useFixedDepth = depth != 0;
         evals = 0;
         whiteHeuristics = new int[MAX_PLY][MAX_PLY];
         blackHeuristics = new int[MAX_PLY][MAX_PLY];
@@ -74,12 +98,20 @@ public class MTDF implements Search, Definitions{
                         + ( (System.currentTimeMillis() - start) / 1000.0) + "s ("
                         + sanUtils.moveToString(lastPV[0]) + ") -- " + evals
                         + " nodes evaluated.");
-            /*if ((score > (CHECKMATE - currentDepth)) || (score < -(CHECKMATE - currentDepth)))
+            if(useFixedDepth) {
+                if (currentDepth==depth || firstGuess == -(CHECKMATE+)) break;
+            }
+            /*if ((firstGuess > (CHECKMATE - currentDepth)) || (firstGuess < -(CHECKMATE - currentDepth)))
                 currentDepth = MAX_DEPTH;*/
         }
         if(VERBOSE)
             System.out.println(evals + " positions evaluated.");
         return firstGuess;
+    }
+
+    private int calculateTime(Board b, int timeLeft, int increment) {
+
+        return 0;
     }
 
     private int memoryEnhancedTestDriver(Board b, int currentDepth, int first) {

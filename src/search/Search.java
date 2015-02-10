@@ -8,5 +8,5 @@ import board.Board;
  */
 public interface Search {
 
-    public int findBestMove(Board b);
+    public int findBestMove(Board b, int depth, int timeLeft, int increment, int moveTime);
 }

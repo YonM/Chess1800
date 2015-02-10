@@ -53,7 +53,7 @@ public class PVS implements Definitions, Search {
     }
 
 
-    public int findBestMove(Board b) {
+    public int findBestMove(Board b, int depth, int timeLeft, int increment, int moveTime) {
         int score;
         legalMoves = 0;
 
