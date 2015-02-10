@@ -33,7 +33,7 @@ public class PVS implements Definitions, Search {
     private boolean null_allowed;
     private static final boolean VERBOSE= true;
 
-    public static PVS getInstance() {
+    public final static PVS getInstance() {
         if(instance==null){
             instance = new PVS();
             return instance;

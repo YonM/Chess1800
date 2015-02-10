@@ -1,4 +1,4 @@
-package transposition_tables;
+package transposition_table;
 
 import board.Board;
 import definitions.Definitions;
@@ -44,7 +44,7 @@ public class TranspositionTable implements Definitions{
                 | (depth << 22);
         hashTable[hashKey + 1] = move;
         hashTable[hashKey + 2] = (int) (zobrist >> 32);
-        hashTable[hashKey + 3] = (int) (zobrist & 0xFFFFFFFF);
+        hashTable[hashKey + 3] = (int) (zobrist);
     }
 
     /**

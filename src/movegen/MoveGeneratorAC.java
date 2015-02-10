@@ -125,7 +125,17 @@ public class MoveGeneratorAC implements Definitions {
 
     }
 
-    public static MoveGeneratorAC getInstance() {
+    private int getAllNonCaptures(Board b, int[] nonCaptures){
+        int lastIndex= getAllMoves(b, nonCaptures);
+        int num_non_captures=0;
+        for(int i=0; i< lastIndex; i++){
+            if(!MoveAC.isPromotion(nonCaptures[i]) || !MoveAC.isCapture(nonCaptures[i]))
+                nonCaptures[num_non_captures++] = nonCaptures[i];
+        }
+        return num_non_captures;
+    }
+
+    public final static MoveGeneratorAC getInstance() {
         if(instance==null){
             instance = new MoveGeneratorAC();
             return instance;

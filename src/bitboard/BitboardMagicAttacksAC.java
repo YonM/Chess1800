@@ -47,7 +47,7 @@ public class BitboardMagicAttacksAC {
             5, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 6
     };
 
-    public static BitboardMagicAttacksAC getInstance() {
+    public final static BitboardMagicAttacksAC getInstance() {
         if(instance==null){
             instance = new BitboardMagicAttacksAC();
             return instance;
@@ -61,7 +61,7 @@ public class BitboardMagicAttacksAC {
     }
 
 
-    private void generateAttacks() {
+    private final void generateAttacks() {
         rook = new long [64];
         rookMask = new long[64];
         rookMagic = new long[64][];

@@ -5,7 +5,7 @@ import definitions.Definitions;
 import evaluation.Evaluator;
 import move.MoveAC;
 import movegen.MoveGeneratorAC;
-import transposition_tables.TranspositionTable;
+import transposition_table.TranspositionTable;
 import utilities.SANUtils;
 
 /**
@@ -100,9 +100,17 @@ public class MTDF implements Search, Definitions{
 
     private int alphaBetaM(Board b, int ply, int depth, int alpha, int beta) {
         int eval_type = HASH_ALPHA;
-        int bestEval = -INFINITY;
+        int bestScore = -INFINITY;
         evals++;
         int score;
+
+        //Check if the hash table value exists and is stored at the same or higher depth.
+        if(transpositionTable.entryExists(b.key) && transpositionTable.getDepth(b.key)>=depth){
+            if(transpositionTable.getFlag(b.key) == HASH_EXACT) return transpositionTable.getEval(b.key); // should never be called
+            if(transpositionTable.getFlag(b.key) == HASH_ALPHA && transpositionTable.getEval(b.key)> alpha) alpha = transpositionTable.getEval(b.key);
+            else if(transpositionTable.getFlag(b.key) == HASH_BETA && transpositionTable.getEval(b.key)< beta) beta = transpositionTable.getEval(b.key);
+            if(alpha>=beta) return transpositionTable.getEval(b.key);
+        }
         if (depth <= 0) {
             follow_pv = false;
             score= quiescenceSearch(b, ply, alpha, beta);
@@ -111,7 +119,7 @@ public class MTDF implements Search, Definitions{
             } else if(score>=beta)
                 transpositionTable.record(b.key, depth, HASH_BETA, score, 0 );
             else
-                transpositionTable.record(b.key, depth, HASH_EXACT, score, 0 );
+                transpositionTable.record(b.key, depth, HASH_EXACT, score, 0 ); //should never be called
         }
 
         if (b.isEndOfGame()) {
@@ -122,18 +130,12 @@ public class MTDF implements Search, Definitions{
             } else if(score>=beta)
                 transpositionTable.record(b.key, depth, HASH_BETA, score, 0 );
             else
-                transpositionTable.record(b.key, depth, HASH_EXACT, score, 0 );
+                transpositionTable.record(b.key, depth, HASH_EXACT, score, 0 ); // should never be called
             if(score == DRAWSCORE) return score;
             return score +ply -1;
         }
 
-        //Check if the hash table value exists and is stored at the same or higher depth.
-        if(transpositionTable.entryExists(b.key) && transpositionTable.getDepth(b.key)>=depth){
-            if(transpositionTable.getFlag(b.key) == HASH_EXACT) return transpositionTable.getEval(b.key);
-            if(transpositionTable.getFlag(b.key) == HASH_ALPHA && transpositionTable.getEval(b.key)> alpha) alpha = transpositionTable.getEval(b.key);
-            else if(transpositionTable.getFlag(b.key) == HASH_BETA && transpositionTable.getEval(b.key)< beta) beta = transpositionTable.getEval(b.key);
-            if(alpha>=beta) return transpositionTable.getEval(b.key);
-        }
+
 
         //Try Null move
         if (!follow_pv && null_allowed) {
@@ -153,50 +155,62 @@ public class MTDF implements Search, Definitions{
 
         null_allowed = true;
         int hashMove=transpositionTable.getMove(b.key);
-        if(hashMove != 0 && !b.validateHashMove(hashMove)) hashMove = 0;
+        //if(hashMove != 0 && !b.validateHashMove(hashMove)) hashMove = 0;
         int movesFound = 0;
         int pvMovesFound = 0;
-        int[] moves = new int[MAX_MOVES];
-        int num_moves = moveGenerator.getAllMoves(b, moves);
-        int bestScore = 0;
 
         //Try hash move
+        if(hashMove !=0 ) {
+            if(b.makeMove(hashMove)){
+                movesFound++;
+                score = -alphaBetaM(b, ply + 1, depth - 1, -alpha - 1, -alpha);
+                b.unmakeMove();
+                // TODO
+                if(score > bestScore) return score;
+            }else
+                hashMove = 0;
+        }
+        int[] moves = new int[MAX_MOVES];
+        int num_moves = moveGenerator.getAllMoves(b, moves);
+
+
 
         for (int i = 0; i < num_moves; i++) {
             selectBestMoveFirst(b, moves, num_moves, ply, depth, i);
-            if (b.makeMove(moves[i])) {
-                movesFound++;
-                //Late Move Reduction
-                if(movesFound>=LATEMOVE_THRESHOLD && depth>LATEMOVE_DEPTH_THRESHOLD && !b.isCheck()&& !MoveAC.isCapture(moves[i])){
-                    score= -alphaBetaM(b, ply + 1, depth - 2, -alpha - 1, -alpha);
-                }
-                else {
-                    score = -alphaBetaM(b, ply + 1, depth - 1, -alpha - 1, -alpha); // PVS Search
-                }
-                if (score > alpha)
-                    alpha = score;
-                b.unmakeMove();
-                if (score > bestScore) {
-                    if (score >= beta) {
-                        transpositionTable.record(b.key, depth, HASH_BETA, score, moves[i]);
-                        if (b.whiteToMove)
-                            whiteHeuristics[MoveAC.getFromIndex(moves[i])][MoveAC.getToIndex(moves[i])] += depth * depth;
-                        else
-                            blackHeuristics[MoveAC.getFromIndex(moves[i])][MoveAC.getToIndex(moves[i])] += depth * depth;
-                        return score;
+            if (hashMove != moves[i]) {
+                if (b.makeMove(moves[i])) {
+                    movesFound++;
+                    //Late Move Reduction
+                    if (movesFound >= LATEMOVE_THRESHOLD && depth > LATEMOVE_DEPTH_THRESHOLD && !b.isCheck() && !MoveAC.isCapture(moves[i])) {
+                        score = -alphaBetaM(b, ply + 1, depth - 2, -alpha - 1, -alpha);
+                    } else {
+                        score = -alphaBetaM(b, ply + 1, depth - 1, -alpha - 1, -alpha); // PVS Search
                     }
-                    bestScore = score;
-                    pvMovesFound++;
+                    if (score > alpha)
+                        alpha = score;
+                    b.unmakeMove();
+                    if (score > bestScore) {
+                        if (score >= beta) {
+                            transpositionTable.record(b.key, depth, HASH_BETA, score, moves[i]);
+                            if (b.whiteToMove)
+                                whiteHeuristics[MoveAC.getFromIndex(moves[i])][MoveAC.getToIndex(moves[i])] += depth * depth;
+                            else
+                                blackHeuristics[MoveAC.getFromIndex(moves[i])][MoveAC.getToIndex(moves[i])] += depth * depth;
+                            return score;
+                        }
+                        bestScore = score;
+                        pvMovesFound++;
                     /*triangularArray[ply][ply] = moves[i];    //save the move
                     for (j = ply + 1; j < triangularLength[ply + 1]; j++)
                         triangularArray[ply][j] = triangularArray[ply + 1][j];  //appends latest best PV from deeper plies
 
                     triangularLength[ply] = triangularLength[ply + 1];*/
-                    if (ply == 0) rememberPV();
+                        if (ply == 0) rememberPV();
 
+
+                    }
 
                 }
-
             }
         }
         /*if (pvMovesFound != 0) {
@@ -217,16 +231,16 @@ public class MTDF implements Search, Definitions{
         int tempMove;
         int best, bestIndex, i;
         // Re-orders the move list so that the PV is selected as the next move to try.
-        if (follow_pv && depth > 1) {
-            for (i = nextIndex; i < num_moves; i++) {
-                if (moves[i] == lastPV[ply]) {
-                    tempMove = moves[i];
-                    moves[i] = moves[nextIndex];
-                    moves[nextIndex] = tempMove;
-                    return;
-                }
-            }
-        }
+//        if (follow_pv && depth > 1) {
+//            for (i = nextIndex; i < num_moves; i++) {
+//                if (moves[i] == lastPV[ply]) {
+//                    tempMove = moves[i];
+//                    moves[i] = moves[nextIndex];
+//                    moves[nextIndex] = tempMove;
+//                    return;
+//                }
+//            }
+//        }
 
         if (b.whiteToMove) {
             best = whiteHeuristics[MoveAC.getFromIndex(moves[nextIndex])][MoveAC.getToIndex(moves[nextIndex])];
