@@ -1,7 +1,6 @@
 package gui;
 
 import definitions.Definitions;
-import search.MTDF;
 import board.Board;
 import move.MoveAC;
 import movegen.MoveGeneratorAC;
@@ -19,16 +18,16 @@ public class BoardModel extends Observable implements Definitions{
     private final BoardView view;
     private final Board b;
     private final MoveGeneratorAC moveGenerator;
-    private final Search search;
-    private final Search search2;
+    private final Search searchSoft;
+    private final Search searchHard;
     private final SANUtils sanUtils;
 
     public BoardModel(Board b, BoardView view) {
         this.b=b;
         this.view=view;
         moveGenerator = MoveGeneratorAC.getInstance();
-        search = PVS.getInstance();
-        search2 = MTDF.getInstance();
+        searchSoft = new PVS(false);
+        searchHard = new PVS(true);
         sanUtils = SANUtils.getInstance();
     }
     public void makeMove(int move) {
@@ -63,12 +62,12 @@ public class BoardModel extends Observable implements Definitions{
     }
 
     public void makeEngineMove() {
-        int move = search.findBestMove(b,0,0,0,0);
+        int move = searchSoft.findBestMove(b,0,0,0,0);
         makeMove(move);
     }
 
     public void makeEngineMove2(){
-        int move = search2.findBestMove(b,0,0,0,0);
+        int move = searchHard.findBestMove(b,0,0,0,0);
         makeMove(move);
     }
 

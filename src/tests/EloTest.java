@@ -28,8 +28,8 @@ public class EloTest {
 
     @Test
     public void testBT2450(){
+        search = new PVS(false);
         b= new Board();
-        search = PVS.getInstance();
         long time = processEPDFile(this.getClass().getResourceAsStream("/bt2450.epd"), 15 * 60 * 1000);
         double timeSeconds = time/1000;
         double elo = 2450- timeSeconds /30;

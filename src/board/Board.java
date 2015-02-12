@@ -1,6 +1,7 @@
 package board;
 
 import bitboard.BitboardMagicAttacksAC;
+import search.Search;
 import utilities.BitboardUtilsAC;
 import definitions.Definitions;
 import fen.FENValidator;
@@ -94,11 +95,10 @@ public class Board implements Definitions {
     private static final int[] SEE_PIECE_VALUES = {0, 100, 325, 325, 500, 975, 999999};
     private int[] seeGain;
 
-    public PVS search;
     public BitboardMagicAttacksAC magics;
     public MoveGeneratorAC moveGenerator;
 
-    public Board(PVS search) {
+    public Board() {
         moves = new int[MAX_GAME_LENGTH * 4];
         for (int i = 0; i < moves.length; i++) {
             moves[i] = 0;
@@ -127,7 +127,6 @@ public class Board implements Definitions {
         white_castle_history = new int[MAX_GAME_LENGTH];
         black_castle_history = new int[MAX_GAME_LENGTH];
         key_history = new long[MAX_GAME_LENGTH];
-        this.search = search;
         magics = BitboardMagicAttacksAC.getInstance();
         moveGenerator = MoveGeneratorAC.getInstance();
     }
@@ -283,19 +282,7 @@ public class Board implements Definitions {
         // threefold repetition.
 
         // Stalemate
-        search.legalMoves = 0;
-        moves = new int[MAX_MOVES];
-        num_moves = moveGenerator.getAllMoves(this, moves);
-        for(int i = 0; i< num_moves; i++){
-            if(makeMove(moves[i])){
-//                System.out.println("legal moves incremented");
-                search.legalMoves++;
-                search.singleMove = moves[i];
-                unmakeMove();
-                if(search.legalMoves > 1) break;
-            }
-        }
-        if (search.legalMoves == 0 && !isCheck()) {
+        if (!moveGenerator.legalMovesAvailable(this) && !isOwnKingAttacked()) {
 //            JOptionPane.showMessageDialog(null, "0.5-0.5 Stalemate");
             return DRAW_BY_STALEMATE;
         }
@@ -750,7 +737,7 @@ public class Board implements Definitions {
         return BitboardMagicAttacksAC.isSquareAttacked(this, whiteKing, !whiteToMove);
     }*/
 
-    public boolean isOwnKingAttacked() {
+    private boolean isOwnKingAttacked() {
         if (whiteToMove) return magics.isSquareAttacked(this, whiteKing, whiteToMove);
         return magics.isSquareAttacked(this, blackKing, whiteToMove);
     }

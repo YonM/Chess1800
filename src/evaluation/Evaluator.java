@@ -284,7 +284,7 @@ public class Evaluator implements Definitions {
     private long temp, whitePassedPawns, blackPassedPawns;
 
     public int eval(Board b) {
-        if(b.isCheckMate()) return CHECKMATE;
+        if(b.isCheckMate()) return -CHECKMATE;
         if(b.isDraw() != NO_DRAW) return DRAWSCORE;
         score = b.material;
         whiteKingSquare = BitboardUtilsAC.getIndexFromBoard(b.whiteKing);
@@ -320,7 +320,6 @@ public class Evaluator implements Definitions {
         }
         evaluateWhiteMaterial(b);
         evaluateBlackMaterial(b);
-        System.out.println("side: " + (b.whiteToMove? "white": "black") + "score: "+score );
         if (b.whiteToMove) return score;
         return -score;
     }
@@ -356,7 +355,7 @@ public class Evaluator implements Definitions {
                 score += PAWN_OWN_DISTANCE[DISTANCE[square][whiteKingSquare]];
 
             //Passed pawn bonus
-            if ((PASSED_WHITE[square] * b.blackPawns) == 0) {
+            if ((PASSED_WHITE[square] & b.blackPawns) == 0) {
                 score += BONUS_PASSED_PAWN;
                 whitePassedPawns ^= BitboardUtilsAC.getSquare[square];
             }
@@ -466,7 +465,7 @@ public class Evaluator implements Definitions {
                 score -= PAWN_OWN_DISTANCE[DISTANCE[square][blackKingSquare]];
 
             //Passed pawn bonus
-            if ((PASSED_BLACK[square] * b.blackPawns) == 0) {
+            if ((PASSED_BLACK[square] & b.blackPawns) == 0) {
                 score -= BONUS_PASSED_PAWN;
                 blackPassedPawns ^= BitboardUtilsAC.getSquare[square];
             }

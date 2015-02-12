@@ -176,7 +176,7 @@ public class MTDF implements Search, Definitions{
         //Try Null move
         if (!follow_pv && null_allowed) {
             if (b.movingSidePieceMaterial() > NULLMOVE_THRESHOLD) {
-                if (!b.isOwnKingAttacked()) {
+                if (!b.isCheck()) {
                     null_allowed = false;
                     b.makeNullMove();
                     score = -alphaBetaM(b, ply, depth - NULLMOVE_REDUCTION, -beta, -beta + 1);
@@ -314,7 +314,7 @@ public class MTDF implements Search, Definitions{
         //triangularLength[ply] = ply;
 
         //Check if we are in check.
-        if (b.isOwnKingAttacked()) return alphaBetaM(b, ply, 1, alpha, beta);
+        if (b.isCheck()) return alphaBetaM(b, ply, 1, alpha, beta);
 
         //Standing pat
         int bestScore;

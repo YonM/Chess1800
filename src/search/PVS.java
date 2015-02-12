@@ -21,7 +21,7 @@ public class PVS implements Definitions, Search {
     private int[] triangularLength;
     public int legalMoves;
     public int singleMove = 0;
-    private final int MAX_DEPTH = 6;
+    private final int MAX_DEPTH = 4;
     private MoveGeneratorAC moveGenerator;
     private Evaluator evaluator;
     private int evals;
@@ -160,7 +160,7 @@ public class PVS implements Definitions, Search {
         //Try Null move
         if (!follow_pv && null_allowed) {
             if (b.movingSidePieceMaterial() > NULLMOVE_THRESHOLD) {
-                if (!b.isOwnKingAttacked()) {
+                if (!b.isCheck()) {
                     null_allowed = false;
                     b.makeNullMove();
                     score = -alphaBetaPVS(b, ply, depth - NULLMOVE_REDUCTION, -beta, -beta + 1);
@@ -178,11 +178,11 @@ public class PVS implements Definitions, Search {
         int movesFound = 0;
         int pvMovesFound = 0;
         int[] moves = new int[MAX_MOVES];
-        int num_moves = moveGenerator.getAllMoves(b, moves);
+        int num_moves = moveGenerator.getAllLegalMoves(b, moves);
         int bestScore = 0;
         selectBestMoveFirst(b, moves, num_moves, ply, depth, 0);
 
-        //try the first legal move with an unchanged window.
+        //try the first legal move with an open window.
         int j,pvIndex=0;
         for (int i = 0;i<num_moves;i++) {
             if (b.makeMove(moves[i])) {
@@ -216,39 +216,59 @@ public class PVS implements Definitions, Search {
 
             if (b.makeMove(moves[i])) {
                 movesFound++;
-                    //Late Move Reduction
-                if(movesFound>LATEMOVE_THRESHOLD && depth>LATEMOVE_DEPTH_THRESHOLD && !b.isCheck()&& !MoveAC.isCapture(moves[i])){
-                    score= -alphaBetaPVS(b, ply + 1, depth - 2, -alpha - 1, -alpha);
-                }
-                else {
+                //Late Move Reduction
+                if (movesFound > LATEMOVE_THRESHOLD && depth > LATEMOVE_DEPTH_THRESHOLD && !b.isCheck() && !MoveAC.isCapture(moves[i])) {
+                    score = -alphaBetaPVS(b, ply + 1, depth - 2, -alpha - 1, -alpha);
+                } else {
                     score = -alphaBetaPVS(b, ply + 1, depth - 1, -alpha - 1, -alpha); // PVS Search
                 }
                 if ((score > alpha) && (score < beta)) {
                     score = -alphaBetaPVS(b, ply + 1, depth - 1, -beta, -alpha); //Better move found, normal alpha-beta.
-                    if (score > alpha)
-                        alpha = score;
+
+                    if(!PVSHard) {
+                        if (score > alpha)
+                            alpha = score;
+                    }
                 }
 
                 b.unmakeMove();
-
-                if (score > bestScore) {
+                if (PVSHard) {
                     if (score >= beta) {
                         if (b.whiteToMove)
                             whiteHeuristics[MoveAC.getFromIndex(moves[i])][MoveAC.getToIndex(moves[i])] += depth * depth;
                         else
                             blackHeuristics[MoveAC.getFromIndex(moves[i])][MoveAC.getToIndex(moves[i])] += depth * depth;
-                        return score;
+                        return beta;
                     }
-                    bestScore = score;
-                    pvMovesFound++;
-                    triangularArray[ply][ply] = moves[i];    //save the move
-                    for (j = ply + 1; j < triangularLength[ply + 1]; j++)
-                        triangularArray[ply][j] = triangularArray[ply + 1][j];  //appends latest best PV from deeper plies
+                    if(score>alpha) {
+                        pvMovesFound++;
+                        triangularArray[ply][ply] = moves[i];    //save the move
+                        for (j = ply + 1; j < triangularLength[ply + 1]; j++)
+                            triangularArray[ply][j] = triangularArray[ply + 1][j];  //appends latest best PV from deeper plies
 
-                    triangularLength[ply] = triangularLength[ply + 1];
-                    if (ply == 0) rememberPV();
+                        triangularLength[ply] = triangularLength[ply + 1];
+                        if (ply == 0) rememberPV();
+                    }
+
+                }else{
+                    if (score > bestScore) {
+                        if (score >= beta) {
+                            if (b.whiteToMove)
+                                whiteHeuristics[MoveAC.getFromIndex(moves[i])][MoveAC.getToIndex(moves[i])] += depth * depth;
+                            else
+                                blackHeuristics[MoveAC.getFromIndex(moves[i])][MoveAC.getToIndex(moves[i])] += depth * depth;
+                            return score;
+                        }
+                        bestScore = score;
+                        pvMovesFound++;
+                        triangularArray[ply][ply] = moves[i];    //save the move
+                        for (j = ply + 1; j < triangularLength[ply + 1]; j++)
+                            triangularArray[ply][j] = triangularArray[ply + 1][j];  //appends latest best PV from deeper plies
+
+                        triangularLength[ply] = triangularLength[ply + 1];
+                        if (ply == 0) rememberPV();
+                    }
                 }
-
             }
         }
         if (pvMovesFound != 0) {
@@ -316,12 +336,15 @@ public class PVS implements Definitions, Search {
         triangularLength[ply] = ply;
 
         //Check if we are in check.
-        if (b.isOwnKingAttacked()) return alphaBetaPVS(b, ply, 1, alpha, beta);
+        if (b.isCheck()) return alphaBetaPVS(b, ply, 1, alpha, beta);
 
         //Standing pat
         int bestScore;
         bestScore = evaluator.eval(b);
-        if (bestScore >= beta) return bestScore;
+        if (bestScore >= beta) {
+            if(PVSHard) return beta;
+            return bestScore;
+        }
         if (bestScore > alpha) alpha = bestScore;
 
         // generate captures & promotions:
@@ -334,22 +357,38 @@ public class PVS implements Definitions, Search {
             b.makeMove(captures[i]);
             score = -quiescenceSearch(b, ply + 1, -beta, -alpha);
             b.unmakeMove(captures[i]);
-
-            if (score >= beta) return score;
-            if(score > alpha) alpha=score;
-
-            if (score > bestScore) {
-                bestScore = score;
-                triangularArray[ply][ply] = captures[i];
-                for (int j = ply + 1; j < triangularLength[ply + 1]; j++) {
-                    triangularArray[ply][j] = triangularArray[ply + 1][j];
+            if (score > alpha) {
+                if (score >= beta) {
+                    if (PVSHard) return beta;
+                    return score;
                 }
-                triangularLength[ply] = triangularLength[ply + 1];
+
+                alpha = score;
+                //Need to test if this is needed as if score>alpha then score>bestScore.
+                if(PVSHard) {
+                    //Fail Hard.
+                    triangularArray[ply][ply] = captures[i];
+                    for (int j = ply + 1; j < triangularLength[ply + 1]; j++) {
+                        triangularArray[ply][j] = triangularArray[ply + 1][j];
+                    }
+                    triangularLength[ply] = triangularLength[ply + 1];
+
+                }else{
+                    //Fail Soft
+                    if (score > bestScore) {
+                        bestScore = score;
+                        triangularArray[ply][ply] = captures[i];
+                        for (int j = ply + 1; j < triangularLength[ply + 1]; j++) {
+                            triangularArray[ply][j] = triangularArray[ply + 1][j];
+                        }
+                        triangularLength[ply] = triangularLength[ply + 1];
+                    }
+                }
             }
 
-
         }
-        return bestScore;
+        if(PVSHard) return alpha; //Fail Hard
+        return bestScore;  //Fail Soft
     }
 
 
