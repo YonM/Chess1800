@@ -12,7 +12,7 @@ import move.MoveAC;
 
 public class BitboardUtilsAC implements Definitions{
     public static final long A8 = 0x8000000000000000L;
-    public static final long H1 = 0x0000000000000001L;
+    public static final long H1 = 0x0000000000000001L; // BitboardMagicAttacksAC uses H1=0 A8=63
     public static final long WHITE_SQUARES = 0x55aa55aa55aa55aaL;
     public static final long BLACK_SQUARES = 0xaa55aa55aa55aa55L;
     // Board borders

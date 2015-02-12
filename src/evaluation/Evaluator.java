@@ -285,7 +285,7 @@ public class Evaluator implements Definitions {
 
     public int eval(Board b) {
         if(b.isCheckMate()) return CHECKMATE;
-        if(b.isDraw()) return DRAWSCORE;
+        if(b.isDraw() != NO_DRAW) return DRAWSCORE;
         score = b.material;
         whiteKingSquare = BitboardUtilsAC.getIndexFromBoard(b.whiteKing);
         blackKingSquare = BitboardUtilsAC.getIndexFromBoard(b.blackKing);
@@ -320,6 +320,7 @@ public class Evaluator implements Definitions {
         }
         evaluateWhiteMaterial(b);
         evaluateBlackMaterial(b);
+        System.out.println("side: " + (b.whiteToMove? "white": "black") + "score: "+score );
         if (b.whiteToMove) return score;
         return -score;
     }

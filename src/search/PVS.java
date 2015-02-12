@@ -15,11 +15,11 @@ import utilities.SANUtils;
  */
 public class PVS implements Definitions, Search {
 
-    private static PVS instance;
+    private boolean PVSHard;
     private SANUtils sanUtils;
     private int[][] triangularArray;
     private int[] triangularLength;
-    public Integer legalMoves;
+    public int legalMoves;
     public int singleMove = 0;
     private final int MAX_DEPTH = 6;
     private MoveGeneratorAC moveGenerator;
@@ -33,25 +33,14 @@ public class PVS implements Definitions, Search {
     private boolean null_allowed;
     private static final boolean VERBOSE= true;
 
-    public final static PVS getInstance() {
-        if(instance==null){
-            instance = new PVS();
-            return instance;
-        }
-        return instance;
-    }
 
-    private PVS()
+    public PVS(boolean failType)
     {
         evaluator = Evaluator.getInstance();
         moveGenerator = MoveGeneratorAC.getInstance();
         sanUtils = SANUtils.getInstance();
+        PVSHard=failType;
     }
-
-    public void setEvaluator(Evaluator eval) {
-        evaluator = eval;
-    }
-
 
     public int findBestMove(Board b, int depth, int timeLeft, int increment, int moveTime) {
         int score;
@@ -178,7 +167,8 @@ public class PVS implements Definitions, Search {
                     b.unmakeMove();
                     null_allowed = true;
                     if (score >= beta) {
-                        return score;
+                        if(PVSHard) return beta; //Fail Hard
+                        return score; //Fail Soft
                     }
                 }
             }
@@ -192,7 +182,7 @@ public class PVS implements Definitions, Search {
         int bestScore = 0;
         selectBestMoveFirst(b, moves, num_moves, ply, depth, 0);
 
-        //try the first move with unchanged window.
+        //try the first legal move with an unchanged window.
         int j,pvIndex=0;
         for (int i = 0;i<num_moves;i++) {
             if (b.makeMove(moves[i])) {
@@ -200,14 +190,15 @@ public class PVS implements Definitions, Search {
                 movesFound++;
                 bestScore = -alphaBetaPVS(b, ply + 1, depth - 1, -beta, -alpha);
                 b.unmakeMove();
-                if (bestScore >= beta) { //beta cutoff
-                    if (b.whiteToMove)
-                        whiteHeuristics[MoveAC.getFromIndex(moves[i])][MoveAC.getToIndex(moves[i])] += depth * depth;
-                    else
-                        blackHeuristics[MoveAC.getFromIndex(moves[i])][MoveAC.getToIndex(moves[i])] += depth * depth;
-                    return bestScore;  // fail soft
-                }
                 if (bestScore > alpha) {
+                    if (bestScore >= beta) { //beta cutoff
+                        if (b.whiteToMove)
+                            whiteHeuristics[MoveAC.getFromIndex(moves[i])][MoveAC.getToIndex(moves[i])] += depth * depth;
+                        else
+                            blackHeuristics[MoveAC.getFromIndex(moves[i])][MoveAC.getToIndex(moves[i])] += depth * depth;
+                        if(PVSHard) return beta; //fail hard
+                        return bestScore;  // fail soft
+                    }
                     pvMovesFound++;
                     triangularArray[ply][ply] = moves[i];    //save the move
                     for (j = ply + 1; j < triangularLength[ply + 1]; j++)
@@ -269,7 +260,8 @@ public class PVS implements Definitions, Search {
 
         if (b.fiftyMove >= 100) return DRAWSCORE;                 //Fifty-move rule
 
-        return bestScore;
+        if(PVSHard) return alpha; //Fail Hard
+        return bestScore;  //Fail Soft
     }
 
     private void selectBestMoveFirst(Board b, int[] moves, int num_moves, int ply, int depth, int nextIndex) {

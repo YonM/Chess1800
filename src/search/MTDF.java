@@ -10,7 +10,7 @@ import utilities.SANUtils;
 
 /**
  * Created by Yonathan on 02/02/2015.
- * MTD(f) based A.I for the secondary AI.
+ * MTD(f) based A.I for the secondary AI. Not Functioning.
  */
 public class MTDF implements Search, Definitions{
     private static MTDF instance;
@@ -41,6 +41,7 @@ public class MTDF implements Search, Definitions{
 
     // MTD(f)
     private int firstGuess;
+    private int prevGuess;
 
     // Timing information
     private long startTime;
@@ -64,7 +65,7 @@ public class MTDF implements Search, Definitions{
         evaluator = Evaluator.getInstance();
         moveGenerator = MoveGeneratorAC.getInstance();
         sanUtils = SANUtils.getInstance();
-        transpositionTable = new TranspositionTable(16);
+        transpositionTable = new TranspositionTable(64);
     }
 
     public void setEvaluator(Evaluator eval) {
@@ -93,13 +94,15 @@ public class MTDF implements Search, Definitions{
             follow_pv = true;
             null_allowed = true;
             firstGuess = memoryEnhancedTestDriver(b, currentDepth, firstGuess);
+           /* if(firstGuess == prevGuess) break;
+            prevGuess = firstGuess;*/
             if(VERBOSE)
                 System.out.println("(" + currentDepth + ") "
                         + ( (System.currentTimeMillis() - start) / 1000.0) + "s ("
                         + sanUtils.moveToString(lastPV[0]) + ") -- " + evals
                         + " nodes evaluated.");
             if(useFixedDepth) {
-                if (currentDepth==depth || firstGuess == -(CHECKMATE+)) break;
+                if (currentDepth==depth || firstGuess == -(CHECKMATE+6)) break;
             }
             /*if ((firstGuess > (CHECKMATE - currentDepth)) || (firstGuess < -(CHECKMATE - currentDepth)))
                 currentDepth = MAX_DEPTH;*/
@@ -139,9 +142,10 @@ public class MTDF implements Search, Definitions{
         //Check if the hash table value exists and is stored at the same or higher depth.
         if(transpositionTable.entryExists(b.key) && transpositionTable.getDepth(b.key)>=depth){
             if(transpositionTable.getFlag(b.key) == HASH_EXACT) return transpositionTable.getEval(b.key); // should never be called
-            if(transpositionTable.getFlag(b.key) == HASH_ALPHA && transpositionTable.getEval(b.key)> alpha) alpha = transpositionTable.getEval(b.key);
-            else if(transpositionTable.getFlag(b.key) == HASH_BETA && transpositionTable.getEval(b.key)< beta) beta = transpositionTable.getEval(b.key);
+            if(transpositionTable.getFlag(b.key) == HASH_ALPHA && transpositionTable.getEval(b.key)<= alpha) return transpositionTable.getEval(b.key);
+            else if(transpositionTable.getFlag(b.key) == HASH_BETA && transpositionTable.getEval(b.key)>= beta) return transpositionTable.getEval(b.key);
             if(alpha>=beta) return transpositionTable.getEval(b.key);
+            alpha= Integer.max(alpha,transpositionTable.getEval(b.key));
         }
         if (depth <= 0) {
             follow_pv = false;

@@ -94,6 +94,13 @@ public interface Definitions {
     public static final int CHECKMATE = KING_VALUE;
     public static final int DRAWSCORE = 0;
     public static final int INFINITY = KING_VALUE +1;
+
+    //Draw reason
+    public static final int NO_DRAW = 0;
+    public static final int DRAW_BY_STALEMATE = 1;
+    public static final int DRAW_BY_MATERIAL = 2;
+    public static final int DRAW_BY_FIFTYMOVE = 3;
+    public static final int DRAW_BY_REP = 4;
     
     //For Transposition table
     public static final int HASH_EXACT = 0;

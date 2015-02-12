@@ -1,5 +1,6 @@
 package gui;
 
+import definitions.Definitions;
 import search.MTDF;
 import board.Board;
 import move.MoveAC;
@@ -14,7 +15,7 @@ import java.util.Observable;
  * Created by Yonathan on 29/01/2015.
  * Based on Ulysse Carion's Godot. Source @ https://github.com/ucarion
  */
-public class BoardModel extends Observable{
+public class BoardModel extends Observable implements Definitions{
     private final BoardView view;
     private final Board b;
     private final MoveGeneratorAC moveGenerator;
@@ -62,12 +63,12 @@ public class BoardModel extends Observable{
     }
 
     public void makeEngineMove() {
-        int move = search.findBestMove(b);
+        int move = search.findBestMove(b,0,0,0,0);
         makeMove(move);
     }
 
     public void makeEngineMove2(){
-        int move = search2.findBestMove(b);
+        int move = search2.findBestMove(b,0,0,0,0);
         makeMove(move);
     }
 
@@ -90,7 +91,7 @@ public class BoardModel extends Observable{
     }
 
     public boolean isDraw() {
-        return b.isDraw();
+        return b.isDraw() != NO_DRAW;
     }
 
     public void displayConclusionInfo() {

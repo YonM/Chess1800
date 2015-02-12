@@ -98,7 +98,7 @@ public class Board implements Definitions {
     public BitboardMagicAttacksAC magics;
     public MoveGeneratorAC moveGenerator;
 
-    public Board() {
+    public Board(PVS search) {
         moves = new int[MAX_GAME_LENGTH * 4];
         for (int i = 0; i < moves.length; i++) {
             moves[i] = 0;
@@ -127,7 +127,7 @@ public class Board implements Definitions {
         white_castle_history = new int[MAX_GAME_LENGTH];
         black_castle_history = new int[MAX_GAME_LENGTH];
         key_history = new long[MAX_GAME_LENGTH];
-        search = PVS.getInstance();
+        this.search = search;
         magics = BitboardMagicAttacksAC.getInstance();
         moveGenerator = MoveGeneratorAC.getInstance();
     }
@@ -265,7 +265,7 @@ public class Board implements Definitions {
     }
 
     public boolean isEndOfGame() {
-        return isDraw() || isCheckMate();
+        return (isDraw() != NO_DRAW) || isCheckMate();
     }
 
     public boolean isCheckMate(){
@@ -277,7 +277,7 @@ public class Board implements Definitions {
                 || magics.isSquareAttacked(this, blackKing, false);
     }
 
-    public boolean isDraw(){
+    public int isDraw(){
         // Checks if the current position is a draw due to:
         // stalemate, insufficient material, 50-move rule or
         // threefold repetition.
@@ -297,7 +297,7 @@ public class Board implements Definitions {
         }
         if (search.legalMoves == 0 && !isCheck()) {
 //            JOptionPane.showMessageDialog(null, "0.5-0.5 Stalemate");
-            return true;
+            return DRAW_BY_STALEMATE;
         }
 
         // Evaluate for draw due to insufficient material
@@ -322,17 +322,17 @@ public class Board implements Definitions {
         if (whitePawnsTotal == 0 && blackPawnsTotal == 0) {
 
             // king vs king
-            if (whiteTotalMat + blackTotalMat == 0) return true;
+            if (whiteTotalMat + blackTotalMat == 0) return DRAW_BY_MATERIAL;
 
             // king and knight vs king
             if (((whiteTotalMat == 3) && (whiteKnights == 1) && (blackTotalMat == 0)) ||
-                    ((blackTotalMat == 3)) && (blackKnights == 1) && (whiteTotalMat == 0)) return true;
+                    ((blackTotalMat == 3)) && (blackKnights == 1) && (whiteTotalMat == 0)) return DRAW_BY_MATERIAL;
 
             // 2 kings with one or more bishops and all bishops on the same colour
             if (whiteBishopsTotal + blackBishopsTotal > 0) {
                 if (whiteKnightsTotal + whiteRooksTotal + whiteQueensTotal + blackKnightsTotal + blackRooksTotal + blackQueensTotal == 0) {
                     if ((((whiteBishops | blackBishops) & BitboardUtilsAC.WHITE_SQUARES) == 0) ||
-                            (((whiteBishops | blackBishops) & BitboardUtilsAC.BLACK_SQUARES) == 0)) return true;
+                            (((whiteBishops | blackBishops) & BitboardUtilsAC.BLACK_SQUARES) == 0)) return DRAW_BY_MATERIAL;
                 }
             }
         }
@@ -340,16 +340,16 @@ public class Board implements Definitions {
         //50Move rule
         if (fiftyMove >= 100) {
             //JOptionPane.showMessageDialog(null, "0.5-0.5 Draw due 50-move rule");
-            return true;
+            return DRAW_BY_FIFTYMOVE;
         }
 
         //Three fold repetition
         if (repetitionCount() >= 3) {
             //JOptionPane.showMessageDialog(null, "0.5 - 0.5 Draw due to repetition");
-            return true;
+            return DRAW_BY_REP;
 
         }
-        return false;
+        return NO_DRAW;
     }
 
     public int repetitionCount() {
