@@ -1,9 +1,12 @@
 package tests;
 
 import board.Board;
+import move.MoveAC;
 import org.junit.Test;
 import search.PVS;
 import search.Search;
+import utilities.SANUtils;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,10 +33,20 @@ public class EloTest {
     public void testBT2450(){
         search = new PVS(false);
         b= new Board();
-        long time = processEPDFile(this.getClass().getResourceAsStream("/bt2450.epd"), 15 * 60 * 1000);
+        long time = processEPDFile(this.getClass().getResourceAsStream("/bt2450.epd"), 10 * 1000);
         double timeSeconds = time/1000;
         double elo = 2450- timeSeconds /30;
         System.out.println("BT 2450 Elo = " + elo);
+    }
+
+    @Test
+    public void testBratkoKopec(){
+        search = new PVS(false);
+        b= new Board();
+        long time = processEPDFile(this.getClass().getResourceAsStream("/bratko-kopec.epd"), 15 * 60 * 1000);
+        double timeSeconds = time/1000;
+        double elo = 2450- timeSeconds /30;
+        System.out.println("Bratko-Kopec Elo = " + elo);
     }
 
     private long processEPDFile(InputStream is, int timeLimit) {
@@ -90,11 +103,27 @@ public class EloTest {
         }catch (IOException e){
 
         }
-        return 0;
+        fails=total-solved;
+        return totalTime;
     }
 
 
+
+
     private int testPosition(String fen, String moveString, int timeLimit) {
+        b=new Board();
+        if(b.initializeFromFEN(fen)){
+            String moveStringArray[] = moveString.split(" ");
+            int moves[] = new int[moveStringArray.length];
+
+            for(int i=0; i<moves.length; i++){
+                moves[i] = SANUtils.
+            }
+
+        }else{
+            System.out.println("error in fen");
+            return -1;
+        }
         return 0;
     }
 

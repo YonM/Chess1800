@@ -62,7 +62,7 @@ public class BoardModel extends Observable implements Definitions{
     }
 
     public void makeEngineMove() {
-        int move = searchSoft.findBestMove(b,0,0,0,0);
+        int move = searchSoft.findBestMove(b,6,0,0,0);
         makeMove(move);
     }
 

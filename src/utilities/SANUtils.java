@@ -148,7 +148,7 @@ public class SANUtils implements Definitions {
     }
 
 
-    public  String moveToString(int move) {
+    public String moveToString(int move) {
         String moveString= "";
         if(MoveAC.getMoveType(move) == TYPE_KINGSIDE_CASTLING)
             return "0-0";

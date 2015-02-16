@@ -102,15 +102,15 @@ public class BitboardUtilsAC implements Definitions{
     // Ranks fordward in pawn direction
     public static final long[][] RANKS_FORWARD = {RANKS_UPWARDS, RANKS_DOWNWARDS};
     public static final long[][] RANKS_BACKWARD = {RANKS_DOWNWARDS, RANKS_UPWARDS};
-    public static final String[] squareNames = changeEndianArray64(new String[] //
-            {"a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8", //
-                    "a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7", //
-                    "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6", //
-                    "a5", "b5", "c5", "d5", "e5", "f5", "g5", "h5", //
-                    "a4", "b4", "c4", "d4", "e4", "f4", "g4", "h4", //
-                    "a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3", //
-                    "a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2", //
-                    "a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1"});
+    public static final String[] squareNames =
+                   {"a1","b1","c1","d1","e1","f1","g1","h1",
+                    "a2","b2","c2","d2","e2","f2","g2","h2",
+                    "a3","b3","c3","d3","e3","f3","g3","h3",
+                    "a4","b4","c4","d4","e4","f4","g4","h4",
+                    "a5","b5","c5","d5","e5","f5","g5","h5",
+                    "a6","b6","c6","d6","e6","f6","g6","h6",
+                    "a7","b7","c7","d7","e7","f7","g7","h7",
+                    "a8","b8","c8","d8","e8","f8","g8","h8"};
 
     // To use with square2Index
     public static final byte[] bitTable = {63, 30, 3, 32, 25, 41, 22, 33, 15, 50, 42, 13, 11, 53, 19, 34, 61, 29, 2, 51, 21, 43, 45, 10, 18, 47, 1, 54, 9, 57,

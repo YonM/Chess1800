@@ -1,13 +1,11 @@
 package board;
 
 import bitboard.BitboardMagicAttacksAC;
-import search.Search;
 import utilities.BitboardUtilsAC;
 import definitions.Definitions;
 import fen.FENValidator;
 import move.MoveAC;
 import movegen.MoveGeneratorAC;
-import search.PVS;
 import zobrist.Zobrist;
 
 import java.util.ArrayList;

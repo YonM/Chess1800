@@ -7,7 +7,7 @@ import definitions.Definitions;
 
 /**
  * Created by Yonathan on 18/12/2014.
- * Evaluation class based on http://web.archive.org/web/20120112113825/http://www.sluijten.com/winglet/
+ * Evaluation class based on Stef Luijten's Winglet source @ http://web.archive.org/web/20120112113825/http://www.sluijten.com/winglet/
  * Takes into account:
  * -Material value. If the material is unbalanced, then the winning side gets a bonus for exchanging pieces.
  * -Bonus for Bishop pair.
@@ -53,7 +53,7 @@ public class Evaluator implements Definitions {
             0, 1, 2, 3, 4, 5, 6, 7
     };
 
-    //PIECE SQUARE TABLES
+    //PIECE SQUARE TABLES provided by Stef Luijten
     private final int[] PAWN_POS_W;
     private final int[] KNIGHT_POS_W;
     private final int[] BISHOP_POS_W;
@@ -163,7 +163,7 @@ public class Evaluator implements Definitions {
         return instance;
     }
 
-    public Evaluator(){
+    private Evaluator(){
         magics = BitboardMagicAttacksAC.getInstance();
         //White Piece Square Tables
         PAWN_POS_W = new int[64];
@@ -286,9 +286,9 @@ public class Evaluator implements Definitions {
     public int eval(Board b) {
         if(b.isCheckMate()) return -CHECKMATE;
         if(b.isDraw() != NO_DRAW) return DRAWSCORE;
-        score = b.material;
-        whiteKingSquare = BitboardUtilsAC.getIndexFromBoard(b.whiteKing);
-        blackKingSquare = BitboardUtilsAC.getIndexFromBoard(b.blackKing);
+        score = 0;
+        whiteKingSquare = Long.numberOfTrailingZeros(b.whiteKing);
+        blackKingSquare = Long.numberOfTrailingZeros(b.blackKing);
 
         whitePawns = Long.bitCount(b.whitePawns);
         whiteKnights = Long.bitCount(b.whiteKnights);
@@ -361,7 +361,7 @@ public class Evaluator implements Definitions {
             }
 
             //Doubled pawn penalty
-            if ((b.whitePawns ^ BitboardUtilsAC.getSquare[square] & BitboardUtilsAC.COLUMN[square % 8]) != 0)
+            if (((b.whitePawns ^ BitboardUtilsAC.getSquare[square]) & BitboardUtilsAC.COLUMN[square % 8]) != 0)
                 score -= PENALTY_DOUBLED_PAWN;
 
             //Isolated pawn penalty
@@ -471,7 +471,7 @@ public class Evaluator implements Definitions {
             }
 
             //Doubled pawn penalty
-            if ((b.blackPawns ^ BitboardUtilsAC.getSquare[square] & BitboardUtilsAC.COLUMN[square % 8]) != 0)
+            if (((b.blackPawns ^ BitboardUtilsAC.getSquare[square]) & BitboardUtilsAC.COLUMN[square % 8]) != 0)
                 score += PENALTY_DOUBLED_PAWN;
 
             //Isolated pawn penalty
