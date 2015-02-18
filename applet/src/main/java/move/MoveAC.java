@@ -88,6 +88,8 @@ public class MoveAC implements Definitions {
         move = move.replace("+", "").replace("x", "").replace("-", "").replace("=", "").replace("#", "").replaceAll(" ", "").replaceAll("0", "o")
                 .replaceAll("O", "o");
 
+        System.out.println("Side to move: "+ (b.whiteToMove ? "white": "black"));
+
         //castling move check
         if ("ooo".equalsIgnoreCase(move)) {
             if (b.whiteToMove) move = "e1c1";
@@ -114,8 +116,11 @@ public class MoveAC implements Definitions {
                 break;
         }
         // If promotion, remove the last char
-        if (moveType != 0)
+        if (moveType != 0){
             move = move.substring(0, move.length() - 1);
+            System.out.println("promotion piece removed");
+        }
+
 
         //To is always the last 2 characters.
         toIndex = BitboardUtilsAC.algebraic2Index(move.substring(move.length() - 2, move.length()));
@@ -126,40 +131,47 @@ public class MoveAC implements Definitions {
         // Fills from with a mask of possible from values... may need to disambiguate, if it's not a pawn move.
         switch (move.charAt(0)) {
             case 'N':
-                fromBoard = (b.whiteKnights & b.blackKnights) & b.getMyPieces() & magics.knight[toIndex];
+                System.out.println("knights: " + (b.whiteKnights | b.blackKnights));
+                fromBoard = (b.whiteKnights | b.blackKnights) & b.getMyPieces() & magics.knight[toIndex];
                 break;
             case 'K':
-                fromBoard = (b.whiteKing & b.blackKing) & b.getMyPieces() & magics.king[toIndex];
+                fromBoard = (b.whiteKing | b.blackKing) & b.getMyPieces() & magics.king[toIndex];
                 break;
             case 'R':
-                fromBoard = (b.whiteRooks & b.blackRooks) & b.getMyPieces() & magics.getRookAttacks(toIndex, b.allPieces);
+                fromBoard = (b.whiteRooks | b.blackRooks) & b.getMyPieces() & magics.getRookAttacks(toIndex, b.allPieces);
                 break;
             case 'B':
-                fromBoard = (b.whiteBishops & b.blackBishops) & b.getMyPieces() & magics.getBishopAttacks(toIndex, b.allPieces);
+                fromBoard = (b.whiteBishops | b.blackBishops) & b.getMyPieces() & magics.getBishopAttacks(toIndex, b.allPieces);
                 break;
             case 'Q':
-                fromBoard = (b.whiteQueens & b.blackQueens) & b.getMyPieces()
+                fromBoard = (b.whiteQueens | b.blackQueens) & b.getMyPieces()
                         & (magics.getRookAttacks(toIndex, b.allPieces) | magics.getBishopAttacks(toIndex, b.allPieces));
                 break;
         }
 
         if (fromBoard != 0) { // remove the piece char
+            System.out.println("remove the piece char");
             move = move.substring(1);
+            System.out.println("move now: " +move);
         }else{
             //Pawn moves
+            System.out.println("pawn piece moved");
             if (move.length() == 2) {
+                System.out.println("pawn non-capture");
                 if (b.whiteToMove) {
-                    fromBoard = (b.whitePawns & b.blackPawns) & b.getMyPieces() & ((toBoard >>> 8) | (((toBoard >>> 8) & b.allPieces) == 0 ? (toBoard >>> 16) : 0));
+                    fromBoard = (b.whitePawns | b.blackPawns) & b.getMyPieces() & ((toBoard >>> 8) | (((toBoard >>> 8) & b.allPieces) == 0 ? (toBoard >>> 16) : 0));
                 } else {
-                    fromBoard = (b.whitePawns & b.blackPawns) & b.getMyPieces() & ((toBoard << 8) | (((toBoard << 8) & b.allPieces) == 0 ? (toBoard << 16) : 0));
+                    System.out.println("pawn capture");
+                    fromBoard = (b.whitePawns | b.blackPawns) & b.getMyPieces() & ((toBoard << 8) | (((toBoard << 8) & b.allPieces) == 0 ? (toBoard << 16) : 0));
                 }
             }
             if (move.length() == 3) { // Pawn capture
-                fromBoard = (b.whitePawns & b.blackPawns) & b.getMyPieces() & (b.whiteToMove ? magics.blackPawn[toIndex] : magics.whitePawn[toIndex]);
+                fromBoard = (b.whitePawns | b.blackPawns) & b.getMyPieces() & (b.whiteToMove ? magics.blackPawn[toIndex] : magics.whitePawn[toIndex]);
             }
         }
 
-        if (move.length() == 3) { // now disambiaguate
+        if (move.length() == 3) { // now disambiguate
+            System.out.println("disambiguate");
             char disambiguate = move.charAt(0);
             int i = "abcdefgh".indexOf(disambiguate);
             if (i >= 0)
@@ -168,13 +180,77 @@ public class MoveAC implements Definitions {
             if (j >= 0)
                 fromBoard &= BitboardUtilsAC.RANK[j];
         }
-        if (move.length() == 4) {
+
+        if (move.length() == 4) { //UCI move
+            System.out.println("UCI move");
             fromBoard = BitboardUtilsAC.algebraic2Square(move.substring(0, 2));
         }
+
         if(fromBoard == 0){
+            System.out.println("from board empty");
             return -1;
         }
 
+        //Detects multiple froms and chooses the first legal move
+        while (fromBoard != 0) {
+            long myFrom = Long.lowestOneBit(fromBoard);
+            fromBoard ^= myFrom;
+            fromIndex = Long.numberOfTrailingZeros(myFrom);
+
+            boolean capture = false;
+            if((myFrom & (b.whitePawns | b.blackPawns)) != 0){
+                pieceMoved = PAWN;
+
+                //passant capture check
+                if((toIndex != (fromIndex -8)) && (toIndex != (fromIndex +8)) &&
+                        (toIndex != (fromIndex -16)) && (toIndex != (fromIndex +16))){
+
+                    if((toBoard & b.allPieces) == 0){
+                        moveType = TYPE_EN_PASSANT;
+                        capture = true;
+                    }
+
+                }
+
+                // Default promotion to queen if not specified
+                if ((toBoard & (BitboardUtilsAC.b_u | BitboardUtilsAC.b_d)) != 0 && (moveType < TYPE_PROMOTION_QUEEN)) {
+                    moveType = TYPE_PROMOTION_QUEEN;
+                }
+            }
+
+            if ((myFrom & (b.whiteBishops | b.blackBishops)) != 0)
+                pieceMoved = BISHOP;
+            else if ((myFrom & (b.whiteKnights | b.blackKnights)) != 0)
+                pieceMoved = KNIGHT;
+            else if ((myFrom & (b.whiteRooks | b.blackRooks)) != 0)
+                pieceMoved = ROOK;
+            else if ((myFrom & (b.whiteQueens | b.blackQueens)) != 0)
+                pieceMoved = QUEEN;
+            else if ((myFrom & (b.whiteKing | b.blackKing)) != 0) {
+                pieceMoved = KING;
+                if (fromIndex == 4 || fromIndex == 4 + (8 * 7)) {
+                    if (toIndex == (fromIndex + 2))
+                        moveType = TYPE_QUEENSIDE_CASTLING;
+                    if (toIndex == (fromIndex - 2))
+                        moveType = TYPE_KINGSIDE_CASTLING;
+                }
+            }
+
+            // Now set captured piece flag
+            if ((toBoard & (b.whitePieces | b.blackPieces)) != 0) {
+                capture = true;
+            }
+            int moveInt= genMove(fromIndex, toIndex, pieceMoved, capture, moveType);
+            if(legalityCheck){
+                if(b.makeMove(moveInt)){
+                    b.unmakeMove();
+                    return moveInt;
+                }
+            }else{
+                return moveInt;
+            }
+
+        }
 
         return 1;
 

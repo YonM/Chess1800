@@ -13,7 +13,6 @@ import java.util.StringTokenizer;
 
 /**
  * Created by Yonathan on 08/12/2014.
- * Singleton class to represent the board.
  * Inspired by Stef Luijten's Winglet Chess @ http://web.archive.org/web/20120621100214/http://www.sluijten.com/winglet/
  * and Ulysse Carion's Godot @ https://github.com/ucarion/godot
  * and Alberto Alonso Ruibal's Carballo @ https://github.com/albertoruibal/carballo
@@ -209,9 +208,14 @@ public class Board implements Definitions {
             // en passant
             ePSquare = BitboardUtilsAC.algebraicLocToInt(arr.get(10));
             // 50mr
-            fiftyMove = Integer.parseInt(arr.get(11));
-            // move number
-            moveNumber = Integer.parseInt(arr.get(12));
+            if(arr.size() >12) {
+                fiftyMove = Integer.parseInt(arr.get(11));
+                // move number
+                moveNumber = Integer.parseInt(arr.get(12));
+            }else{
+                fiftyMove = 0;
+                moveNumber = 1;
+            }
             initMoveNumber = moveNumber;
 
             key = Zobrist.getKeyFromBoard(this);
@@ -222,6 +226,7 @@ public class Board implements Definitions {
             material -= (Long.bitCount(blackPawns) * PAWN_VALUE + Long.bitCount(blackKnights) * KNIGHT_VALUE
                     + Long.bitCount(blackBishops) * BISHOP_VALUE + Long.bitCount(blackRooks) * ROOK_VALUE
                     + Long.bitCount(blackQueens) * QUEEN_VALUE);
+            System.out.println(this);
 //            for(int s: fenSquares)
 //            System.out.println(s);
             /*System.out.println("Turn: "+ whiteToMove);
@@ -357,30 +362,18 @@ public class Board implements Definitions {
      */
     public char getPieceAt(int loc) {
         long sq = BitboardUtilsAC.getSquare[loc];
-        if ((whitePawns & sq) != 0L)
-            return 'P';
-        if ((whiteKnights & sq) != 0L)
-            return 'N';
-        if ((whiteBishops & sq) != 0L)
-            return 'B';
-        if ((whiteRooks & sq) != 0L)
-            return 'R';
-        if ((whiteQueens & sq) != 0L)
-            return 'Q';
-        if ((whiteKing & sq) != 0L)
-            return 'K';
-        if ((blackPawns & sq) != 0L)
-            return 'p';
-        if ((blackKnights & sq) != 0L)
-            return 'n';
-        if ((blackBishops & sq) != 0L)
-            return 'b';
-        if ((blackRooks & sq) != 0L)
-            return 'r';
-        if ((blackQueens & sq) != 0L)
-            return 'q';
-        if ((blackKing & sq) != 0L)
-            return 'k';
+        if (((whitePawns | blackPawns) & sq) != 0L)
+            return (whitePieces & sq) !=0 ? 'P': 'p';
+        if (((whiteKnights | blackKnights) & sq) != 0L)
+            return (whitePieces & sq) !=0 ? 'N': 'n';
+        if (((whiteBishops | blackBishops) & sq) != 0L)
+            return (whitePieces & sq) !=0 ? 'B': 'b';
+        if (((whiteRooks | blackRooks) & sq) != 0L)
+            return (whitePieces & sq) !=0 ? 'R': 'r';
+        if (((whiteQueens | blackQueens) & sq) != 0L)
+            return (whitePieces & sq) !=0 ? 'Q': 'q';
+        if (((whiteKing | blackKing) & sq) != 0L)
+            return (whitePieces & sq) !=0 ? 'K': 'k';
         return ' ';
     }
 
@@ -824,6 +817,50 @@ public class Board implements Definitions {
         return true;
     }
 
+    @Override
+    public String toString() {
+        String s = "     a   b   c   d   e   f   g   h\n";
+        s += "   +---+---+---+---+---+---+---+---+\n 8 | ";
+
+        for (int up = 7; up >= 0; up--) {
+            for (int out = 0; out < 8; out++) {
+                s += getPieceAt(up * 8 + out) + " | ";
+            }
+            s += (up + 1) + "\n   +---+---+---+---+---+---+---+---+";
+            if (up != 0)
+                s += "\n " + up + " | ";
+        }
+
+        s += "\n     a   b   c   d   e   f   g   h\n\n";
+
+        s += "White to move: " + whiteToMove + "\n";
+        s += "White: O-O: " + castleWhite + " -- O-O-O: " + castleWhite + "\n";
+        s += "Black: O-O: " + castleBlack + " -- O-O-O: " + castleBlack + "\n";
+        s +=
+                "En Passant: " + ePSquare + " ("
+                        + BitboardUtilsAC.intToAlgebraicLoc(ePSquare) + ")\n";
+        s += "50 move rule: " + fiftyMove + "\n";
+        s += "Move number: " + moveNumber + "\n";
+        return s;
+    }
+
+//    public String toString(){
+//        StringBuilder sb = new StringBuilder();
+//        int j = 8;
+//        long i = BitboardUtilsAC.A8;
+//        while (i != 0) {
+//            sb.append(getPieceAt(Long.numberOfTrailingZeros(i)));
+//            sb.append(" ");
+//            if ((i & BitboardUtilsAC.b_r) != 0) {
+//                sb.append(j--);
+//                sb.append("\n");
+//            }
+//            i >>>= 1;
+//        }
+//        sb.append("a b c d e f g h  ");
+//        sb.append((whiteToMove ? "white move\n" : "blacks move\n"));
+//        return sb.toString();
+//    }
     /*public long getAllPieces(){
         return allPieces;
     }*/

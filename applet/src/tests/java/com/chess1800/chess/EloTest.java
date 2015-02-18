@@ -1,11 +1,12 @@
-package tests;
+package com.chess1800.chess;
 
 import board.Board;
+import junit.framework.TestCase;
 import move.MoveAC;
 import org.junit.Test;
 import search.PVS;
 import search.Search;
-import utilities.SANUtils;
+
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,7 +18,7 @@ import java.io.InputStreamReader;
  * Created by Yonathan on 10/02/2015.
  * Based on Alberto Ruibal's Carballo. Sources @ Source @ https://github.com/albertoruibal/carballo/
  */
-public class EloTest {
+public class EloTest extends TestCase {
 
     Board b;
     Search search;
@@ -33,7 +34,7 @@ public class EloTest {
     public void testBT2450(){
         search = new PVS(false);
         b= new Board();
-        long time = processEPDFile(this.getClass().getResourceAsStream("/bt2450.epd"), 10 * 1000);
+        long time = processEPDFile(this.getClass().getResourceAsStream("/BT2450.epd"), 2 * 60 * 1000);
         double timeSeconds = time/1000;
         double elo = 2450- timeSeconds /30;
         System.out.println("BT 2450 Elo = " + elo);
@@ -41,7 +42,7 @@ public class EloTest {
 
     @Test
     public void testBratkoKopec(){
-        search = new PVS(false);
+        search = new PVS(true);
         b= new Board();
         long time = processEPDFile(this.getClass().getResourceAsStream("/bratko-kopec.epd"), 15 * 60 * 1000);
         double timeSeconds = time/1000;
@@ -111,20 +112,33 @@ public class EloTest {
 
 
     private int testPosition(String fen, String moveString, int timeLimit) {
+        System.out.println("hello test called");
+        int time=0;
         b=new Board();
         if(b.initializeFromFEN(fen)){
             String moveStringArray[] = moveString.split(" ");
             int moves[] = new int[moveStringArray.length];
-
+            System.out.println("move string: " +moveStringArray[0]);
             for(int i=0; i<moves.length; i++){
-                moves[i] = SANUtils.
+                moves[i] = MoveAC.getMoveFromString(b, moveStringArray[i], true);
             }
-
+            boolean found = false;
+            int moveFound;
+            for(int move: moves){
+                moveFound=search.findBestMove(b,0,0,0, timeLimit);
+                System.out.println("best move: " +move + " Found move: " + moveFound);
+                if(move==moveFound){
+                    time+=search.getBestMoveTime();
+                    found = true;
+                }
+            }
+            if(!found)
+                return timeLimit;
         }else{
-            System.out.println("error in fen");
+            System.out.println("error in fen string: " + fen);
             return -1;
         }
-        return 0;
+        return time;
     }
 
 

@@ -50,6 +50,7 @@ public class MTDF implements Search, Definitions{
     private static int TIME_CHECK_INTERVAL=10000;
     private boolean useFixedDepth;
     private boolean stopSearch;
+    private long bestMoveTime;
 
     public static MTDF getInstance() {
         if(instance==null){
@@ -72,6 +73,11 @@ public class MTDF implements Search, Definitions{
         evaluator = eval;
     }
 
+
+    @Override
+    public long getBestMoveTime() {
+        return bestMoveTime;
+    }
 
     public int findBestMove(Board b, int depth, int timeLeft, int increment, int moveTime) {
         startTime = System.currentTimeMillis();
@@ -109,6 +115,7 @@ public class MTDF implements Search, Definitions{
         }
         if(VERBOSE)
             System.out.println(evals + " positions evaluated.");
+        bestMoveTime=System.currentTimeMillis() - startTime;
         return firstGuess;
     }
 

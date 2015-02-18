@@ -11,20 +11,22 @@ import java.util.regex.Pattern;
  * @author Jaco Van Niekerk
  */
 public class FENValidator {
-
+    private final static boolean VERBOSE = false;
     /*
     * Method checks if the string provided is a valid FEN, no legality checking is made.
     * Just that the string contains the correct piece types, two kings and each rank has 8 squares.*/
     public static boolean isValidFEN(String fen) {
-        Pattern pattern = Pattern.compile("((([prnbqkPRNBQK12345678]*/){7})([prnbqkPRNBQK12345678]*)) (w|b) ((K?Q?k?q?)|\\-) (([abcdefgh][36])|\\-) (\\d*) (\\d*)");
+        Pattern pattern = Pattern.compile("((([prnbqkPRNBQK12345678]*/){7})([prnbqkPRNBQK12345678]*)) (w|b) ((K?Q?k?q?)|\\-) (([abcdefgh][36])|\\-)( ((\\d*) (\\d*))||\n)");
         Matcher matcher = pattern.matcher(fen);
         if (!matcher.matches()) {
+            if(VERBOSE) System.out.println("matcher fail");
             return false;
         }
         String[] ranks = matcher.group(2).split("/");
 
         for (String rank : ranks) {
             if (!verifyRank(rank)) {
+                if(VERBOSE) System.out.println("rank fail: " +rank);
                 return false;
             }
         }
