@@ -49,10 +49,9 @@ public class Perft {
     @Test
     private static int perft(Bitboard b, int ply, int depth) {
         if (depth == 0) return 1;
-        AbstractAbstractBitboardMoveGenerator moveGenerator = AbstractAbstractBitboardMoveGenerator.getInstance();
 
         int[] moves = new int[b.MAX_MOVES];
-        int num_moves = moveGenerator.getAllMoves(b,moves);
+        int num_moves = b.getAllMoves(moves);
         int count = 0;
 
         for (int i = 0; i < num_moves; i++) {

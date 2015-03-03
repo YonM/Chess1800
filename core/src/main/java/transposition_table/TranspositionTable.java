@@ -2,6 +2,7 @@ package transposition_table;
 
 import board.Bitboard;
 import definitions.Definitions;
+import search.Search;
 
 /**
  * Created by Yonathan on 02/02/2015.
@@ -118,8 +119,8 @@ public class TranspositionTable implements Definitions{
      * @return collectString The moves in a string
      */
     public int[] collectPV(Bitboard b) {
-        int[] arrayPV = new int[MAX_PLY];
-        int move = getMove(b.key);
+        int[] arrayPV = new int[Search.MAX_PLY];
+        int move = getMove(b.getKey());
         int i = 20;
         int index = 0;
         int pv_error=0;
@@ -128,7 +129,7 @@ public class TranspositionTable implements Definitions{
                 break;
             arrayPV[index] = move;
             if (b.makeMove(move)) {
-                move = getMove(b.key);
+                move = getMove(b.getKey());
                 i--;
                 index++;
             }else{

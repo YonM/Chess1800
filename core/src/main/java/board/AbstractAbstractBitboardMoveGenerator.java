@@ -39,8 +39,8 @@ public abstract class AbstractAbstractBitboardMoveGenerator extends AbstractBitb
     
     protected boolean whiteToMove;
     //Castling values
-    public final int CANCASTLEOO = 1;
-    public final int CANCASTLEOOO = 2;
+    public static final int CANCASTLEOO = 1;
+    public static final int CANCASTLEOOO = 2;
 
     //For SEE & Quiescence Search
     public static final int MINCAPTVAL = 1;
@@ -48,6 +48,7 @@ public abstract class AbstractAbstractBitboardMoveGenerator extends AbstractBitb
     protected int initMoveNumber;
 
     protected int ePSquare;
+
     protected int castleWhite;
     protected int castleBlack;
 
@@ -60,7 +61,17 @@ public abstract class AbstractAbstractBitboardMoveGenerator extends AbstractBitb
     public boolean isWhiteToMove() {
         return whiteToMove;
     }
-    
+
+
+    public int getCastleBlack() {
+        return castleBlack;
+    }
+
+
+    public int getCastleWhite() {
+        return castleWhite;
+    }
+
     /**
      * Gets all <i>pseudo-legal</i> moves available for the side to move. If the
      * generated moves need to be legal (and not simply pseudo-legal), then
@@ -196,6 +207,11 @@ public abstract class AbstractAbstractBitboardMoveGenerator extends AbstractBitb
         whitePieces = whiteKing | whiteQueens | whiteRooks | whiteBishops | whiteKnights | whitePawns;
         blackPieces = blackKing | blackQueens | blackRooks | blackBishops | blackKnights | blackPawns;
         allPieces = whitePieces | blackPieces;
+    }
+
+
+    public int getEPSquare() {
+        return ePSquare;
     }
 
 

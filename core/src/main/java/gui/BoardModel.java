@@ -1,10 +1,13 @@
 package gui;
 
+import board.Chessboard;
 import definitions.Definitions;
 import board.Bitboard;
 import move.Move;
 import board.AbstractAbstractBitboardMoveGenerator;
 import search.PVS;
+import search.PVSHard;
+import search.PVSSoft;
 import search.Search;
 import utilities.SANUtils;
 
@@ -17,7 +20,6 @@ import java.util.Observable;
 public class BoardModel extends Observable implements Definitions{
     private final BoardView view;
     private final Bitboard b;
-    private final AbstractAbstractBitboardMoveGenerator moveGenerator;
     private final Search searchSoft;
     private final Search searchHard;
     private final SANUtils sanUtils;
@@ -25,16 +27,15 @@ public class BoardModel extends Observable implements Definitions{
     public BoardModel(Bitboard b, BoardView view) {
         this.b=b;
         this.view=view;
-        moveGenerator = AbstractAbstractBitboardMoveGenerator.getInstance();
-        searchSoft = new PVS(false);
-        searchHard = new PVS(true);
+        searchSoft = new PVSSoft();
+        searchHard = new PVSHard();
         sanUtils = SANUtils.getInstance();
     }
     public void makeMove(int move) {
-        if (b.moveNumber % 2 == 0)
+        if (b.getMoveNumber() % 2 == 0)
             System.out.println(" " + sanUtils.getSAN(b, move));
         else
-            System.out.print( ((b.moveNumber + 1) / 2) + ". " + sanUtils.getSAN(b, move));
+            System.out.print( ((b.getMoveNumber() + 1) / 2) + ". " + sanUtils.getSAN(b, move));
 
         int from = Move.getFromIndex(move);
         int to = Move.getToIndex(move);
@@ -51,7 +52,7 @@ public class BoardModel extends Observable implements Definitions{
                         + (char) ('8' - y2);
 
         int[] moves = new int[Bitboard.MAX_MOVES];
-        int num_moves = moveGenerator.getAllLegalMoves(b, moves);
+        int num_moves = b.getAllLegalMoves(moves);
         for (int i = 0; i < num_moves; i++) {
             if (s.equals(sanUtils.intToAlgebraicLoc(Move.getFromIndex(moves[i])) + "-"
                     + sanUtils.intToAlgebraicLoc(Move.getToIndex(moves[i])))) {
@@ -72,7 +73,7 @@ public class BoardModel extends Observable implements Definitions{
     }
 
     public void unmakeMove() {
-        if (b.moveNumber > 0) {
+        if (b.getMoveNumber() > 0) {
             b.unmakeMove();
             b.unmakeMove();
             view.setLastMove(0, 0, 0, 0);
@@ -82,20 +83,20 @@ public class BoardModel extends Observable implements Definitions{
     }
 
     public boolean whiteWins() {
-        return b.isCheckMate() && !b.whiteToMove;
+        return b.isCheckMate() && !b.isWhiteToMove();
     }
 
     public boolean blackWins() {
-        return b.isCheckMate() && b.whiteToMove;
+        return b.isCheckMate() && b.isWhiteToMove();
     }
 
     public boolean isDraw() {
-        return b.isDraw() != NO_DRAW;
+        return b.isDraw() != Chessboard.NO_DRAW;
     }
 
     public void displayConclusionInfo() {
-        if (b.moveNumber % 2 == 0)
-            System.out.print(b.moveNumber / 2 + ". ");
+        if (b.getMoveNumber() % 2 == 0)
+            System.out.print(b.getMoveNumber() / 2 + ". ");
         else
             System.out.print(" ");
 

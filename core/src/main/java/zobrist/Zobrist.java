@@ -1,6 +1,7 @@
 package zobrist;
 
 import board.Bitboard;
+import board.Chessboard;
 import definitions.Definitions;
 
 /**
@@ -61,17 +62,17 @@ public class Zobrist implements Definitions {
         for (int loc = 0; loc < 64; loc++) {
             key ^= getKeyPieceIndex(loc, b.getPieceAt(loc));
         }
-        if ((b.castleWhite & CANCASTLEOO) != 0)
+        if ((b.getCastleWhite() & Bitboard.CANCASTLEOO) != 0)
             key ^= whiteKingSideCastling;
-        if ((b.castleWhite & CANCASTLEOOO) != 0)
+        if ((b.getCastleWhite() & Bitboard.CANCASTLEOOO) != 0)
             key ^= whiteQueenSideCastling;
-        if ((b.castleBlack & CANCASTLEOO) != 0)
+        if ((b.getCastleBlack() & Bitboard.CANCASTLEOO) != 0)
             key ^= blackKingSideCastling;
-        if ((b.castleBlack & CANCASTLEOOO) != 0)
+        if ((b.getCastleBlack() & Bitboard.CANCASTLEOOO) != 0)
             key ^= blackQueenSideCastling;
-        if (b.ePSquare != -1)
-            key ^= passantColumn[b.ePSquare % 8];
-        if (b.whiteToMove)
+        if (b.getEPSquare() != -1)
+            key ^= passantColumn[b.getEPSquare() % 8];
+        if (b.isWhiteToMove())
             key ^= whiteMove;
         return key;
     }

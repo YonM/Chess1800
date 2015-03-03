@@ -1,10 +1,12 @@
 package search;
 
 import board.Chessboard;
+import board.Evaluator;
 import move.Move;
 
 /**
  * Created by Yonathan on 02/03/2015.
+ * PVS with Fail Soft.
  */
 public class PVSSoft extends PVS {
 
@@ -31,9 +33,9 @@ public class PVSSoft extends PVS {
 
         // End of game check, evaluate the board if so to check if it's a draw or checkmate.
         int endGameCheck= board.eval();
-        if (endGameCheck == DRAWSCORE || endGameCheck == -CHECKMATE) {
+        if (endGameCheck == Evaluator.DRAWSCORE || endGameCheck == -Evaluator.CHECKMATE) {
             follow_pv = false;
-            if(endGameCheck == DRAWSCORE) return endGameCheck;
+            if(endGameCheck == Evaluator.DRAWSCORE) return endGameCheck;
             return endGameCheck +ply -1;
         }
 
@@ -134,7 +136,7 @@ public class PVSSoft extends PVS {
                 blackHeuristics[Move.getFromIndex(triangularArray[ply][ply])][Move.getToIndex(triangularArray[ply][ply])] += depth * depth;
         }
 
-        if (board.getFiftyMove() >= 100) return DRAWSCORE;                 //Fifty-move rule
+        if (board.getFiftyMove() >= 100) return Evaluator.DRAWSCORE;                 //Fifty-move rule
 
         return bestScore;  //Fail Soft
     }

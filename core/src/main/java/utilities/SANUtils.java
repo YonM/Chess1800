@@ -1,6 +1,7 @@
 package utilities;
 
 import board.Bitboard;
+import board.Chessboard;
 import definitions.Definitions;
 import move.Move;
 import board.AbstractAbstractBitboardMoveGenerator;
@@ -12,7 +13,7 @@ import board.AbstractAbstractBitboardMoveGenerator;
 public class SANUtils implements Definitions {
 
     private static SANUtils instance;
-    private AbstractAbstractBitboardMoveGenerator moveGen;
+    private Chessboard board;
 
     public static SANUtils getInstance() {
         if (instance == null) {
@@ -23,7 +24,7 @@ public class SANUtils implements Definitions {
     }
 
     private SANUtils() {
-        moveGen = AbstractAbstractBitboardMoveGenerator.getInstance();
+        board = new Bitboard();
     }
 
     public String getSAN(Bitboard b, int move) {
@@ -58,7 +59,7 @@ public class SANUtils implements Definitions {
         boolean amb_file = false, amb_rank = false, amb_move = false;
 
         int[] moves = new int[Bitboard.MAX_MOVES];
-        int num_moves = moveGen.getAllLegalMoves(b, moves);
+        int num_moves = board.getAllLegalMoves(moves);
 
         for (int i = 0; i < num_moves; i++) {
             if (moves[i] == move || Move.getToIndex(moves[i]) != toIndex)
@@ -106,16 +107,16 @@ public class SANUtils implements Definitions {
         if (Move.isPromotion(Move.getMoveType(move))) {
             san += "=";
             switch (Move.getMoveType(move)) {
-                case TYPE_PROMOTION_BISHOP:
+                case Move.TYPE_PROMOTION_BISHOP:
                     san += "B";
                     break;
-                case TYPE_PROMOTION_KNIGHT:
+                case Move.TYPE_PROMOTION_KNIGHT:
                     san += "N";
                     break;
-                case TYPE_PROMOTION_ROOK:
+                case Move.TYPE_PROMOTION_ROOK:
                     san += "R";
                     break;
-                case TYPE_PROMOTION_QUEEN:
+                case Move.TYPE_PROMOTION_QUEEN:
                     san += "Q";
                     break;
             }
@@ -185,16 +186,16 @@ public class SANUtils implements Definitions {
             case TYPE_EN_PASSANT:
                 moveString += " e.p.";
                 break;
-            case TYPE_PROMOTION_BISHOP:
+            case Move.TYPE_PROMOTION_BISHOP:
                 moveString += "=B";
                 break;
-            case TYPE_PROMOTION_KNIGHT:
+            case Move.TYPE_PROMOTION_KNIGHT:
                 moveString += "=N";
                 break;
-            case TYPE_PROMOTION_ROOK:
+            case Move.TYPE_PROMOTION_ROOK:
                 moveString += "=R";
                 break;
-            case TYPE_PROMOTION_QUEEN:
+            case Move.TYPE_PROMOTION_QUEEN:
                 moveString += "=Q";
                 break;
         }

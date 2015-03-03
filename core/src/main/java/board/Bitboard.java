@@ -17,6 +17,7 @@ import java.util.StringTokenizer;
  */
 public class Bitboard extends AbstractBitboardEvaluator implements Definitions, Chessboard {
     protected int material;
+
     protected int moveNumber;
 
 
@@ -213,6 +214,9 @@ public class Bitboard extends AbstractBitboardEvaluator implements Definitions, 
         return fiftyMove;
     }
 
+    public int getMoveNumber() {
+        return moveNumber;
+    }
 
     private void clearBitboards() {
         whiteKing = 0;
