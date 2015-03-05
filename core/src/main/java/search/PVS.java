@@ -2,7 +2,6 @@ package search;
 
 import board.Chessboard;
 import move.Move;
-import utilities.SANUtils;
 
 /**
  * Created by Yonathan on 21/12/2014.
@@ -74,7 +73,7 @@ public abstract class PVS implements Search {
             if(VERBOSE)
                 System.out.println("(" + currentDepth + ") "
                         + ( (System.currentTimeMillis() - startTime) / 1000.0) + "s ("
-                        + SANUtils.moveToString(lastPV[0]) + ") -- " + evals
+                        + Move.moveToString(lastPV[0]) + ") -- " + evals
                         + " nodes evaluated.");
             // stop searching if the current depth leads to a forced mate:
             if ((score > (Chessboard.CHECKMATE - currentDepth)) || (score < -(Chessboard.CHECKMATE - currentDepth))) {

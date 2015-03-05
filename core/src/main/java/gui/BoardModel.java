@@ -2,11 +2,11 @@ package gui;
 
 import board.Chessboard;
 import board.Bitboard;
+import board.MoveGenerator;
 import move.Move;
 import search.PVSHard;
 import search.PVSSoft;
 import search.Search;
-import utilities.SANUtils;
 
 import java.util.Observable;
 
@@ -16,11 +16,11 @@ import java.util.Observable;
  */
 public class BoardModel extends Observable {
     private final BoardView view;
-    private final Bitboard b;
+    private final Chessboard b;
     private final Search searchSoft;
     private final Search searchHard;
 
-    public BoardModel(Bitboard b, BoardView view) {
+    public BoardModel(Chessboard b, BoardView view) {
         this.b=b;
         this.view=view;
         searchSoft = new PVSSoft();
@@ -28,9 +28,9 @@ public class BoardModel extends Observable {
     }
     public void makeMove(int move) {
         if (b.getMoveNumber() % 2 == 0)
-            System.out.println(" " + SANUtils.getSAN(b, move));
+            System.out.println(" " + b.getSAN(move));
         else
-            System.out.print( ((b.getMoveNumber() + 1) / 2) + ". " + SANUtils.getSAN(b, move));
+            System.out.print( ((b.getMoveNumber() + 1) / 2) + ". " + b.getSAN(move));
 
         int from = Move.getFromIndex(move);
         int to = Move.getToIndex(move);
@@ -46,11 +46,11 @@ public class BoardModel extends Observable {
                 (char) (x1 + 'a') + "" + (char) ('8' - y1) + "-" + (char) (x2 + 'a')
                         + (char) ('8' - y2);
 
-        int[] moves = new int[Bitboard.MAX_MOVES];
+        int[] moves = new int[MoveGenerator.MAX_MOVES];
         int num_moves = b.getAllLegalMoves(moves);
         for (int i = 0; i < num_moves; i++) {
-            if (s.equals(SANUtils.intToAlgebraicLoc(Move.getFromIndex(moves[i])) + "-"
-                    + SANUtils.intToAlgebraicLoc(Move.getToIndex(moves[i])))) {
+            if (s.equals(Bitboard.intToAlgebraicLoc(Move.getFromIndex(moves[i])) + "-"
+                    + Bitboard.intToAlgebraicLoc(Move.getToIndex(moves[i])))) {
                 makeMove(moves[i]);
                 break;
             }

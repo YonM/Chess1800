@@ -1,11 +1,8 @@
 package search;
 
 import board.Chessboard;
-import board.Evaluator;
 import move.Move;
 import transposition_table.TranspositionTable;
-import utilities.SANUtils;
-
 /**
  * Created by Yonathan on 02/02/2015.
  * MTD(f) based A.I for the secondary AI. Not Functioning.
@@ -16,7 +13,6 @@ public class MTDF implements Search{
     public int singleMove = 0;
     private final int MAX_DEPTH = 5;
 
-    private Evaluator evaluator;
     private TranspositionTable transpositionTable;
 
     // Number of  nodes evaluated
@@ -55,9 +51,6 @@ public class MTDF implements Search{
         transpositionTable = new TranspositionTable(64);
     }
 
-    public void setEvaluator(Evaluator eval) {
-        evaluator = eval;
-    }
 
 
     @Override
@@ -91,7 +84,7 @@ public class MTDF implements Search{
             if(VERBOSE)
                 System.out.println("(" + currentDepth + ") "
                         + ( (System.currentTimeMillis() - start) / 1000.0) + "s ("
-                        + SANUtils.moveToString(lastPV[0]) + ") -- " + evals
+                        + Move.moveToString(lastPV[0]) + ") -- " + evals
                         + " nodes evaluated.");
             if(useFixedDepth) {
                 if (currentDepth==depth || firstGuess == -(Chessboard.CHECKMATE+6)) break;
@@ -154,7 +147,7 @@ public class MTDF implements Search{
 
         if (board.isEndOfGame()) {
             follow_pv = false;
-            score = evaluator.eval();
+            score = board.eval();
             if(score<= alpha){
                 transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_ALPHA, score, 0 );
             } else if(score>=beta)

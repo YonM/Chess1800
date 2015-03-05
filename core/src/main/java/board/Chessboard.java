@@ -7,6 +7,9 @@ package board;
 public interface Chessboard extends Evaluator {
 
     public static final String START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+
+
     //Move related
     public boolean makeMove(int move);
     public void makeNullMove();
@@ -16,6 +19,7 @@ public interface Chessboard extends Evaluator {
     //Position related
     public boolean initializeFromFEN(String fen);
     public long getKey();
+    public char getPieceAt(int loc);
 
 
 
@@ -24,9 +28,16 @@ public interface Chessboard extends Evaluator {
     public boolean isEndOfGame();
     public boolean isCheck();
     public boolean isWhiteToMove();
+    public boolean isCheckMate();
+    public int isDraw();
     public int getFiftyMove();
     public int getMoveNumber();
     public int movingSidePieceMaterial();
+
+
+    //Move Notation
+    public String getSAN(int move);
+
 
 
 

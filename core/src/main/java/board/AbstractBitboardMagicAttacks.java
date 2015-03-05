@@ -1,7 +1,5 @@
 package board;
 
-import utilities.BitboardUtils;
-
 /**
  * Created by Yonathan on 07/12/2014.
  * Based on Alberto Ruibal's Carballo. Source @ https://githucom/albertoruibal/carballo/
@@ -37,6 +35,37 @@ public abstract class AbstractBitboardMagicAttacks{
     protected long blackPieces;
     protected long allPieces;
 
+    protected static final long A8 = 0x8000000000000000L;
+    protected static final long H1 = 0x0000000000000001L; // AbstractBitboardMagicAttacks uses H1=0 A8=63
+    protected static final long WHITE_SQUARES = 0x55aa55aa55aa55aaL;
+    protected static final long BLACK_SQUARES = 0xaa55aa55aa55aa55L;
+    // Board borders
+    protected static final long b_d = 0x00000000000000ffL; // down
+    protected static final long b_u = 0xff00000000000000L; // up
+    protected static final long b_r = 0x0101010101010101L; // right
+    protected static final long b_l = 0x8080808080808080L; // left
+    // Board borders (2 squares),for the knight
+    protected static final long b2_d = 0x000000000000ffffL; // down
+    protected static final long b2_u = 0xffff000000000000L; // up
+    protected static final long b2_r = 0x0303030303030303L; // right
+    protected static final long b2_l = 0xC0C0C0C0C0C0C0C0L; // left
+
+    public static final String[] squareNames =
+            {"a1","b1","c1","d1","e1","f1","g1","h1",
+                    "a2","b2","c2","d2","e2","f2","g2","h2",
+                    "a3","b3","c3","d3","e3","f3","g3","h3",
+                    "a4","b4","c4","d4","e4","f4","g4","h4",
+                    "a5","b5","c5","d5","e5","f5","g5","h5",
+                    "a6","b6","c6","d6","e6","f6","g6","h6",
+                    "a7","b7","c7","d7","e7","f7","g7","h7",
+                    "a8","b8","c8","d8","e8","f8","g8","h8"};
+
+    
+    // 0 is a, 7 is h
+    public static final long[] COLUMN = {b_l, b_r << 6, b_r << 5, b_r << 4, b_r << 3, b_r << 2, b_r << 1, b_r};
+
+    // 0 is 1, 7 is 8
+    public static final long[] RANK = {b_d, b_d << 8, b_d << 16, b_d << 24, b_d << 32, b_d << 40, b_d << 48, b_d << 56};
 
 
     // Magic numbers provided by Russell Newman & Chris Moreton @ http://www.rivalchess.com/magic-bitboards/
@@ -63,6 +92,11 @@ public abstract class AbstractBitboardMagicAttacks{
             5, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 6
     };
 
+    // To use with square2Index
+    private static final byte[] bitTable = {63, 30, 3, 32, 25, 41, 22, 33, 15, 50, 42, 13, 11, 53, 19, 34, 61, 29, 2, 51, 21, 43, 45, 10, 18, 47, 1, 54, 9, 57,
+            0, 35, 62, 31, 40, 4, 49, 5, 52, 26, 60, 6, 23, 44, 46, 27, 56, 16, 7, 39, 48, 24, 59, 14, 12, 55, 38, 28, 58, 20, 37, 17, 36, 8};
+
+
 
     protected final void generateAttacks() {
         rook = new long [64];
@@ -79,48 +113,48 @@ public abstract class AbstractBitboardMagicAttacks{
         byte i = 0;
         while (square != 0) {
 
-            rook[i] = squareAttackedAuxSlider(square, +8, BitboardUtils.b_u)
-                    | squareAttackedAuxSlider(square, -8, BitboardUtils.b_d)
-                    | squareAttackedAuxSlider(square, -1, BitboardUtils.b_r)
-                    | squareAttackedAuxSlider(square, +1, BitboardUtils.b_l);
+            rook[i] = squareAttackedAuxSlider(square, +8, b_u)
+                    | squareAttackedAuxSlider(square, -8, b_d)
+                    | squareAttackedAuxSlider(square, -1, b_r)
+                    | squareAttackedAuxSlider(square, +1, b_l);
             
-            rookMask[i] = squareAttackedAuxSliderMask(square, +8, BitboardUtils.b_u)
-                    | squareAttackedAuxSliderMask(square, -8, BitboardUtils.b_d)
-                    | squareAttackedAuxSliderMask(square, -1, BitboardUtils.b_r)
-                    | squareAttackedAuxSliderMask(square, +1, BitboardUtils.b_l);
+            rookMask[i] = squareAttackedAuxSliderMask(square, +8, b_u)
+                    | squareAttackedAuxSliderMask(square, -8, b_d)
+                    | squareAttackedAuxSliderMask(square, -1, b_r)
+                    | squareAttackedAuxSliderMask(square, +1, b_l);
 
-            bishop[i] = squareAttackedAuxSlider(square, +9, BitboardUtils.b_u | BitboardUtils.b_l)
-                    | squareAttackedAuxSlider(square, +7, BitboardUtils.b_u | BitboardUtils.b_r)
-                    | squareAttackedAuxSlider(square, -7, BitboardUtils.b_d | BitboardUtils.b_l)
-                    | squareAttackedAuxSlider(square, -9, BitboardUtils.b_d | BitboardUtils.b_r);
+            bishop[i] = squareAttackedAuxSlider(square, +9, b_u | b_l)
+                    | squareAttackedAuxSlider(square, +7, b_u | b_r)
+                    | squareAttackedAuxSlider(square, -7, b_d | b_l)
+                    | squareAttackedAuxSlider(square, -9, b_d | b_r);
 
-            bishopMask[i] = squareAttackedAuxSliderMask(square, +9, BitboardUtils.b_u | BitboardUtils.b_l)
-                    | squareAttackedAuxSliderMask(square, +7, BitboardUtils.b_u | BitboardUtils.b_r)
-                    | squareAttackedAuxSliderMask(square, -7, BitboardUtils.b_d | BitboardUtils.b_l)
-                    | squareAttackedAuxSliderMask(square, -9, BitboardUtils.b_d | BitboardUtils.b_r);
+            bishopMask[i] = squareAttackedAuxSliderMask(square, +9, b_u | b_l)
+                    | squareAttackedAuxSliderMask(square, +7, b_u | b_r)
+                    | squareAttackedAuxSliderMask(square, -7, b_d | b_l)
+                    | squareAttackedAuxSliderMask(square, -9, b_d | b_r);
 
-            knight[i] = squareAttackedAux(square, +17, BitboardUtils.b2_u | BitboardUtils.b_l)
-                    | squareAttackedAux(square, +15, BitboardUtils.b2_u | BitboardUtils.b_r)
-                    | squareAttackedAux(square, -15, BitboardUtils.b2_d | BitboardUtils.b_l)
-                    | squareAttackedAux(square, -17, BitboardUtils.b2_d | BitboardUtils.b_r)
-                    | squareAttackedAux(square, +10, BitboardUtils.b_u | BitboardUtils.b2_l)
-                    | squareAttackedAux(square, +6, BitboardUtils.b_u | BitboardUtils.b2_r)
-                    | squareAttackedAux(square, -6, BitboardUtils.b_d | BitboardUtils.b2_l)
-                    | squareAttackedAux(square, -10, BitboardUtils.b_d | BitboardUtils.b2_r);
+            knight[i] = squareAttackedAux(square, +17, b2_u | b_l)
+                    | squareAttackedAux(square, +15, b2_u | b_r)
+                    | squareAttackedAux(square, -15, b2_d | b_l)
+                    | squareAttackedAux(square, -17, b2_d | b_r)
+                    | squareAttackedAux(square, +10, b_u | b2_l)
+                    | squareAttackedAux(square, +6, b_u | b2_r)
+                    | squareAttackedAux(square, -6, b_d | b2_l)
+                    | squareAttackedAux(square, -10, b_d | b2_r);
 
-            whitePawn[i] = squareAttackedAux(square, 7, BitboardUtils.b_u | BitboardUtils.b_r)
-                    | squareAttackedAux(square, 9, BitboardUtils.b_u | BitboardUtils.b_l);
-            blackPawn[i] = squareAttackedAux(square, -7, BitboardUtils.b_d | BitboardUtils.b_l)
-                    | squareAttackedAux(square, -9, BitboardUtils.b_d | BitboardUtils.b_r);
+            whitePawn[i] = squareAttackedAux(square, 7, b_u | b_r)
+                    | squareAttackedAux(square, 9, b_u | b_l);
+            blackPawn[i] = squareAttackedAux(square, -7, b_d | b_l)
+                    | squareAttackedAux(square, -9, b_d | b_r);
 
-            king[i] = squareAttackedAux(square, +8, BitboardUtils.b_u)
-                    | squareAttackedAux(square, -8, BitboardUtils.b_d)
-                    | squareAttackedAux(square, -1, BitboardUtils.b_r)
-                    | squareAttackedAux(square, +1, BitboardUtils.b_l)
-                    | squareAttackedAux(square, +9, BitboardUtils.b_u | BitboardUtils.b_l)
-                    | squareAttackedAux(square, +7, BitboardUtils.b_u | BitboardUtils.b_r)
-                    | squareAttackedAux(square, -7, BitboardUtils.b_d | BitboardUtils.b_l)
-                    | squareAttackedAux(square, -9, BitboardUtils.b_d | BitboardUtils.b_r);
+            king[i] = squareAttackedAux(square, +8, b_u)
+                    | squareAttackedAux(square, -8, b_d)
+                    | squareAttackedAux(square, -1, b_r)
+                    | squareAttackedAux(square, +1, b_l)
+                    | squareAttackedAux(square, +9, b_u | b_l)
+                    | squareAttackedAux(square, +7, b_u | b_r)
+                    | squareAttackedAux(square, -7, b_d | b_l)
+                    | squareAttackedAux(square, -9, b_d | b_r);
 
             // And now generate magics
             int rookPositions = (1 << magicNumberShiftsRook[i]);
@@ -195,8 +229,18 @@ public abstract class AbstractBitboardMagicAttacks{
      * @return true if the square is being attacked, false otherwise.
      */
     public boolean isSquareAttacked(long square, boolean white) {
-        return isIndexAttacked(BitboardUtils.square2Index(square), white);
+        return isIndexAttacked(square2Index(square), white);
     }
+
+    /**
+     * Converts a square to its index 0=H1, 63=A8
+     */
+    private static byte square2Index(long square) {
+        long b = square ^ (square - 1);
+        int fold = (int) (b ^ (b >>> 32));
+        return bitTable[(fold * 0x783a9b23) >>> 26];
+    }
+
 
     private boolean isIndexAttacked(byte i, boolean white) {
         if (i < 0 || i > 63)
@@ -258,15 +302,15 @@ public abstract class AbstractBitboardMagicAttacks{
     }
 
     protected long getRookShiftAttacks(long square, long all) {
-        return checkSquareAttackedAux(square, all, +8, BitboardUtils.b_u) | checkSquareAttackedAux(square, all, -8, BitboardUtils.b_d)
-                | checkSquareAttackedAux(square, all, -1, BitboardUtils.b_r) | checkSquareAttackedAux(square, all, +1, BitboardUtils.b_l);
+        return checkSquareAttackedAux(square, all, +8, b_u) | checkSquareAttackedAux(square, all, -8, b_d)
+                | checkSquareAttackedAux(square, all, -1, b_r) | checkSquareAttackedAux(square, all, +1, b_l);
     }
 
     protected long getBishopShiftAttacks(long square, long all) {
-        return checkSquareAttackedAux(square, all, +9, BitboardUtils.b_u | BitboardUtils.b_l)
-                | checkSquareAttackedAux(square, all, +7, BitboardUtils.b_u | BitboardUtils.b_r)
-                | checkSquareAttackedAux(square, all, -7, BitboardUtils.b_d | BitboardUtils.b_l)
-                | checkSquareAttackedAux(square, all, -9, BitboardUtils.b_d | BitboardUtils.b_r);
+        return checkSquareAttackedAux(square, all, +9, b_u | b_l)
+                | checkSquareAttackedAux(square, all, +7, b_u | b_r)
+                | checkSquareAttackedAux(square, all, -7, b_d | b_l)
+                | checkSquareAttackedAux(square, all, -9, b_d | b_r);
     }
 
     /**

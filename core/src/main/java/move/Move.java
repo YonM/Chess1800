@@ -1,6 +1,8 @@
 package move;
 
 
+import board.Bitboard;
+
 /**
  * Created by Yonathan on 03/12/2014.
  * This class, as the name indicates, is for the moves of a chess game.
@@ -93,6 +95,59 @@ public class Move{
 
     public static final boolean isPromotion(int move) {
         return Move.getMoveType(move) >= TYPE_PROMOTION_QUEEN;
+    }
+
+    public static String moveToString(int move) {
+        String moveString= "";
+        if(Move.getMoveType(move) == Move.TYPE_KINGSIDE_CASTLING)
+            return "0-0";
+        if(Move.getMoveType(move) == Move.TYPE_QUEENSIDE_CASTLING)
+            return "0-0-0";
+        switch (Move.getPieceMoved(move)) {
+            case Move.KNIGHT:
+                moveString += "N";
+                break;
+            case Move.BISHOP:
+                moveString += "B";
+                break;
+            case Move.ROOK:
+                moveString += "R";
+                break;
+            case Move.QUEEN:
+                moveString += "Q";
+                break;
+            case Move.KING:
+                moveString += "K";
+                break;
+            default:
+                moveString = "";
+                break;
+        }
+        moveString += Bitboard.intToAlgebraicLoc(Move.getFromIndex(move));
+        if (Move.isCapture(move))
+            moveString += "x";
+        else
+            moveString += "-";
+        moveString += Bitboard.intToAlgebraicLoc(Move.getToIndex(move));
+
+        switch (Move.getMoveType(move)) {
+            case Move.TYPE_EN_PASSANT:
+                moveString += " e.p.";
+                break;
+            case Move.TYPE_PROMOTION_BISHOP:
+                moveString += "=B";
+                break;
+            case Move.TYPE_PROMOTION_KNIGHT:
+                moveString += "=N";
+                break;
+            case Move.TYPE_PROMOTION_ROOK:
+                moveString += "=R";
+                break;
+            case Move.TYPE_PROMOTION_QUEEN:
+                moveString += "=Q";
+                break;
+        }
+        return moveString;
     }
 
 

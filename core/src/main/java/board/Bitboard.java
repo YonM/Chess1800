@@ -1,7 +1,6 @@
 package board;
 
 import move.Move;
-import utilities.BitboardUtils;
 import fen.FENValidator;
 import zobrist.Zobrist;
 
@@ -19,17 +18,10 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
 
     protected int moveNumber;
 
-
-
     protected int fiftyMove;
 
     protected long[] key_history;
     protected long key; //Zobrist key#
-
-    private int num_moves;
-
-
-
 
     //For (un)make move
     private int from, to, piece, moveType;
@@ -63,6 +55,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
     //For Static Exchange Evaluator
     protected int[] seeGain;
     protected static final int[] SEE_PIECE_VALUES = {0, 100, 325, 325, 500, 975, 999999};
+
     public Bitboard() {
         generateAttacks();
         moves = new int[MAX_GAME_LENGTH * 4];
@@ -119,7 +112,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
                         }
                     }
                     else {
-                        long square = BitboardUtils.getSquare[up * 8 + out];
+                        long square = getSquare[up * 8 + out];
                         switch (c) {
                             case 'p':
                                 blackPawns |= square;
@@ -173,7 +166,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
             if(arr.get(9).contains("k")) castleBlack += CANCASTLEOO;
             if(arr.get(9).contains("q")) castleBlack += CANCASTLEOOO;
             // en passant
-            ePSquare = BitboardUtils.algebraicLocToInt(arr.get(10));
+            ePSquare = algebraicLocToInt(arr.get(10));
             // 50mr
             if(arr.size() >12) {
                 fiftyMove = Integer.parseInt(arr.get(11));
@@ -260,8 +253,8 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         piece = Move.getPieceMoved(move);
         moveType = Move.getMoveType(move);
         capture = Move.isCapture(move);
-        fromBoard = BitboardUtils.getSquare[from];
-        toBoard = BitboardUtils.getSquare[to];
+        fromBoard = getSquare[from];
+        toBoard = getSquare[to];
         fromToBoard = fromBoard | toBoard;
 
         fiftyMove++;
@@ -464,7 +457,6 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
                 break;
             default:
                 return false;
-            //throw new RuntimeException("Unreachable" + " & piece:" +piece +"  move=" + move);
         }
         updateAggregateBitboards();
         if (whiteToMove) {
@@ -622,8 +614,8 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
             // 2 kings with one or more bishops and all bishops on the same colour
             if (whiteBishopsTotal + blackBishopsTotal > 0) {
                 if (whiteKnightsTotal + whiteRooksTotal + whiteQueensTotal + blackKnightsTotal + blackRooksTotal + blackQueensTotal == 0) {
-                    if ((((whiteBishops | blackBishops) & BitboardUtils.WHITE_SQUARES) == 0) ||
-                            (((whiteBishops | blackBishops) & BitboardUtils.BLACK_SQUARES) == 0)) return DRAW_BY_MATERIAL;
+                    if ((((whiteBishops | blackBishops) & WHITE_SQUARES) == 0) ||
+                            (((whiteBishops | blackBishops) & BLACK_SQUARES) == 0)) return DRAW_BY_MATERIAL;
                 }
             }
         }
@@ -666,6 +658,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         return (whiteToMove) ? whitePieceMaterial() : blackPieceMaterial();
     }
 
+
     public int whitePieceMaterial() {
         return 325 * Long.bitCount(whiteKnights) + 325 * Long.bitCount(whiteBishops)
                 + 500 * Long.bitCount(whiteRooks) + 975 * Long.bitCount(whiteQueens);
@@ -675,13 +668,6 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         return 325 * Long.bitCount(blackKnights) + 325 * Long.bitCount(blackBishops)
                 + 500 * Long.bitCount(blackRooks) + 975 * Long.bitCount(blackQueens);
     }
-
-    /*public boolean isOtherKingAttacked() {
-        if (whiteToMove) return BitboardMagicAttacksAC.isSquareAttacked(this, blackKing, !whiteToMove);
-        return BitboardMagicAttacksAC.isSquareAttacked(this, whiteKing, !whiteToMove);
-    }*/
-
-
 
     //Static Exchange Evaluator based on https://chessprogramming.wikispaces.com/SEE+-+The+Swap+Algorithm
 
@@ -754,6 +740,189 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
     }
 
 
+    @Override
+    public String getSAN(int move) {
+        String san;
+        if (Move.getMoveType(move) == Move.TYPE_KINGSIDE_CASTLING) {
+            san = "O-O";
+            if(makeMove(move)) {
+                if (isCheckMate())
+                    san += "#";
+                else if (isCheck())
+                    san += "+";
+                unmakeMove();
+            }
+            return san;
+        }
+        if (Move.getMoveType(move) == Move.TYPE_QUEENSIDE_CASTLING) {
+            san = "O-O-O";
+            if(makeMove(move)) {
+                if (isCheckMate())
+                    san += "#";
+                else if (isCheck())
+                    san += "+";
+                unmakeMove();
+            }
+            return san;
+        }
+        int moveType = Move.getMoveType(move);
+        int piece = Move.getPieceMoved(move);
+        int fromIndex = Move.getFromIndex(move);
+        int toIndex = Move.getToIndex(move);
+        int from_file = fromIndex % 8;
+        int from_rank = fromIndex / 8;
+
+        boolean amb_file = false, amb_rank = false, amb_move = false;
+
+        int[] moves = new int[MAX_MOVES];
+        int num_moves = getAllLegalMoves(moves);
+
+        //Check for ambiguity.
+        for (int i = 0; i < num_moves; i++) {
+            if (moves[i] == move || Move.getToIndex(moves[i]) != toIndex)
+                continue;
+
+            if (Move.isPromotion(Move.getMoveType(move))) {
+                if (Move.getMoveType(moves[i]) != moveType)
+                    continue;
+            }
+
+            int pieceX = Move.getMoveType(moves[i]);
+            if (pieceX != piece)
+                continue;
+
+            int sq = Move.getFromIndex(moves[i]);
+
+            int sq_file = sq % 8;
+            int sq_rank = sq / 8;
+
+            if (sq_file == from_file)
+                amb_file = true;
+            if (sq_rank == from_rank)
+                amb_rank = true;
+
+            amb_move = true;
+        }
+
+        san = moveToPieceString(move);
+
+        if (amb_move) {
+            if (!amb_file)
+                san += intColToString(fromIndex);
+            else if (!amb_rank)
+                san += intRowToString(fromIndex);
+            else
+                san += intToAlgebraicLoc(fromIndex);
+        }
+        if (Move.isCapture(move)) {
+            if (Move.getPieceMoved(move) == Move.PAWN && !amb_rank)
+                san += intColToString(fromIndex);
+            san += "x";
+        }
+        san += intToAlgebraicLoc(toIndex);
+        if (Move.isPromotion(Move.getMoveType(move))) {
+            san += "=";
+            switch (Move.getMoveType(move)) {
+                case Move.TYPE_PROMOTION_BISHOP:
+                    san += "B";
+                    break;
+                case Move.TYPE_PROMOTION_KNIGHT:
+                    san += "N";
+                    break;
+                case Move.TYPE_PROMOTION_ROOK:
+                    san += "R";
+                    break;
+                case Move.TYPE_PROMOTION_QUEEN:
+                    san += "Q";
+                    break;
+            }
+        }
+
+        if(makeMove(move)) {
+            if (isCheckMate())
+                san += "#";
+            else if (isCheck())
+                san += "+";
+            unmakeMove();
+        }
+
+        return san;
+    }
+
+    private static String moveToPieceString(int move) {
+        switch (Move.getPieceMoved(move)) {
+            case Move.KNIGHT:
+                return "N";
+            case Move.BISHOP:
+                return "B";
+            case Move.ROOK:
+                return "R";
+            case Move.QUEEN:
+                return "Q";
+            case Move.KING:
+                return "K";
+        }
+        return "";
+    }
+
+    /**
+     * Converts an integer location in [0, 64) to a string in ['a', 'h']
+     * representing its column (aka file).
+     *
+     * @param loc
+     *            an int in [0, 64) representing a location.
+     * @return the string representing the file of the location.
+     */
+    private static String intColToString(int loc) {
+        return (char) ( ( (loc % 8) + 'a')) + "";
+    }
+
+
+    /**
+     * Converts an integer location in [0, 64) to a string in
+     * "algebraic notation" (ie. of the form 'a7', 'c5).
+     *
+     * @param loc
+     *            an int in [0, 64) representing a location
+     * @return the "algebraic notation" of the location
+     */
+    public static String intToAlgebraicLoc(int loc) {
+        if (loc == -1)
+            return "-";
+        int out = loc % 8;
+        int up = loc / 8;
+        char outc = (char) (out + 'a');
+        char upc = (char) (up + '1');
+        return outc + "" + upc;
+    }
+
+    /**
+     * Converts an integer location in [0, 64) to a string in ['a', 'h']
+     * representing its rank (aka row).
+     *
+     * @param loc
+     *            an int in [0, 64) representing a location.
+     * @return the string representing the rank of the location.
+     */
+    private static String intRowToString(int loc) {
+        return (char) ( ( (loc / 8) + '1')) + "";
+    }
+    /*public boolean isOtherKingAttacked() {
+        if (whiteToMove) return BitboardMagicAttacksAC.isSquareAttacked(this, blackKing, !whiteToMove);
+        return BitboardMagicAttacksAC.isSquareAttacked(this, whiteKing, !whiteToMove);
+    }*/
+
+    public static int algebraic2Index(String name) {
+        System.out.println("square checked: " +name);
+        for (int i = 0; i < 64; i++) {
+            if (name.equals(squareNames[i])) {
+                System.out.println("index returned: " +i);
+                return i;
+            }
+        }
+        return -1;
+    }
+
 
     public boolean validateHashMove(int move) {
         if(!makeMove(move)) return false;
@@ -806,7 +975,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
 
 
         //To is always the last 2 characters.
-        toIndex = BitboardUtils.algebraic2Index(move.substring(move.length() - 2, move.length()));
+        toIndex = algebraic2Index(move.substring(move.length() - 2, move.length()));
         long toBoard = 0X1L << toIndex;
         long fromBoard = 0;
 
@@ -857,15 +1026,15 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
             char disambiguate = move.charAt(0);
             int i = "abcdefgh".indexOf(disambiguate);
             if (i >= 0)
-                fromBoard &= BitboardUtils.COLUMN[i];
+                fromBoard &= COLUMN[i];
             int j = "12345678".indexOf(disambiguate);
             if (j >= 0)
-                fromBoard &= BitboardUtils.RANK[j];
+                fromBoard &= RANK[j];
         }
 
         if (move.length() == 4) { //UCI move
             System.out.println("UCI move");
-            fromBoard = BitboardUtils.algebraic2Square(move.substring(0, 2));
+            fromBoard = algebraic2Square(move.substring(0, 2));
         }
 
         if(fromBoard == 0){
@@ -895,7 +1064,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
                 }
 
                 // Default promotion to queen if not specified
-                if ((toBoard & (BitboardUtils.b_u | BitboardUtils.b_d)) != 0 && (moveType < Move.TYPE_PROMOTION_QUEEN)) {
+                if ((toBoard & (b_u | b_d)) != 0 && (moveType < Move.TYPE_PROMOTION_QUEEN)) {
                     moveType = Move.TYPE_PROMOTION_QUEEN;
                 }
             }
@@ -938,6 +1107,39 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
 
     }
 
+    private static long algebraic2Square(String name) {
+        long aux = H1;
+        for (int i = 0; i< 64; i++){
+            if(name.equals(squareNames[i]))
+                return aux;
+            aux <<=1;
+        }
+        return 0;
+    }
+
+    /**
+     * Converts a location in "algebraic notation" (ie. of the form 'a7', 'c5',
+     * etc.) into its integer representation.
+     *
+     * <b>Note:</b> this method may throw a <code>NumberFormatException</code>
+     * if the passed string is malformed-- no error checking occurs in this
+     * method.
+     *
+     * @param loc
+     *            a string representing a location
+     * @return the integer representation of the string
+     */
+    private static int algebraicLocToInt(String loc) {
+        if (loc.equals("-"))
+            return -1;
+        int out = loc.charAt(0) - 'a';
+        int up = Integer.parseInt(loc.charAt(1) + "") - 1;
+        return up * 8 + out;
+    }
+
+
+
+
     @Override
     public String toString() {
         String s = "     a   b   c   d   e   f   g   h\n";
@@ -959,7 +1161,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         s += "Black: O-O: " + castleBlack + " -- O-O-O: " + castleBlack + "\n";
         s +=
                 "En Passant: " + ePSquare + " ("
-                        + BitboardUtils.intToAlgebraicLoc(ePSquare) + ")\n";
+                        + intToAlgebraicLoc(ePSquare) + ")\n";
         s += "50 move rule: " + fiftyMove + "\n";
         s += "Move number: " + moveNumber + "\n";
         return s;
