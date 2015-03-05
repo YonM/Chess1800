@@ -12,7 +12,6 @@ import utilities.SANUtils;
  */
 public abstract class PVS implements Search {
 
-    protected SANUtils sanUtils;
     protected int[][] triangularArray;
     protected int[] triangularLength;
     public int legalMoves;
@@ -36,11 +35,6 @@ public abstract class PVS implements Search {
     protected boolean stopSearch;
     private long bestMoveTime;
     private int globalBestMove;
-
-    public PVS()
-    {
-        sanUtils = SANUtils.getInstance();
-    }
 
     public final int findBestMove(Chessboard board, int depth, int timeLeft, int increment, int moveTime) {
         startTime = System.currentTimeMillis();
@@ -80,7 +74,7 @@ public abstract class PVS implements Search {
             if(VERBOSE)
                 System.out.println("(" + currentDepth + ") "
                         + ( (System.currentTimeMillis() - startTime) / 1000.0) + "s ("
-                        + sanUtils.moveToString(lastPV[0]) + ") -- " + evals
+                        + SANUtils.moveToString(lastPV[0]) + ") -- " + evals
                         + " nodes evaluated.");
             // stop searching if the current depth leads to a forced mate:
             if ((score > (Chessboard.CHECKMATE - currentDepth)) || (score < -(Chessboard.CHECKMATE - currentDepth))) {

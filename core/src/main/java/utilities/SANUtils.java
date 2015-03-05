@@ -10,22 +10,7 @@ import move.Move;
  */
 public class SANUtils{
 
-    private static SANUtils instance;
-    private Chessboard board;
-
-    public static SANUtils getInstance() {
-        if (instance == null) {
-            instance = new SANUtils();
-            return instance;
-        }
-        return instance;
-    }
-
-    private SANUtils() {
-        board = new Bitboard();
-    }
-
-    public String getSAN(Bitboard b, int move) {
+    public static String getSAN(Bitboard b, int move) {
         String san;
         if (Move.getMoveType(move) == Move.TYPE_KINGSIDE_CASTLING) {
             san = "O-O";
@@ -57,7 +42,7 @@ public class SANUtils{
         boolean amb_file = false, amb_rank = false, amb_move = false;
 
         int[] moves = new int[Bitboard.MAX_MOVES];
-        int num_moves = board.getAllLegalMoves(moves);
+        int num_moves = b.getAllLegalMoves(moves);
 
         for (int i = 0; i < num_moves; i++) {
             if (moves[i] == move || Move.getToIndex(moves[i]) != toIndex)
@@ -87,7 +72,6 @@ public class SANUtils{
 
         san = moveToPieceString(move);
 
-        // this is the technique Stockfish uses.
         if (amb_move) {
             if (!amb_file)
                 san += intColToString(fromIndex);
@@ -130,7 +114,7 @@ public class SANUtils{
         return san;
     }
 
-    private String moveToPieceString(int move) {
+    private static String moveToPieceString(int move) {
         switch (Move.getPieceMoved(move)) {
                 case Move.KNIGHT:
                     return "N";
@@ -147,7 +131,7 @@ public class SANUtils{
     }
 
 
-    public String moveToString(int move) {
+    public static String moveToString(int move) {
         String moveString= "";
         if(Move.getMoveType(move) == Move.TYPE_KINGSIDE_CASTLING)
             return "0-0";
@@ -208,7 +192,7 @@ public class SANUtils{
      *            an int in [0, 64) representing a location
      * @return the "algebraic notation" of the location
      */
-    public String intToAlgebraicLoc(int loc) {
+    public static String intToAlgebraicLoc(int loc) {
         if (loc == -1)
             return "-";
         int out = loc % 8;
@@ -226,7 +210,7 @@ public class SANUtils{
      *            an int in [0, 64) representing a location.
      * @return the string representing the file of the location.
      */
-    public String intColToString(int loc) {
+    public static String intColToString(int loc) {
         return (char) ( ( (loc % 8) + 'a')) + "";
     }
 
@@ -238,7 +222,7 @@ public class SANUtils{
      *            an int in [0, 64) representing a location.
      * @return the string representing the rank of the location.
      */
-    public String intRowToString(int loc) {
+    public static String intRowToString(int loc) {
         return (char) ( ( (loc / 8) + '1')) + "";
     }
 }

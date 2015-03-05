@@ -19,20 +19,18 @@ public class BoardModel extends Observable {
     private final Bitboard b;
     private final Search searchSoft;
     private final Search searchHard;
-    private final SANUtils sanUtils;
 
     public BoardModel(Bitboard b, BoardView view) {
         this.b=b;
         this.view=view;
         searchSoft = new PVSSoft();
         searchHard = new PVSHard();
-        sanUtils = SANUtils.getInstance();
     }
     public void makeMove(int move) {
         if (b.getMoveNumber() % 2 == 0)
-            System.out.println(" " + sanUtils.getSAN(b, move));
+            System.out.println(" " + SANUtils.getSAN(b, move));
         else
-            System.out.print( ((b.getMoveNumber() + 1) / 2) + ". " + sanUtils.getSAN(b, move));
+            System.out.print( ((b.getMoveNumber() + 1) / 2) + ". " + SANUtils.getSAN(b, move));
 
         int from = Move.getFromIndex(move);
         int to = Move.getToIndex(move);
@@ -51,8 +49,8 @@ public class BoardModel extends Observable {
         int[] moves = new int[Bitboard.MAX_MOVES];
         int num_moves = b.getAllLegalMoves(moves);
         for (int i = 0; i < num_moves; i++) {
-            if (s.equals(sanUtils.intToAlgebraicLoc(Move.getFromIndex(moves[i])) + "-"
-                    + sanUtils.intToAlgebraicLoc(Move.getToIndex(moves[i])))) {
+            if (s.equals(SANUtils.intToAlgebraicLoc(Move.getFromIndex(moves[i])) + "-"
+                    + SANUtils.intToAlgebraicLoc(Move.getToIndex(moves[i])))) {
                 makeMove(moves[i]);
                 break;
             }

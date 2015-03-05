@@ -12,7 +12,6 @@ import utilities.SANUtils;
  */
 public class MTDF implements Search{
     private static MTDF instance;
-    private SANUtils sanUtils;
     public Integer legalMoves;
     public int singleMove = 0;
     private final int MAX_DEPTH = 5;
@@ -53,7 +52,6 @@ public class MTDF implements Search{
 
     private MTDF()
     {
-        sanUtils = SANUtils.getInstance();
         transpositionTable = new TranspositionTable(64);
     }
 
@@ -93,7 +91,7 @@ public class MTDF implements Search{
             if(VERBOSE)
                 System.out.println("(" + currentDepth + ") "
                         + ( (System.currentTimeMillis() - start) / 1000.0) + "s ("
-                        + sanUtils.moveToString(lastPV[0]) + ") -- " + evals
+                        + SANUtils.moveToString(lastPV[0]) + ") -- " + evals
                         + " nodes evaluated.");
             if(useFixedDepth) {
                 if (currentDepth==depth || firstGuess == -(Chessboard.CHECKMATE+6)) break;
