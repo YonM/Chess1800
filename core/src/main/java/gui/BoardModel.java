@@ -1,11 +1,8 @@
 package gui;
 
 import board.Chessboard;
-import definitions.Definitions;
 import board.Bitboard;
 import move.Move;
-import board.AbstractAbstractBitboardMoveGenerator;
-import search.PVS;
 import search.PVSHard;
 import search.PVSSoft;
 import search.Search;
@@ -17,7 +14,7 @@ import java.util.Observable;
  * Created by Yonathan on 29/01/2015.
  * Based on Ulysse Carion's Godot. Source @ https://github.com/ucarion
  */
-public class BoardModel extends Observable implements Definitions{
+public class BoardModel extends Observable {
     private final BoardView view;
     private final Bitboard b;
     private final Search searchSoft;

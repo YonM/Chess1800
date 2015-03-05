@@ -1,8 +1,6 @@
 package utilities;
 
 
-import definitions.Definitions;
-
 
 /**
  * Created by Yonathan on 07/12/2014.
@@ -10,7 +8,7 @@ import definitions.Definitions;
  * With tweaks provided by Yonathan Maalo.
  */
 
-public class BitboardUtilsAC implements Definitions{
+public class BitboardUtils {
     public static final long A8 = 0x8000000000000000L;
     public static final long H1 = 0x0000000000000001L; // BitboardMagicAttacksAC uses H1=0 A8=63
     public static final long WHITE_SQUARES = 0x55aa55aa55aa55aaL;

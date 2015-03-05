@@ -1,7 +1,7 @@
 package search;
 
-import board.*;
-import definitions.Definitions;
+import board.Chessboard;
+import board.Evaluator;
 import move.Move;
 import transposition_table.TranspositionTable;
 import utilities.SANUtils;
@@ -10,14 +10,13 @@ import utilities.SANUtils;
  * Created by Yonathan on 02/02/2015.
  * MTD(f) based A.I for the secondary AI. Not Functioning.
  */
-public class MTDF implements Search, Definitions{
+public class MTDF implements Search{
     private static MTDF instance;
     private SANUtils sanUtils;
     public Integer legalMoves;
     public int singleMove = 0;
     private final int MAX_DEPTH = 5;
-    
-    private MoveGenerator moveGenerator;
+
     private Evaluator evaluator;
     private TranspositionTable transpositionTable;
 
@@ -130,7 +129,7 @@ public class MTDF implements Search, Definitions{
     }
 
     private int alphaBetaM(Chessboard board, int ply, int depth, int alpha, int beta) {
-        int eval_type = HASH_ALPHA;
+        int eval_type = TranspositionTable.HASH_ALPHA;
         int bestScore = -Chessboard.INFINITY;
         evals++;
         int score;
@@ -138,9 +137,9 @@ public class MTDF implements Search, Definitions{
         //Check if the hash table value exists and is stored at the same or higher depth.
         long key = board.getKey();
         if(transpositionTable.entryExists(key) && transpositionTable.getDepth(key)>=depth){
-            if(transpositionTable.getFlag(key) == HASH_EXACT) return transpositionTable.getEval(key); // should never be called
-            if(transpositionTable.getFlag(key) == HASH_ALPHA && transpositionTable.getEval(key)<= alpha) return transpositionTable.getEval(key);
-            else if(transpositionTable.getFlag(key) == HASH_BETA && transpositionTable.getEval(key)>= beta) return transpositionTable.getEval(key);
+            if(transpositionTable.getFlag(key) == TranspositionTable.HASH_EXACT) return transpositionTable.getEval(key); // should never be called
+            if(transpositionTable.getFlag(key) == TranspositionTable.HASH_ALPHA && transpositionTable.getEval(key)<= alpha) return transpositionTable.getEval(key);
+            else if(transpositionTable.getFlag(key) == TranspositionTable.HASH_BETA && transpositionTable.getEval(key)>= beta) return transpositionTable.getEval(key);
             if(alpha>=beta) return transpositionTable.getEval(key);
             alpha= Integer.max(alpha,transpositionTable.getEval(key));
         }
@@ -148,22 +147,22 @@ public class MTDF implements Search, Definitions{
             follow_pv = false;
             score= quiescenceSearch(board, ply, alpha, beta);
             if(score<= alpha){
-                transpositionTable.record(board.getKey(), depth, HASH_ALPHA, score, 0 );
+                transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_ALPHA, score, 0 );
             } else if(score>=beta)
-                transpositionTable.record(board.getKey(), depth, HASH_BETA, score, 0 );
+                transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_BETA, score, 0 );
             else
-                transpositionTable.record(board.getKey(), depth, HASH_EXACT, score, 0 ); //should never be called
+                transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_EXACT, score, 0 ); //should never be called
         }
 
         if (board.isEndOfGame()) {
             follow_pv = false;
             score = evaluator.eval();
             if(score<= alpha){
-                transpositionTable.record(board.getKey(), depth, HASH_ALPHA, score, 0 );
+                transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_ALPHA, score, 0 );
             } else if(score>=beta)
-                transpositionTable.record(board.getKey(), depth, HASH_BETA, score, 0 );
+                transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_BETA, score, 0 );
             else
-                transpositionTable.record(board.getKey(), depth, HASH_EXACT, score, 0 ); // should never be called
+                transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_EXACT, score, 0 ); // should never be called
             if(score == Chessboard.DRAWSCORE) return score;
             return score +ply -1;
         }
@@ -224,7 +223,7 @@ public class MTDF implements Search, Definitions{
                     board.unmakeMove();
                     if (score > bestScore) {
                         if (score >= beta) {
-                            transpositionTable.record(board.getKey(), depth, HASH_BETA, score, moves[i]);
+                            transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_BETA, score, moves[i]);
                             if (board.isWhiteToMove())
                                 whiteHeuristics[Move.getFromIndex(moves[i])][Move.getToIndex(moves[i])] += depth * depth;
                             else

@@ -1,7 +1,7 @@
 package gui;
 
 import board.Bitboard;
-import definitions.Definitions;
+import board.Chessboard;
 
 import javax.swing.JFrame;
 import javax.swing.Timer;
@@ -20,7 +20,7 @@ import java.awt.event.MouseListener;
  * The main class of the project.
  * Based on Ulysse Carion's Godot. Source @ https://github.com/ucarion
  */
-public class Chess1800 extends JFrame implements Definitions, ActionListener{
+public class Chess1800 extends JFrame implements ActionListener{
 
     private static final int WIDTH = 50;
     private static final int LOWER_BUFFER = 51;
@@ -45,11 +45,11 @@ public class Chess1800 extends JFrame implements Definitions, ActionListener{
     private int player_time;
     private int engine_time;
 
-    private enum STATE{
+/*    private enum STATE{
         MENU,
         GAME
     };
-    private STATE State = STATE.MENU;
+    private STATE State = STATE.MENU;*/
 
     public Chess1800() {
         super("Chess 1800");
@@ -58,7 +58,7 @@ public class Chess1800 extends JFrame implements Definitions, ActionListener{
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         Bitboard b = new Bitboard();
-        b.initializeFromFEN(START_FEN);
+        b.initializeFromFEN(Chessboard.START_FEN);
         view = new BoardView();
         model = new BoardModel(b, view);
         model.addObserver(view);

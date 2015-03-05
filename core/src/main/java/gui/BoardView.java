@@ -1,7 +1,5 @@
 package gui;
 
-import definitions.Definitions;
-
 import javax.swing.JPanel;
 import javax.swing.ImageIcon;
 import java.awt.Graphics;

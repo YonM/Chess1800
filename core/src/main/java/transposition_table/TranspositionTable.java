@@ -1,7 +1,6 @@
 package transposition_table;
 
 import board.Bitboard;
-import definitions.Definitions;
 import search.Search;
 
 /**
@@ -9,7 +8,11 @@ import search.Search;
  * Used for MTDF, specifically in the alphaBetaM call of the class.
  * Based on Mediocre Chess by Jonatan Pettersson sources @ http://sourceforge.net/projects/mediocrechess/
  */
-public class TranspositionTable implements Definitions{
+public class TranspositionTable{
+    //For Transposition table
+    public static final int HASH_EXACT = 0;
+    public static final int HASH_ALPHA = 1;
+    public static final int HASH_BETA = 2;
     public int[] hashTable; // Used for transposition table
     public final int HASHSIZE; // The number of slots either table will have
 

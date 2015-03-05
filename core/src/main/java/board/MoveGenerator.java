@@ -13,4 +13,6 @@ public interface MoveGenerator {
 
     public int genCaptures(int[] captures);
 
+
+
 }

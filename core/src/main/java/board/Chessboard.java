@@ -6,6 +6,7 @@ package board;
  */
 public interface Chessboard extends Evaluator {
 
+    public static final String START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     //Move related
     public boolean makeMove(int move);
     public void makeNullMove();

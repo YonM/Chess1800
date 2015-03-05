@@ -1,7 +1,7 @@
 package board;
 
-import utilities.BitboardUtilsAC;
-import definitions.Definitions;
+import utilities.BitboardUtils;
+
 
 /**
  * Created by Yonathan on 18/12/2014.
@@ -17,7 +17,7 @@ import definitions.Definitions;
  * Scores calculated from white perspective and then returns the score from the perspective
  * of the side to move.
  */
-public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboardMoveGenerator implements Definitions, Evaluator {
+public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboardMoveGenerator implements Evaluator {
 
     //Bonus/Penalty constants
     private final int PENALTY_DOUBLED_PAWN = 10;
@@ -201,40 +201,40 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
             for (rank = i / 8 + 1; rank < 7; rank++) {
                 file = i % 8;
                 if (file > 0)
-                    PASSED_WHITE[i] ^= BitboardUtilsAC.getSquare[rank * 8 + (file - 1)];
-                PASSED_WHITE[i] ^= BitboardUtilsAC.getSquare[rank * 8 + file];
+                    PASSED_WHITE[i] ^= BitboardUtils.getSquare[rank * 8 + (file - 1)];
+                PASSED_WHITE[i] ^= BitboardUtils.getSquare[rank * 8 + file];
                 if (file < 7)
-                    PASSED_WHITE[i] ^= BitboardUtilsAC.getSquare[rank * 8 + (file + 1)];
+                    PASSED_WHITE[i] ^= BitboardUtils.getSquare[rank * 8 + (file + 1)];
             }
             //Isolated white pawns
             for (rank = 1; rank < 7; rank++) {
                 file = i % 8;
-                if (file > 0) ISOLATED_WHITE[i] ^= BitboardUtilsAC.getSquare[rank * 8 + (file - 1)];
-                if (file < 7) ISOLATED_WHITE[i] ^= BitboardUtilsAC.getSquare[rank * 8 + (file + 1)];
+                if (file > 0) ISOLATED_WHITE[i] ^= BitboardUtils.getSquare[rank * 8 + (file - 1)];
+                if (file < 7) ISOLATED_WHITE[i] ^= BitboardUtils.getSquare[rank * 8 + (file + 1)];
             }
 
             //Backward white pawns
             for (rank = 1; rank < 7; rank++) {
                 file = i % 8;
-                if (file > 0) BACKWARD_WHITE[i] ^= BitboardUtilsAC.getSquare[rank * 8 + (file - 1)];
-                if (file > 7) BACKWARD_WHITE[i] ^= BitboardUtilsAC.getSquare[rank * 8 + (file + 1)];
+                if (file > 0) BACKWARD_WHITE[i] ^= BitboardUtils.getSquare[rank * 8 + (file - 1)];
+                if (file > 7) BACKWARD_WHITE[i] ^= BitboardUtils.getSquare[rank * 8 + (file + 1)];
             }
 
         }
 
         //Strong/Weak squares for white pawns, used for king safety. Only if the king is on the first 3 ranks.
         for (i = 0; i < 24; i++) {
-            STRONG_SAFE_WHITE[i] ^= BitboardUtilsAC.getSquare[i + 8];
+            STRONG_SAFE_WHITE[i] ^= BitboardUtils.getSquare[i + 8];
             file = i % 8;
             if (file > 0) {
-                STRONG_SAFE_WHITE[i] ^= BitboardUtilsAC.getSquare[i + 7];
+                STRONG_SAFE_WHITE[i] ^= BitboardUtils.getSquare[i + 7];
             } else {
-                STRONG_SAFE_WHITE[i] ^= BitboardUtilsAC.getSquare[i + 10];
+                STRONG_SAFE_WHITE[i] ^= BitboardUtils.getSquare[i + 10];
             }
             if (file < 7) {
-                STRONG_SAFE_WHITE[i] ^= BitboardUtilsAC.getSquare[i + 9];
+                STRONG_SAFE_WHITE[i] ^= BitboardUtils.getSquare[i + 9];
             } else {
-                STRONG_SAFE_WHITE[i] ^= BitboardUtilsAC.getSquare[i + 6];
+                STRONG_SAFE_WHITE[i] ^= BitboardUtils.getSquare[i + 6];
             }
             WEAK_SAFE_WHITE[i] = STRONG_SAFE_WHITE[i] << 8;
         }
@@ -246,20 +246,20 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
         WEAK_SAFE_BLACK = new long[64];
         for (i = 0; i < 64; i++) {
             for (square = 0; square < 64; square++) {
-                if ((PASSED_WHITE[i] & BitboardUtilsAC.getSquare[square]) != 0)
-                    PASSED_BLACK[MIRROR[i]] |= BitboardUtilsAC.getSquare[MIRROR[square]];
+                if ((PASSED_WHITE[i] & BitboardUtils.getSquare[square]) != 0)
+                    PASSED_BLACK[MIRROR[i]] |= BitboardUtils.getSquare[MIRROR[square]];
 
-                if ((ISOLATED_WHITE[i] & BitboardUtilsAC.getSquare[square]) != 0)
-                    ISOLATED_BLACK[MIRROR[i]] |= BitboardUtilsAC.getSquare[MIRROR[square]];
+                if ((ISOLATED_WHITE[i] & BitboardUtils.getSquare[square]) != 0)
+                    ISOLATED_BLACK[MIRROR[i]] |= BitboardUtils.getSquare[MIRROR[square]];
 
-                if ((BACKWARD_WHITE[i] & BitboardUtilsAC.getSquare[square]) != 0)
-                    BACKWARD_BLACK[MIRROR[i]] |= BitboardUtilsAC.getSquare[MIRROR[square]];
+                if ((BACKWARD_WHITE[i] & BitboardUtils.getSquare[square]) != 0)
+                    BACKWARD_BLACK[MIRROR[i]] |= BitboardUtils.getSquare[MIRROR[square]];
 
-                if ((STRONG_SAFE_WHITE[i] & BitboardUtilsAC.getSquare[square]) != 0)
-                    STRONG_SAFE_BLACK[MIRROR[i]] |= BitboardUtilsAC.getSquare[MIRROR[square]];
+                if ((STRONG_SAFE_WHITE[i] & BitboardUtils.getSquare[square]) != 0)
+                    STRONG_SAFE_BLACK[MIRROR[i]] |= BitboardUtils.getSquare[MIRROR[square]];
 
-                if ((WEAK_SAFE_WHITE[i] & BitboardUtilsAC.getSquare[square]) != 0)
-                    WEAK_SAFE_BLACK[MIRROR[i]] |= BitboardUtilsAC.getSquare[MIRROR[square]];
+                if ((WEAK_SAFE_WHITE[i] & BitboardUtils.getSquare[square]) != 0)
+                    WEAK_SAFE_BLACK[MIRROR[i]] |= BitboardUtils.getSquare[MIRROR[square]];
 
             }
         }
@@ -352,7 +352,7 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
         whitePassedPawns = 0;
         temp = whitePawnCount;
         while (temp != 0) {
-            square = BitboardUtilsAC.getIndexFromBoard(temp);
+            square = BitboardUtils.getIndexFromBoard(temp);
             score += PAWN_VALUE;
             score += PAWN_POS_W[square];
             score += PAWN_OPPONENT_DISTANCE[DISTANCE[square][blackKingSquare]];
@@ -362,11 +362,11 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
             //Passed pawn bonus
             if ((PASSED_WHITE[square] & blackPawnCount) == 0) {
                 score += BONUS_PASSED_PAWN;
-                whitePassedPawns ^= BitboardUtilsAC.getSquare[square];
+                whitePassedPawns ^= BitboardUtils.getSquare[square];
             }
 
             //Doubled pawn penalty
-            if (((whitePawnCount ^ BitboardUtilsAC.getSquare[square]) & BitboardUtilsAC.COLUMN[square % 8]) != 0)
+            if (((whitePawnCount ^ BitboardUtils.getSquare[square]) & BitboardUtils.COLUMN[square % 8]) != 0)
                 score -= PENALTY_DOUBLED_PAWN;
 
             //Isolated pawn penalty
@@ -382,18 +382,18 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
                     if ((BACKWARD_WHITE[square] & whitePawnCount) == 0)
                         score -= PENALTY_BACKWARD_PAWN;
             }
-            temp ^= BitboardUtilsAC.getSquare[square];
+            temp ^= BitboardUtils.getSquare[square];
         }
     }
 
     private void evaluateWhiteKnights() {
         temp = whiteKnightCount;
         while (temp != 0) {
-            square = BitboardUtilsAC.getIndexFromBoard(temp);
+            square = BitboardUtils.getIndexFromBoard(temp);
             score += KNIGHT_VALUE;
             score += KNIGHT_POS_W[square];
             score += KNIGHT_DISTANCE[DISTANCE[square][blackKingSquare]];
-            temp ^= BitboardUtilsAC.getSquare[square];
+            temp ^= BitboardUtils.getSquare[square];
         }
     }
 
@@ -402,11 +402,11 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
                 score += BONUS_BISHOP_PAIR;
         temp = whiteBishopCount;
         while (temp != 0) {
-            square = BitboardUtilsAC.getIndexFromBoard(temp);
+            square = BitboardUtils.getIndexFromBoard(temp);
             score += BISHOP_VALUE;
             score += BISHOP_POS_W[square];
             score += BISHOP_DISTANCE[DISTANCE[square][blackKingSquare]];
-            temp ^= BitboardUtilsAC.getSquare[square];
+            temp ^= BitboardUtils.getSquare[square];
         }
     }
 
@@ -414,20 +414,20 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
     private void evaluateWhiteRooks() {
         temp = whiteRookCount;
         while (temp != 0) {
-            square = BitboardUtilsAC.getIndexFromBoard(temp);
+            square = BitboardUtils.getIndexFromBoard(temp);
             score += ROOK_VALUE;
             score += ROOK_POS_W[square];
             score += ROOK_DISTANCE[DISTANCE[square][blackKingSquare]];
-            if ((BitboardUtilsAC.COLUMN[square % 8] & whitePassedPawns) != 0)
-                if (square < BitboardUtilsAC.getLastIndexFromBoard((BitboardUtilsAC.COLUMN[square % 8] & whitePassedPawns)))
+            if ((BitboardUtils.COLUMN[square % 8] & whitePassedPawns) != 0)
+                if (square < BitboardUtils.getLastIndexFromBoard((BitboardUtils.COLUMN[square % 8] & whitePassedPawns)))
                     score += BONUS_ROOK_BEHIND_PASSED_PAWN;
 
-            if ((BitboardUtilsAC.COLUMN[square % 8] & blackPawnCount) == 0) {
+            if ((BitboardUtils.COLUMN[square % 8] & blackPawnCount) == 0) {
                 score += BONUS_ROOK_ON_OPEN_FILE;
-                if ((BitboardUtilsAC.COLUMN[square % 8] & (whiteRookCount & ~Long.lowestOneBit(temp))) != 0)
+                if ((BitboardUtils.COLUMN[square % 8] & (whiteRookCount & ~Long.lowestOneBit(temp))) != 0)
                     score+=BONUS_TWO_ROOKS_ON_OPEN_FILE;
             }
-            temp ^= BitboardUtilsAC.getSquare[square];
+            temp ^= BitboardUtils.getSquare[square];
         }
     }
 
@@ -435,11 +435,11 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
     private void evaluateWhiteQueens() {
         temp = whiteQueenCount;
         while (temp != 0) {
-            square = BitboardUtilsAC.getIndexFromBoard(temp);
+            square = BitboardUtils.getIndexFromBoard(temp);
             score += QUEEN_VALUE;
             score += QUEEN_POS_W[square];
             score += QUEEN_DISTANCE[DISTANCE[square][blackKingSquare]];
-            temp ^= BitboardUtilsAC.getSquare[square];
+            temp ^= BitboardUtils.getSquare[square];
         }
     }
 
@@ -462,7 +462,7 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
         blackPassedPawns = 0;
         temp = blackPawnCount;
         while (temp != 0) {
-            square = BitboardUtilsAC.getIndexFromBoard(temp);
+            square = BitboardUtils.getIndexFromBoard(temp);
             score -= PAWN_VALUE;
             score -= PAWN_POS_B[square];
             score -= PAWN_OPPONENT_DISTANCE[DISTANCE[square][whiteKingSquare]];
@@ -472,11 +472,11 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
             //Passed pawn bonus
             if ((PASSED_BLACK[square] & blackPawnCount) == 0) {
                 score -= BONUS_PASSED_PAWN;
-                blackPassedPawns ^= BitboardUtilsAC.getSquare[square];
+                blackPassedPawns ^= BitboardUtils.getSquare[square];
             }
 
             //Doubled pawn penalty
-            if (((blackPawnCount ^ BitboardUtilsAC.getSquare[square]) & BitboardUtilsAC.COLUMN[square % 8]) != 0)
+            if (((blackPawnCount ^ BitboardUtils.getSquare[square]) & BitboardUtils.COLUMN[square % 8]) != 0)
                 score += PENALTY_DOUBLED_PAWN;
 
             //Isolated pawn penalty
@@ -492,18 +492,18 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
                     if ((BACKWARD_BLACK[square] & blackPawnCount) == 0)
                         score += PENALTY_BACKWARD_PAWN;
             }
-            temp ^= BitboardUtilsAC.getSquare[square];
+            temp ^= BitboardUtils.getSquare[square];
         }
     }
 
     private void evaluateBlackKnights() {
         temp = blackKnightCount;
         while (temp != 0) {
-            square = BitboardUtilsAC.getIndexFromBoard(temp);
+            square = BitboardUtils.getIndexFromBoard(temp);
             score -= KNIGHT_VALUE;
             score -= KNIGHT_POS_B[square];
             score -= KNIGHT_DISTANCE[DISTANCE[square][whiteKingSquare]];
-            temp ^= BitboardUtilsAC.getSquare[square];
+            temp ^= BitboardUtils.getSquare[square];
         }
     }
 
@@ -512,41 +512,41 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
                 score -= BONUS_BISHOP_PAIR;
         temp = blackBishopCount;
         while (temp != 0) {
-            square = BitboardUtilsAC.getIndexFromBoard(temp);
+            square = BitboardUtils.getIndexFromBoard(temp);
             score -= BISHOP_VALUE;
             score -= BISHOP_POS_B[square];
             score -= BISHOP_DISTANCE[DISTANCE[square][whiteKingSquare]];
-            temp ^= BitboardUtilsAC.getSquare[square];
+            temp ^= BitboardUtils.getSquare[square];
         }
     }
 
     private void evaluateBlackRooks() {
         temp = blackRookCount;
         while (temp != 0) {
-            square = BitboardUtilsAC.getIndexFromBoard(temp);
+            square = BitboardUtils.getIndexFromBoard(temp);
             score -= ROOK_VALUE;
             score -= ROOK_POS_B[square];
             score -= ROOK_DISTANCE[DISTANCE[square][whiteKingSquare]];
-            if ((BitboardUtilsAC.COLUMN[square % 8] & blackPassedPawns) != 0)
-                if (square < BitboardUtilsAC.getLastIndexFromBoard((BitboardUtilsAC.COLUMN[square % 8] & blackPassedPawns)))
+            if ((BitboardUtils.COLUMN[square % 8] & blackPassedPawns) != 0)
+                if (square < BitboardUtils.getLastIndexFromBoard((BitboardUtils.COLUMN[square % 8] & blackPassedPawns)))
                     score -= BONUS_ROOK_BEHIND_PASSED_PAWN;
-            if ((BitboardUtilsAC.COLUMN[square % 8] & whitePawnCount) == 0) {
+            if ((BitboardUtils.COLUMN[square % 8] & whitePawnCount) == 0) {
                 score -= BONUS_ROOK_ON_OPEN_FILE;
-                if ((BitboardUtilsAC.COLUMN[square % 8] & (blackRookCount & ~Long.lowestOneBit(temp))) != 0)
+                if ((BitboardUtils.COLUMN[square % 8] & (blackRookCount & ~Long.lowestOneBit(temp))) != 0)
                     score -= BONUS_TWO_ROOKS_ON_OPEN_FILE;
             }
-            temp ^= BitboardUtilsAC.getSquare[square];
+            temp ^= BitboardUtils.getSquare[square];
         }
     }
 
     private void evaluateBlackQueens() {
         temp = blackQueenCount;
         while (temp != 0) {
-            square = BitboardUtilsAC.getIndexFromBoard(temp);
+            square = BitboardUtils.getIndexFromBoard(temp);
             score -= QUEEN_VALUE;
             score -= QUEEN_POS_B[square];
             score -= QUEEN_DISTANCE[DISTANCE[square][whiteKingSquare]];
-            temp ^= BitboardUtilsAC.getSquare[square];
+            temp ^= BitboardUtils.getSquare[square];
         }
     }
 

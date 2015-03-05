@@ -1,8 +1,7 @@
 package board;
 
 import move.Move;
-import utilities.BitboardUtilsAC;
-import definitions.Definitions;
+import utilities.BitboardUtils;
 import fen.FENValidator;
 import zobrist.Zobrist;
 
@@ -15,7 +14,7 @@ import java.util.StringTokenizer;
  * and Ulysse Carion's Godot @ https://github.com/ucarion/godot
  * and Alberto Alonso Ruibal's Carballo @ https://github.com/albertoruibal/carballo
  */
-public class Bitboard extends AbstractBitboardEvaluator implements Definitions, Chessboard {
+public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
     protected int material;
 
     protected int moveNumber;
@@ -120,7 +119,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Definitions, 
                         }
                     }
                     else {
-                        long square = BitboardUtilsAC.getSquare[up * 8 + out];
+                        long square = BitboardUtils.getSquare[up * 8 + out];
                         switch (c) {
                             case 'p':
                                 blackPawns |= square;
@@ -174,7 +173,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Definitions, 
             if(arr.get(9).contains("k")) castleBlack += CANCASTLEOO;
             if(arr.get(9).contains("q")) castleBlack += CANCASTLEOOO;
             // en passant
-            ePSquare = BitboardUtilsAC.algebraicLocToInt(arr.get(10));
+            ePSquare = BitboardUtils.algebraicLocToInt(arr.get(10));
             // 50mr
             if(arr.size() >12) {
                 fiftyMove = Integer.parseInt(arr.get(11));
@@ -261,8 +260,8 @@ public class Bitboard extends AbstractBitboardEvaluator implements Definitions, 
         piece = Move.getPieceMoved(move);
         moveType = Move.getMoveType(move);
         capture = Move.isCapture(move);
-        fromBoard = BitboardUtilsAC.getSquare[from];
-        toBoard = BitboardUtilsAC.getSquare[to];
+        fromBoard = BitboardUtils.getSquare[from];
+        toBoard = BitboardUtils.getSquare[to];
         fromToBoard = fromBoard | toBoard;
 
         fiftyMove++;
@@ -306,7 +305,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Definitions, 
         ePSquare = -1;
 
         switch (piece) {
-            case PAWN:
+            case Move.PAWN:
                 fiftyMove = 0;
                 //Check if we need to update en passant square.
                 if (whiteToMove && (fromBoard << 16 & toBoard) != 0) ePSquare = Long.numberOfTrailingZeros(fromBoard << 8);
@@ -374,7 +373,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Definitions, 
                     }
                 }
                 break;
-            case KNIGHT:
+            case Move.KNIGHT:
                 if (whiteToMove) {
 
                     whiteKnights ^= fromToBoard;
@@ -384,7 +383,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Definitions, 
                     key ^= Zobrist.getKeyForMove(from, to, 'n');
                 }
                 break;
-            case BISHOP:
+            case Move.BISHOP:
                 if (whiteToMove) {
                     whiteBishops ^= fromToBoard;
                     key ^= Zobrist.getKeyForMove(from, to, 'B');
@@ -393,7 +392,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Definitions, 
                     key ^= Zobrist.getKeyForMove(from, to, 'b');
                 }
                 break;
-            case ROOK:
+            case Move.ROOK:
                 if (whiteToMove) {
                     whiteRooks ^= fromToBoard;
                     key ^= Zobrist.getKeyForMove(from, to, 'R');
@@ -402,7 +401,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Definitions, 
                     key ^= Zobrist.getKeyForMove(from, to, 'r');
                 }
                 break;
-            case QUEEN:
+            case Move.QUEEN:
                 if (whiteToMove) {
                     whiteQueens ^= fromToBoard;
                     key ^= Zobrist.getKeyForMove(from, to, 'Q');
@@ -411,12 +410,12 @@ public class Bitboard extends AbstractBitboardEvaluator implements Definitions, 
                     key ^= Zobrist.getKeyForMove(from, to, 'q');
                 }
                 break;
-            case KING:
+            case Move.KING:
                 long rookMask = 0;
                 int rookToIndex = 0;
                 int rookFromIndex = 0;
                 //castling handled
-                if (moveType == TYPE_KINGSIDE_CASTLING) {
+                if (moveType == Move.TYPE_KINGSIDE_CASTLING) {
                     if (whiteToMove) {
                         castleWhite &= ~CANCASTLEOO;
                         rookMask = 0xa0L;
@@ -431,7 +430,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Definitions, 
                         key ^= Zobrist.blackKingSideCastling;
                     }
                 }
-                if (moveType == TYPE_QUEENSIDE_CASTLING) {
+                if (moveType == Move.TYPE_QUEENSIDE_CASTLING) {
                     if (whiteToMove) {
                         castleWhite &= ~CANCASTLEOOO;
                         rookMask = 0x9L;
@@ -623,8 +622,8 @@ public class Bitboard extends AbstractBitboardEvaluator implements Definitions, 
             // 2 kings with one or more bishops and all bishops on the same colour
             if (whiteBishopsTotal + blackBishopsTotal > 0) {
                 if (whiteKnightsTotal + whiteRooksTotal + whiteQueensTotal + blackKnightsTotal + blackRooksTotal + blackQueensTotal == 0) {
-                    if ((((whiteBishops | blackBishops) & BitboardUtilsAC.WHITE_SQUARES) == 0) ||
-                            (((whiteBishops | blackBishops) & BitboardUtilsAC.BLACK_SQUARES) == 0)) return DRAW_BY_MATERIAL;
+                    if ((((whiteBishops | blackBishops) & BitboardUtils.WHITE_SQUARES) == 0) ||
+                            (((whiteBishops | blackBishops) & BitboardUtils.BLACK_SQUARES) == 0)) return DRAW_BY_MATERIAL;
                 }
             }
         }
@@ -690,11 +689,11 @@ public class Bitboard extends AbstractBitboardEvaluator implements Definitions, 
         int capturedPiece = 0;
         long toBoard = Move.getToSquare(move);
 
-        if ((toBoard & (whiteKnights | blackKnights)) != 0) capturedPiece = KNIGHT;
-        else if ((toBoard & (whiteBishops | blackBishops)) != 0) capturedPiece = BISHOP;
-        else if ((toBoard & (whiteRooks | blackRooks)) != 0) capturedPiece = ROOK;
-        else if ((toBoard & (whiteQueens | blackQueens)) != 0) capturedPiece = QUEEN;
-        else if ((toBoard & (whitePawns | blackPawns)) != 0) capturedPiece = PAWN;
+        if ((toBoard & (whiteKnights | blackKnights)) != 0) capturedPiece = Move.KNIGHT;
+        else if ((toBoard & (whiteBishops | blackBishops)) != 0) capturedPiece = Move.BISHOP;
+        else if ((toBoard & (whiteRooks | blackRooks)) != 0) capturedPiece = Move.ROOK;
+        else if ((toBoard & (whiteQueens | blackQueens)) != 0) capturedPiece = Move.QUEEN;
+        else if ((toBoard & (whitePawns | blackPawns)) != 0) capturedPiece = Move.PAWN;
         return sEE(Move.getFromIndex(move), Move.getToIndex(move), Move.getPieceMoved(move), capturedPiece);
     }
 
@@ -726,22 +725,22 @@ public class Bitboard extends AbstractBitboardEvaluator implements Definitions, 
             //non-promoting pawn
             if ((fromCandidates = attacks & (whitePawns | blackPawns) & side) != 0 && ((toIndex / 8 != 1 & ((d % 2) == 0))
                     || ((toIndex / 8 != 8 & ((d % 2) != 0)))))
-                pieceMoved = PAWN;
+                pieceMoved = Move.PAWN;
             else if ((fromCandidates = attacks & (whiteKnights | blackKnights) & side) != 0)
-                pieceMoved = KNIGHT;
+                pieceMoved = Move.KNIGHT;
             else if ((fromCandidates = attacks & (whiteBishops | blackBishops) & side) != 0)
-                pieceMoved = BISHOP;
+                pieceMoved = Move.BISHOP;
             else if ((fromCandidates = attacks & (whiteRooks | blackRooks) & side) != 0)
-                pieceMoved = ROOK;
+                pieceMoved = Move.ROOK;
                 //promoting pawn(s) included
             else if ((fromCandidates = attacks & (whitePawns | blackPawns) & side) != 0)
-                pieceMoved = PAWN;
+                pieceMoved = Move.PAWN;
             else if ((fromCandidates = attacks & (whiteQueens | blackQueens) & side) != 0)
-                pieceMoved = QUEEN;
+                pieceMoved = Move.QUEEN;
                 //king will only capture if there are no more attackers left.
             else if ((fromCandidates = attacks & (whiteKing | blackKing) & side) != 0 && ((attacks & blackPieces) == 0
                     & ((d % 2) != 0) || (((attacks & blackPieces) == 0) & ((d % 2) == 0))))
-                pieceMoved = KING;
+                pieceMoved = Move.KING;
 
             fromSquare = Long.lowestOneBit(fromCandidates);
 
@@ -807,7 +806,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Definitions, 
 
 
         //To is always the last 2 characters.
-        toIndex = BitboardUtilsAC.algebraic2Index(move.substring(move.length() - 2, move.length()));
+        toIndex = BitboardUtils.algebraic2Index(move.substring(move.length() - 2, move.length()));
         long toBoard = 0X1L << toIndex;
         long fromBoard = 0;
 
@@ -858,15 +857,15 @@ public class Bitboard extends AbstractBitboardEvaluator implements Definitions, 
             char disambiguate = move.charAt(0);
             int i = "abcdefgh".indexOf(disambiguate);
             if (i >= 0)
-                fromBoard &= BitboardUtilsAC.COLUMN[i];
+                fromBoard &= BitboardUtils.COLUMN[i];
             int j = "12345678".indexOf(disambiguate);
             if (j >= 0)
-                fromBoard &= BitboardUtilsAC.RANK[j];
+                fromBoard &= BitboardUtils.RANK[j];
         }
 
         if (move.length() == 4) { //UCI move
             System.out.println("UCI move");
-            fromBoard = BitboardUtilsAC.algebraic2Square(move.substring(0, 2));
+            fromBoard = BitboardUtils.algebraic2Square(move.substring(0, 2));
         }
 
         if(fromBoard == 0){
@@ -882,40 +881,40 @@ public class Bitboard extends AbstractBitboardEvaluator implements Definitions, 
 
             boolean capture = false;
             if((myFrom & (whitePawns | blackPawns)) != 0){
-                pieceMoved = PAWN;
+                pieceMoved = Move.PAWN;
 
                 //passant capture check
                 if((toIndex != (fromIndex -8)) && (toIndex != (fromIndex +8)) &&
                         (toIndex != (fromIndex -16)) && (toIndex != (fromIndex +16))){
 
                     if((toBoard & allPieces) == 0){
-                        moveType = TYPE_EN_PASSANT;
+                        moveType = Move.TYPE_EN_PASSANT;
                         capture = true;
                     }
 
                 }
 
                 // Default promotion to queen if not specified
-                if ((toBoard & (BitboardUtilsAC.b_u | BitboardUtilsAC.b_d)) != 0 && (moveType < Move.TYPE_PROMOTION_QUEEN)) {
+                if ((toBoard & (BitboardUtils.b_u | BitboardUtils.b_d)) != 0 && (moveType < Move.TYPE_PROMOTION_QUEEN)) {
                     moveType = Move.TYPE_PROMOTION_QUEEN;
                 }
             }
 
             if ((myFrom & (whiteBishops | blackBishops)) != 0)
-                pieceMoved = BISHOP;
+                pieceMoved = Move.BISHOP;
             else if ((myFrom & (whiteKnights | blackKnights)) != 0)
-                pieceMoved = KNIGHT;
+                pieceMoved = Move.KNIGHT;
             else if ((myFrom & (whiteRooks | blackRooks)) != 0)
-                pieceMoved = ROOK;
+                pieceMoved = Move.ROOK;
             else if ((myFrom & (whiteQueens | blackQueens)) != 0)
-                pieceMoved = QUEEN;
+                pieceMoved = Move.QUEEN;
             else if ((myFrom & (whiteKing | blackKing)) != 0) {
-                pieceMoved = KING;
+                pieceMoved = Move.KING;
                 if (fromIndex == 4 || fromIndex == 4 + (8 * 7)) {
                     if (toIndex == (fromIndex + 2))
-                        moveType = TYPE_QUEENSIDE_CASTLING;
+                        moveType = Move.TYPE_QUEENSIDE_CASTLING;
                     if (toIndex == (fromIndex - 2))
-                        moveType = TYPE_KINGSIDE_CASTLING;
+                        moveType = Move.TYPE_KINGSIDE_CASTLING;
                 }
             }
 
@@ -960,7 +959,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Definitions, 
         s += "Black: O-O: " + castleBlack + " -- O-O-O: " + castleBlack + "\n";
         s +=
                 "En Passant: " + ePSquare + " ("
-                        + BitboardUtilsAC.intToAlgebraicLoc(ePSquare) + ")\n";
+                        + BitboardUtils.intToAlgebraicLoc(ePSquare) + ")\n";
         s += "50 move rule: " + fiftyMove + "\n";
         s += "Move number: " + moveNumber + "\n";
         return s;

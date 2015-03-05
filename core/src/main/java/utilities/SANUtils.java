@@ -2,15 +2,13 @@ package utilities;
 
 import board.Bitboard;
 import board.Chessboard;
-import definitions.Definitions;
 import move.Move;
-import board.AbstractAbstractBitboardMoveGenerator;
 
 /**
  * Created by Yonathan on 02/02/2015.
  * Mostly taken from Godot @ https://github.com/ucarion/godot/ by Ulysse Carion.
  */
-public class SANUtils implements Definitions {
+public class SANUtils{
 
     private static SANUtils instance;
     private Chessboard board;
@@ -29,7 +27,7 @@ public class SANUtils implements Definitions {
 
     public String getSAN(Bitboard b, int move) {
         String san;
-        if (Move.getMoveType(move) == TYPE_KINGSIDE_CASTLING) {
+        if (Move.getMoveType(move) == Move.TYPE_KINGSIDE_CASTLING) {
             san = "O-O";
             b.makeMove(move);
             if (b.isCheckMate())
@@ -39,7 +37,7 @@ public class SANUtils implements Definitions {
             b.unmakeMove();
             return san;
         }
-        if (Move.getMoveType(move) == TYPE_QUEENSIDE_CASTLING) {
+        if (Move.getMoveType(move) == Move.TYPE_QUEENSIDE_CASTLING) {
             san = "O-O-O";
             b.makeMove(move);
             if (b.isCheckMate())
@@ -99,7 +97,7 @@ public class SANUtils implements Definitions {
                 san += intToAlgebraicLoc(fromIndex);
         }
         if (Move.isCapture(move)) {
-            if (Move.getPieceMoved(move) == PAWN && !amb_rank)
+            if (Move.getPieceMoved(move) == Move.PAWN && !amb_rank)
                 san += intColToString(fromIndex);
             san += "x";
         }
@@ -134,15 +132,15 @@ public class SANUtils implements Definitions {
 
     private String moveToPieceString(int move) {
         switch (Move.getPieceMoved(move)) {
-                case KNIGHT:
+                case Move.KNIGHT:
                     return "N";
-                case BISHOP:
+                case Move.BISHOP:
                     return "B";
-                case ROOK:
+                case Move.ROOK:
                     return "R";
-                case QUEEN:
+                case Move.QUEEN:
                     return "Q";
-                case KING:
+                case Move.KING:
                     return "K";
             }
             return "";
@@ -151,24 +149,24 @@ public class SANUtils implements Definitions {
 
     public String moveToString(int move) {
         String moveString= "";
-        if(Move.getMoveType(move) == TYPE_KINGSIDE_CASTLING)
+        if(Move.getMoveType(move) == Move.TYPE_KINGSIDE_CASTLING)
             return "0-0";
-        if(Move.getMoveType(move) == TYPE_QUEENSIDE_CASTLING)
+        if(Move.getMoveType(move) == Move.TYPE_QUEENSIDE_CASTLING)
             return "0-0-0";
         switch (Move.getPieceMoved(move)) {
-            case KNIGHT:
+            case Move.KNIGHT:
                 moveString += "N";
                 break;
-            case BISHOP:
+            case Move.BISHOP:
                 moveString += "B";
                 break;
-            case ROOK:
+            case Move.ROOK:
                 moveString += "R";
                 break;
-            case QUEEN:
+            case Move.QUEEN:
                 moveString += "Q";
                 break;
-            case KING:
+            case Move.KING:
                 moveString += "K";
                 break;
             default:
@@ -183,7 +181,7 @@ public class SANUtils implements Definitions {
         moveString += intToAlgebraicLoc(Move.getToIndex(move));
 
         switch (Move.getMoveType(move)) {
-            case TYPE_EN_PASSANT:
+            case Move.TYPE_EN_PASSANT:
                 moveString += " e.p.";
                 break;
             case Move.TYPE_PROMOTION_BISHOP:

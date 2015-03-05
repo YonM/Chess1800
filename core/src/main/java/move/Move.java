@@ -1,8 +1,5 @@
 package move;
 
-import board.Chessboard;
-import definitions.Definitions;
-import utilities.BitboardUtilsAC;
 
 /**
  * Created by Yonathan on 03/12/2014.
@@ -21,8 +18,22 @@ import utilities.BitboardUtilsAC;
  *  'From' is the square the piece started its move from. Again, 6 bits for 0-63.
  *  @author Alberto Alonso Ruibal updated by Yonathan Maalo
  */
-public class Move implements Definitions {
+public class Move{
 
+
+    // Move pieces ordered by value
+    public static final int EMPTY = 0;
+    public static final int PAWN = 1;
+    public static final int KNIGHT = 2;
+    public static final int BISHOP = 3;
+    public static final int ROOK = 4;
+    public static final int QUEEN = 5;
+    public static final int KING = 6;
+
+    // Move Types
+    public static final int TYPE_KINGSIDE_CASTLING = 1;
+    public static final int TYPE_QUEENSIDE_CASTLING = 2;
+    public static final int TYPE_EN_PASSANT = 3;
 
     //Promotions
     // promotions must be always >= TYPE_PROMOTION_QUEEN

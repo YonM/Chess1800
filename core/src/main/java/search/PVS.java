@@ -1,7 +1,6 @@
 package search;
 
 import board.Chessboard;
-import definitions.Definitions;
 import move.Move;
 import utilities.SANUtils;
 
@@ -11,7 +10,7 @@ import utilities.SANUtils;
  * Based on Winglet by Stef Luijten's Winglet Chess @
  * http://web.archive.org/web/20120621100214/http://www.sluijten.com/winglet/
  */
-public abstract class PVS implements Definitions, Search {
+public abstract class PVS implements Search {
 
     protected SANUtils sanUtils;
     protected int[][] triangularArray;
