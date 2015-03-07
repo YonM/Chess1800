@@ -7,6 +7,10 @@ public interface Evaluator extends MoveGenerator {
 
     public int eval();
 
+    //Game state related
+    public boolean isCheckMate();
+    public int isDraw();
+
     //Draw reason
     public static final int NO_DRAW = 0;
     public static final int DRAW_BY_STALEMATE = 1;

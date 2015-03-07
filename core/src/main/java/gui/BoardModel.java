@@ -57,13 +57,13 @@ public class BoardModel extends Observable {
         }
     }
 
-    public void makeEngineMove() {
-        int move = searchSoft.findBestMove(b,6,0,0,0);
+    public void makeEngineMove(int engine_time) {
+        int move = searchSoft.findBestMove(b,6,engine_time,10000,0);
         makeMove(move);
     }
 
-    public void makeEngineMove2(){
-        int move = searchHard.findBestMove(b,0,0,0,0);
+    public void makeEngineMove2(int engine_time){
+        int move = searchHard.findBestMove(b,6,engine_time,10000,0);
         makeMove(move);
     }
 

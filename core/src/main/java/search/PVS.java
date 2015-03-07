@@ -13,8 +13,6 @@ public abstract class PVS implements Search {
 
     protected int[][] triangularArray;
     protected int[] triangularLength;
-    public int legalMoves;
-    public int singleMove = 0;
     protected final int MAX_DEPTH = 16;
     protected int evals;
     protected int[][] whiteHeuristics;
@@ -62,7 +60,7 @@ public abstract class PVS implements Search {
             triangularLength = new int[MAX_GAME_LENGTH];
             follow_pv = true;
             null_allowed = true;
-            score = alphaBetaPVS(board, 0, currentDepth, alpha, beta);
+            score = PVS(board, 0, currentDepth, alpha, beta);
 
             if(stopSearch){
                 if(VERBOSE)System.out.println("Search stopped at depth:" +currentDepth);
@@ -101,15 +99,7 @@ public abstract class PVS implements Search {
         return lastPV[0];
     }
 
-    protected abstract int alphaBetaPVS(Chessboard board, int i, int currentDepth, int alpha, int beta);
-
-    /*Next two methods are the main search methods. They are nearly identical, this is done to avoid if statements,
-    * if both search types were inside one method.
-    * Fail Hard implementation first.
-    */
-
-
-
+    protected abstract int PVS(Chessboard board, int i, int currentDepth, int alpha, int beta);
 
     //Based on Mediocre Chess by Jonatan Pettersson. Source @ http://sourceforge.net/projects/mediocrechess/
     private int calculateTime(int timeLeft, int increment) {
@@ -124,23 +114,23 @@ public abstract class PVS implements Search {
             if(timeForThisMove<0)
                 timeForThisMove=100;
         }
-
+        System.out.println("Time for this move: " + timeForThisMove);
         return timeForThisMove;
     }
 
     @Override
-    public long getBestMoveTime() {
+    public final long getBestMoveTime() {
         return bestMoveTime;
     }
 
 
     //Based on Mediocre Chess by Jonatan Pettersson. Source @ http://sourceforge.net/projects/mediocrechess/
-    protected boolean shouldWeStop() {
+    protected final boolean shouldWeStop() {
         if(System.currentTimeMillis()- startTime > timeForMove) return true;
         return false;
     }
 
-    protected void selectBestMoveFirst(Chessboard board, int[] moves, int num_moves, int ply, int depth, int nextIndex) {
+    protected final void selectBestMoveFirst(Chessboard board, int[] moves, int num_moves, int ply, int depth, int nextIndex) {
         int tempMove;
         int best, bestIndex, i;
         // Re-orders the move list so that the PV is selected as the next move to try.
@@ -191,7 +181,8 @@ public abstract class PVS implements Search {
     protected abstract int quiescenceSearch(Chessboard board, int ply, int alpha, int beta);
 
 
-    protected void rememberPV() {
+    protected final void rememberPV() {
+        System.out.println("Length of triangularLength[0]: " + triangularLength[0]);
         for (int i = 0; i < triangularLength[0]; i++) {
             lastPV[i] = triangularArray[0][i];
         }

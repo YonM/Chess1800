@@ -7,8 +7,10 @@ import org.junit.Test;
 /**
  * Created by Yonathan on 21/12/2014.
  * Tests that the move generator generates the correct number of moves for a given position and how quickly.
+ * Test strings and expected results provided by Sharper @ http://www.albert.nu/programs/sharper/perft
  */
 public class Perft {
+    Bitboard b;
 
     /*
     * This test starts from the initial position. The theoretical results should be:
@@ -31,9 +33,10 @@ public class Perft {
     */
     private final static String test2 = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
 
-    public static void main(String[] args) {
-        Bitboard b = new Bitboard();
-        boolean loaded = b.initializeFromFEN(test2);
+    @Test
+    public void perft() {
+        b = new Bitboard();
+        boolean loaded = b.initializeFromFEN(test1);
         int i;
         if (loaded) {
             //System.out.println("true");
@@ -46,8 +49,8 @@ public class Perft {
         }
 
     }
-    @Test
-    private static int perft(Bitboard b, int ply, int depth) {
+
+    private int perft(Bitboard b, int ply, int depth) {
         if (depth == 0) return 1;
 
         int[] moves = new int[b.MAX_MOVES];

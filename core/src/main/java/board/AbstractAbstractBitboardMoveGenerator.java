@@ -40,11 +40,6 @@ public abstract class AbstractAbstractBitboardMoveGenerator extends AbstractBitb
     public static final long[] RANK = {b_d, b_d << 8, b_d << 16, b_d << 24, b_d << 32, b_d << 40, b_d << 48, b_d << 56};
 
 
-
-
-    //public static final int MAX_PLY = 64;
-
-    
     protected boolean whiteToMove;
     //Castling values
     public static final int CANCASTLEOO = 1;
@@ -104,9 +99,9 @@ public abstract class AbstractAbstractBitboardMoveGenerator extends AbstractBitb
         int lastIndex = getAllMoves(moves);
         int j = 0;
         for (int i = 0; i < lastIndex; i++) {
-            if (this.makeMove(moves[i])) {
+            if (makeMove(moves[i])) {
                 moves[j++] = moves[i];
-                this.unmakeMove();
+                unmakeMove();
             }
         }
         return j;
@@ -136,7 +131,7 @@ public abstract class AbstractAbstractBitboardMoveGenerator extends AbstractBitb
         return index;
     }
 
-    private int getAllBlackMoves( int[] moves) {
+    private int getAllBlackMoves(int[] moves) {
         int index = 0;
         index += getBlackPawnMoves(moves, index);
         index += getBlackKnightMoves(moves, index);
@@ -193,7 +188,6 @@ public abstract class AbstractAbstractBitboardMoveGenerator extends AbstractBitb
 
     public abstract int sEE(int move);
 
-    public int sEE;
 
     private int getAllNonCaptures(int[] nonCaptures){
         int lastIndex= getAllMoves(nonCaptures);

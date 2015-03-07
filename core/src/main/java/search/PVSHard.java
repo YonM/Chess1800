@@ -2,6 +2,7 @@ package search;
 
 import board.Chessboard;
 import board.Evaluator;
+import board.MoveGenerator;
 import move.Move;
 
 /**
@@ -10,7 +11,7 @@ import move.Move;
  */
 public class PVSHard extends PVS {
 
-    protected int alphaBetaPVS(Chessboard board, int ply, int depth, int alpha, int beta) {
+    protected int PVS(Chessboard board, int ply, int depth, int alpha, int beta) {
         evals++;
         triangularLength[ply] = ply;
         // Check if time is up
@@ -41,11 +42,11 @@ public class PVSHard extends PVS {
         int score;
         // Try Null move
         if (!follow_pv && null_allowed) {
-            if (board.movingSidePieceMaterial() > NULLMOVE_THRESHOLD) {
+            if (board.movingSideMaterial() > NULLMOVE_THRESHOLD) {
                 if (!board.isCheck()) {
                     null_allowed = false;
                     board.makeNullMove();
-                    score = -alphaBetaPVS(board, ply, depth - NULLMOVE_REDUCTION, -beta, -beta + 1);
+                    score = -PVS(board, ply, depth - NULLMOVE_REDUCTION, -beta, -beta + 1);
                     board.unmakeMove();
                     null_allowed = true;
                     if (score >= beta) {
@@ -58,17 +59,18 @@ public class PVSHard extends PVS {
         null_allowed = true;
         int movesFound = 0;
         int pvMovesFound = 0;
-        int[] moves = new int[MAX_MOVES];
+        int[] moves = new int[MoveGenerator.MAX_MOVES];
         int num_moves = board.getAllMoves(moves);
-        selectBestMoveFirst(board, moves, num_moves, ply, depth, 0);
+
 
         //try the first legal move with an open window.
         int j,pvIndex=0;
         for (int i = 0;i<num_moves;i++) {
+            selectBestMoveFirst(board, moves, num_moves, ply, depth, i);
             if (board.makeMove(moves[i])) {
                 pvIndex=i;
                 movesFound++;
-                score = -alphaBetaPVS(board, ply + 1, depth - 1, -beta, -alpha);
+                score = -PVS(board, ply + 1, depth - 1, -beta, -alpha);
                 board.unmakeMove();
                 if (score > alpha) {
                     if (score >= beta) { //beta cutoff
@@ -96,13 +98,13 @@ public class PVSHard extends PVS {
             if (board.makeMove(moves[i])) {
                 movesFound++;
                 //Late Move Reduction
-                if (movesFound > LATEMOVE_THRESHOLD && depth > LATEMOVE_DEPTH_THRESHOLD && !board.isCheck() && !Move.isCapture(moves[i])) {
-                    score = -alphaBetaPVS(board, ply + 1, depth - 2, -alpha - 1, -alpha);
+                if (movesFound > LATEMOVE_THRESHOLD && depth > LATEMOVE_DEPTH_THRESHOLD && !board.isCheck() && !Move.isCapture(moves[i]) && !Move.isPromotion(moves[i])) {
+                    score = -PVS(board, ply + 1, depth - 2, -alpha - 1, -alpha);
                 } else {
-                    score = -alphaBetaPVS(board, ply + 1, depth - 1, -alpha - 1, -alpha); // PVS Search
+                    score = -PVS(board, ply + 1, depth - 1, -alpha - 1, -alpha); // PVS Search
                 }
                 if ((score > alpha) && (score < beta)) {
-                    score = -alphaBetaPVS(board, ply + 1, depth - 1, -beta, -alpha); //Better move found, normal alpha-beta.
+                    score = -PVS(board, ply + 1, depth - 1, -beta, -alpha); //Better move found, normal alpha-beta.
                 }
 
                 board.unmakeMove();
@@ -143,7 +145,7 @@ public class PVSHard extends PVS {
         triangularLength[ply] = ply;
 
         //Check if we are in check.
-        if (board.isCheck()) return alphaBetaPVS(board, ply, 1, alpha, beta);
+        if (board.isCheck()) return PVS(board, ply, 1, alpha, beta);
 
         //Standing pat
         int score;
@@ -155,7 +157,7 @@ public class PVSHard extends PVS {
 
         // generate captures & promotions:
         // genCaptures returns a sorted move list
-        int[] captures = new int[MAX_MOVES];
+        int[] captures = new int[MoveGenerator.MAX_MOVES];
         int num_captures = board.genCaptures(captures);
 
         for (int i = 0; i < num_captures; i++) {

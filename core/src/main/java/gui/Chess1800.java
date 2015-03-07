@@ -162,7 +162,7 @@ public class Chess1800 extends JFrame implements ActionListener{
             else {
                 timer.stop();
                 long start = System.currentTimeMillis();
-                model.makeEngineMove();
+                model.makeEngineMove(engine_time);
                 long stop = System.currentTimeMillis();
                 engine_time -= (stop - start);
                 player_turn = true;

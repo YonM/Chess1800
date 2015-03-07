@@ -282,24 +282,24 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
     }
 
     public int eval() {
-        if(this.isCheckMate()) return -CHECKMATE;
-        if(this.isDraw() != NO_DRAW) return DRAWSCORE;
+        if(isCheckMate()) return -CHECKMATE;
+        if(isDraw()!= NO_DRAW)return DRAWSCORE;
         score = 0;
         whiteKingSquare = Long.numberOfTrailingZeros(whiteKing);
         blackKingSquare = Long.numberOfTrailingZeros(blackKing);
 
-        whitePawnCount = Long.bitCount(whitePawnCount);
-        whiteKnightCount = Long.bitCount(whiteKnightCount);
-        whiteBishopCount = Long.bitCount(whiteBishopCount);
-        whiteRookCount = Long.bitCount(whiteRookCount);
-        whiteQueenCount = Long.bitCount(whiteQueenCount);
+        whitePawnCount = Long.bitCount(whitePawns);
+        whiteKnightCount = Long.bitCount(whiteKnights);
+        whiteBishopCount = Long.bitCount(whiteBishops);
+        whiteRookCount = Long.bitCount(whiteRooks);
+        whiteQueenCount = Long.bitCount(whiteQueens);
         whiteTotal = whitePawnCount + whiteKnightCount + whiteBishopCount + whiteRookCount + whiteQueenCount;
 
-        blackPawnCount = Long.bitCount(blackPawnCount);
-        blackKnightCount = Long.bitCount(blackKnightCount);
-        blackBishopCount = Long.bitCount(blackBishopCount);
-        blackRookCount = Long.bitCount(blackRookCount);
-        blackQueenCount = Long.bitCount(blackQueenCount);
+        blackPawnCount = Long.bitCount(blackPawns);
+        blackKnightCount = Long.bitCount(blackKnights);
+        blackBishopCount = Long.bitCount(blackBishops);
+        blackRookCount = Long.bitCount(blackRooks);
+        blackQueenCount = Long.bitCount(blackQueens);
         blackTotal = blackPawnCount + blackKnightCount + blackBishopCount + blackRookCount + blackQueenCount;
 
         //Test for end game if white or black total material less than the value of a Rook+ Queen.

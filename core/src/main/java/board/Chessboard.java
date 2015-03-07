@@ -11,9 +11,6 @@ public interface Chessboard extends Evaluator {
 
 
     //Move related
-    public boolean makeMove(int move);
-    public void makeNullMove();
-    public void unmakeMove();
     public int getMoveFromString(String move, boolean legalityCheck);
 
     //Position related
@@ -28,11 +25,9 @@ public interface Chessboard extends Evaluator {
     public boolean isEndOfGame();
     public boolean isCheck();
     public boolean isWhiteToMove();
-    public boolean isCheckMate();
-    public int isDraw();
     public int getFiftyMove();
     public int getMoveNumber();
-    public int movingSidePieceMaterial();
+    public int movingSideMaterial();
 
 
     //Move Notation

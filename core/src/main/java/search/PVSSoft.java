@@ -2,6 +2,7 @@ package search;
 
 import board.Chessboard;
 import board.Evaluator;
+import board.MoveGenerator;
 import move.Move;
 
 /**
@@ -11,7 +12,7 @@ import move.Move;
 public class PVSSoft extends PVS {
 
     //Fail Soft implementation
-    protected int alphaBetaPVS(Chessboard board, int ply, int depth, int alpha, int beta) {
+    protected int PVS(Chessboard board, int ply, int depth, int alpha, int beta) {
         evals++;
         triangularLength[ply] = ply;
         // Check if time is up
@@ -35,21 +36,24 @@ public class PVSSoft extends PVS {
         int endGameCheck= board.eval();
         if (endGameCheck == Evaluator.DRAWSCORE || endGameCheck == -Evaluator.CHECKMATE) {
             follow_pv = false;
-            if(endGameCheck == Evaluator.DRAWSCORE) return endGameCheck;
+            if(endGameCheck == Evaluator.DRAWSCORE){
+                return endGameCheck;
+            }
             return endGameCheck +ply -1;
         }
 
         int score;
         // Try Null move
         if (!follow_pv && null_allowed) {
-            if (board.movingSidePieceMaterial() > NULLMOVE_THRESHOLD) {
+            if (board.movingSideMaterial() > NULLMOVE_THRESHOLD) {
                 if (!board.isCheck()) {
                     null_allowed = false;
                     board.makeNullMove();
-                    score = -alphaBetaPVS(board, ply, depth - NULLMOVE_REDUCTION, -beta, -beta + 1);
+                    score = -PVS(board, ply, depth - NULLMOVE_REDUCTION, -beta, -beta + 1);
                     board.unmakeMove();
                     null_allowed = true;
                     if (score >= beta) {
+
                         return score; //Fail Soft
                     }
                 }
@@ -59,18 +63,20 @@ public class PVSSoft extends PVS {
         null_allowed = true;
         int movesFound = 0;
         int pvMovesFound = 0;
-        int[] moves = new int[MAX_MOVES];
+        int[] moves = new int[MoveGenerator.MAX_MOVES];
         int num_moves = board.getAllMoves(moves);
         int bestScore = 0;
-        selectBestMoveFirst(board, moves, num_moves, ply, depth, 0);
+        //System.out.println("number of moves: " + num_moves);
+
 
         //try the first legal move with an open window.
         int j,pvIndex=0;
         for (int i = 0;i<num_moves;i++) {
+            selectBestMoveFirst(board, moves, num_moves, ply, depth, i);
             if (board.makeMove(moves[i])) {
                 pvIndex=i;
                 movesFound++;
-                bestScore = -alphaBetaPVS(board, ply + 1, depth - 1, -beta, -alpha);
+                bestScore = -PVS(board, ply + 1, depth - 1, -beta, -alpha);
                 board.unmakeMove();
                 if (bestScore > alpha) {
                     if (bestScore >= beta) { //beta cutoff
@@ -99,12 +105,12 @@ public class PVSSoft extends PVS {
                 movesFound++;
                 //Late Move Reduction
                 if (movesFound > LATEMOVE_THRESHOLD && depth > LATEMOVE_DEPTH_THRESHOLD && !board.isCheck() && !Move.isCapture(moves[i])) {
-                    score = -alphaBetaPVS(board, ply + 1, depth - 2, -alpha - 1, -alpha);
+                    score = -PVS(board, ply + 1, depth - 2, -alpha - 1, -alpha);
                 } else {
-                    score = -alphaBetaPVS(board, ply + 1, depth - 1, -alpha - 1, -alpha); // PVS Search
+                    score = -PVS(board, ply + 1, depth - 1, -alpha - 1, -alpha); // PVS Search
                 }
                 if ((score > alpha) && (score < beta)) {
-                    score = -alphaBetaPVS(board, ply + 1, depth - 1, -beta, -alpha); //Better move found, re-search with Open Window
+                    score = -PVS(board, ply + 1, depth - 1, -beta, -alpha); //Better move found, re-search with Open Window
                     if (score > alpha)
                         alpha = score;
                 }
@@ -143,10 +149,11 @@ public class PVSSoft extends PVS {
 
 
     protected int quiescenceSearch(Chessboard board, int ply, int alpha, int beta) {
+        System.out.println("ply: "+ ply);
         triangularLength[ply] = ply;
 
         //Check if we are in check.
-        if (board.isCheck()) return alphaBetaPVS(board, ply, 1, alpha, beta);
+        if (board.isCheck()) return PVS(board, ply, 1, alpha, beta);
 
         //Standing pat
         int bestScore;
@@ -158,8 +165,9 @@ public class PVSSoft extends PVS {
 
         // generate captures & promotions:
         // genCaptures returns a sorted move list
-        int[] captures = new int[MAX_MOVES];
+        int[] captures = new int[MoveGenerator.MAX_MOVES];
         int num_captures = board.genCaptures(captures);
+        System.out.println("number of captures:" + num_captures);
 
         int score;
         for (int i = 0; i < num_captures; i++) {

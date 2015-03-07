@@ -1,6 +1,7 @@
 package search;
 
 import board.Chessboard;
+import board.MoveGenerator;
 import move.Move;
 import transposition_table.TranspositionTable;
 /**
@@ -162,7 +163,7 @@ public class MTDF implements Search{
 
         //Try Null move
         if (!follow_pv && null_allowed) {
-            if (board.movingSidePieceMaterial() > NULLMOVE_THRESHOLD) {
+            if (board.movingSideMaterial() > NULLMOVE_THRESHOLD) {
                 if (!board.isCheck()) {
                     null_allowed = false;
                     board.makeNullMove();
@@ -193,7 +194,7 @@ public class MTDF implements Search{
             }else
                 hashMove = 0;
         }
-        int[] moves = new int[MAX_MOVES];
+        int[] moves = new int[MoveGenerator.MAX_MOVES];
         int num_moves = board.getAllMoves(moves);
 
 
@@ -311,7 +312,7 @@ public class MTDF implements Search{
 
         // generate captures & promotions:
         // genCaptures returns a sorted move list
-        int[] captures = new int[MAX_MOVES];
+        int[] captures = new int[MoveGenerator.MAX_MOVES];
         int num_captures = board.genCaptures(captures);
 
         int score;
