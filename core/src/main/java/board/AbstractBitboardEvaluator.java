@@ -357,7 +357,7 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
 
     private void evaluateWhitePawns() {
         whitePassedPawns = 0;
-        temp = whitePawnCount;
+        temp = whitePawns;
         while (temp != 0) {
             square = getIndexFromBoard(temp);
             score += PAWN_VALUE;
@@ -367,17 +367,17 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
                 score += PAWN_OWN_DISTANCE[DISTANCE[square][whiteKingSquare]];
 
             //Passed pawn bonus
-            if ((PASSED_WHITE[square] & blackPawnCount) == 0) {
+            if ((PASSED_WHITE[square] & blackPawns) == 0) {
                 score += BONUS_PASSED_PAWN;
                 whitePassedPawns ^= getSquare[square];
             }
 
             //Doubled pawn penalty
-            if (((whitePawnCount ^ getSquare[square]) & COLUMN[square % 8]) != 0)
+            if (((whitePawns ^ getSquare[square]) & COLUMN[square % 8]) != 0)
                 score -= PENALTY_DOUBLED_PAWN;
 
             //Isolated pawn penalty
-            if ((ISOLATED_WHITE[square] & whitePawnCount) == 0) {
+            if ((ISOLATED_WHITE[square] & whitePawns) == 0) {
                 score -= PENALTY_ISOLATED_PAWN;
             } else {
                 /*  Not isolated but maybe backwards if:
@@ -385,8 +385,8 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
                  *  2. No pawns left that can defend the pawn.
                 */
 
-                if ((whitePawn[square + 8] & blackPawnCount) != 0)
-                    if ((BACKWARD_WHITE[square] & whitePawnCount) == 0)
+                if ((whitePawn[square + 8] & blackPawns) != 0)
+                    if ((BACKWARD_WHITE[square] & whitePawns) == 0)
                         score -= PENALTY_BACKWARD_PAWN;
             }
             temp ^= getSquare[square];
@@ -394,7 +394,7 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
     }
 
     private void evaluateWhiteKnights() {
-        temp = whiteKnightCount;
+        temp = whiteKnights;
         while (temp != 0) {
             square = getIndexFromBoard(temp);
             score += KNIGHT_VALUE;
@@ -407,7 +407,7 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
     private void evaluateWhiteBishops() {
         if(Long.bitCount(whiteBishopCount)>1)
                 score += BONUS_BISHOP_PAIR;
-        temp = whiteBishopCount;
+        temp = whiteBishops;
         while (temp != 0) {
             square = getIndexFromBoard(temp);
             score += BISHOP_VALUE;
@@ -419,7 +419,7 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
 
 
     private void evaluateWhiteRooks() {
-        temp = whiteRookCount;
+        temp = whiteRooks;
         while (temp != 0) {
             square = getIndexFromBoard(temp);
             score += ROOK_VALUE;
@@ -429,9 +429,9 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
                 if (square < getLastIndexFromBoard((COLUMN[square % 8] & whitePassedPawns)))
                     score += BONUS_ROOK_BEHIND_PASSED_PAWN;
 
-            if ((COLUMN[square % 8] & blackPawnCount) == 0) {
+            if ((COLUMN[square % 8] & blackPawns) == 0) {
                 score += BONUS_ROOK_ON_OPEN_FILE;
-                if ((COLUMN[square % 8] & (whiteRookCount & ~Long.lowestOneBit(temp))) != 0)
+                if ((COLUMN[square % 8] & (whiteRooks & ~Long.lowestOneBit(temp))) != 0)
                     score+=BONUS_TWO_ROOKS_ON_OPEN_FILE;
             }
             temp ^= getSquare[square];
@@ -440,7 +440,7 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
 
 
     private void evaluateWhiteQueens() {
-        temp = whiteQueenCount;
+        temp = whiteQueens;
         while (temp != 0) {
             square = getIndexFromBoard(temp);
             score += QUEEN_VALUE;
@@ -458,16 +458,16 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
             score += KING_POS_W[whiteKingSquare];
             //Not end-game so add pawn shield bonus
             //Strong pawn shield bonus if pawns are close to the king
-            score += BONUS_PAWN_SHIELD_STRONG * Long.bitCount((STRONG_SAFE_WHITE[whiteKingSquare] & whitePawnCount));
+            score += BONUS_PAWN_SHIELD_STRONG * Long.bitCount((STRONG_SAFE_WHITE[whiteKingSquare] & whitePawns));
 
             //Weak pawn shield bonus if pawns are not very close to the king
-            score += BONUS_PAWN_SHIELD_WEAK * Long.bitCount((WEAK_SAFE_WHITE[whiteKingSquare] & whitePawnCount));
+            score += BONUS_PAWN_SHIELD_WEAK * Long.bitCount((WEAK_SAFE_WHITE[whiteKingSquare] & whitePawns));
         }
     }
 
     private void evaluateBlackPawns() {
         blackPassedPawns = 0;
-        temp = blackPawnCount;
+        temp = blackPawns;
         while (temp != 0) {
             square = getIndexFromBoard(temp);
             score -= PAWN_VALUE;
@@ -477,17 +477,17 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
                 score -= PAWN_OWN_DISTANCE[DISTANCE[square][blackKingSquare]];
 
             //Passed pawn bonus
-            if ((PASSED_BLACK[square] & blackPawnCount) == 0) {
+            if ((PASSED_BLACK[square] & whitePawns) == 0) {
                 score -= BONUS_PASSED_PAWN;
                 blackPassedPawns ^= getSquare[square];
             }
 
             //Doubled pawn penalty
-            if (((blackPawnCount ^ getSquare[square]) & COLUMN[square % 8]) != 0)
+            if (((blackPawns ^ getSquare[square]) & COLUMN[square % 8]) != 0)
                 score += PENALTY_DOUBLED_PAWN;
 
             //Isolated pawn penalty
-            if ((ISOLATED_BLACK[square] & blackPawnCount) == 0) {
+            if ((ISOLATED_BLACK[square] & blackPawns) == 0) {
                 score += PENALTY_ISOLATED_PAWN;
             } else {
                 /*  Not isolated but maybe backwards if:
@@ -495,8 +495,8 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
                  *  2. No pawns left that can defend the pawn.
                 */
 
-                if ((blackPawn[square + 8] & blackPawnCount) != 0)
-                    if ((BACKWARD_BLACK[square] & blackPawnCount) == 0)
+                if ((blackPawn[square + 8] & whitePawns) != 0)
+                    if ((BACKWARD_BLACK[square] & blackPawns) == 0)
                         score += PENALTY_BACKWARD_PAWN;
             }
             temp ^= getSquare[square];
@@ -504,7 +504,7 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
     }
 
     private void evaluateBlackKnights() {
-        temp = blackKnightCount;
+        temp = blackKnights;
         while (temp != 0) {
             square = getIndexFromBoard(temp);
             score -= KNIGHT_VALUE;
@@ -517,7 +517,7 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
     private void evaluateBlackBishops() {
         if(Long.bitCount(blackBishopCount)>1)
                 score -= BONUS_BISHOP_PAIR;
-        temp = blackBishopCount;
+        temp = blackBishops;
         while (temp != 0) {
             square = getIndexFromBoard(temp);
             score -= BISHOP_VALUE;
@@ -528,7 +528,7 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
     }
 
     private void evaluateBlackRooks() {
-        temp = blackRookCount;
+        temp = blackRooks;
         while (temp != 0) {
             square = getIndexFromBoard(temp);
             score -= ROOK_VALUE;
@@ -537,9 +537,9 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
             if ((COLUMN[square % 8] & blackPassedPawns) != 0)
                 if (square < getLastIndexFromBoard((COLUMN[square % 8] & blackPassedPawns)))
                     score -= BONUS_ROOK_BEHIND_PASSED_PAWN;
-            if ((COLUMN[square % 8] & whitePawnCount) == 0) {
+            if ((COLUMN[square % 8] & whitePawns) == 0) {
                 score -= BONUS_ROOK_ON_OPEN_FILE;
-                if ((COLUMN[square % 8] & (blackRookCount & ~Long.lowestOneBit(temp))) != 0)
+                if ((COLUMN[square % 8] & (blackRooks & ~Long.lowestOneBit(temp))) != 0)
                     score -= BONUS_TWO_ROOKS_ON_OPEN_FILE;
             }
             temp ^= getSquare[square];
@@ -547,7 +547,7 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
     }
 
     private void evaluateBlackQueens() {
-        temp = blackQueenCount;
+        temp = blackQueens;
         while (temp != 0) {
             square = getIndexFromBoard(temp);
             score -= QUEEN_VALUE;
@@ -564,10 +564,10 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
             score -= KING_POS_B[blackKingSquare];
             //Not end-game so add pawn shield bonus
             //Strong pawn shield bonus if pawns are close to the king
-            score -= BONUS_PAWN_SHIELD_STRONG * Long.bitCount((STRONG_SAFE_BLACK[blackKingSquare] & blackPawnCount));
+            score -= BONUS_PAWN_SHIELD_STRONG * Long.bitCount((STRONG_SAFE_BLACK[blackKingSquare] & blackPawns));
 
             //Weak pawn shield bonus if pawns are not very close to the king
-            score -= BONUS_PAWN_SHIELD_WEAK * Long.bitCount((WEAK_SAFE_WHITE[blackKingSquare] & blackPawnCount));
+            score -= BONUS_PAWN_SHIELD_WEAK * Long.bitCount((WEAK_SAFE_WHITE[blackKingSquare] & blackPawns));
         }
     }
 

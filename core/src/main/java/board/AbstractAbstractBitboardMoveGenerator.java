@@ -152,10 +152,11 @@ public abstract class AbstractAbstractBitboardMoveGenerator extends AbstractBitb
             val = sEE(captures[i]);
             captureValues[i] = val;
             if(val< MINCAPTVAL){
-                ArrayUtils.remove(captures, i);
-                ArrayUtils.remove(captureValues, i);
+                captures=ArrayUtils.remove(captures, i);
+                captureValues= ArrayUtils.remove(captureValues, i);
                 num_captures--;
                 i--;
+                continue;
             }
             insertIndex = i;
 

@@ -704,12 +704,12 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
 
         seeGain[d] = SEE_PIECE_VALUES[capturedPiece];
         do {
-            long side = (d % 2) == 0 ? getOpponentPieces() : getMyPieces();
+            long side = (d % 2) == 0 ? getOpponentPieces() : getMyPieces(); //sides switched
             d++; // depth increased.
 
-            // speculative score if defended.
-            seeGain[d] = SEE_PIECE_VALUES[pieceMoved] - seeGain[d - 1];
 
+            seeGain[d] = SEE_PIECE_VALUES[pieceMoved] - seeGain[d - 1];// speculative score if defended.
+            if (Math.max(-seeGain[d-1], seeGain[d]) <0) break; //prune
             attacks ^= fromSquare; // reset bit in set to traverse
             all ^= fromSquare;  // reset bit in temporary occupancy (for x-Rays)
 

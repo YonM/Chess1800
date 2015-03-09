@@ -164,7 +164,7 @@ public class PVSSoft extends PVS {
         if (bestScore > alpha) alpha = bestScore;
 
         // generate captures & promotions:
-        // genCaptures returns a sorted move list
+        // genCaptures gives a sorted move list
         int[] captures = new int[MoveGenerator.MAX_MOVES];
         int num_captures = board.genCaptures(captures);
         System.out.println("number of captures:" + num_captures);
