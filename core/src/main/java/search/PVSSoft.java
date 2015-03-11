@@ -149,7 +149,6 @@ public class PVSSoft extends PVS {
 
 
     protected int quiescenceSearch(Chessboard board, int ply, int alpha, int beta) {
-        System.out.println("ply: "+ ply);
         triangularLength[ply] = ply;
 
         //Check if we are in check.
@@ -167,27 +166,27 @@ public class PVSSoft extends PVS {
         // genCaptures gives a sorted move list
         int[] captures = new int[MoveGenerator.MAX_MOVES];
         int num_captures = board.genCaptures(captures);
-        System.out.println("number of captures:" + num_captures);
 
         int score;
         for (int i = 0; i < num_captures; i++) {
-            board.makeMove(captures[i]);
-            score = -quiescenceSearch(board, ply + 1, -beta, -alpha);
-            board.unmakeMove();
-            if (score > alpha) {
-                if (score >= beta) {
-                    //Fail Soft
-                    return score;
-                }
-
-                alpha = score;
-                if (score > bestScore) {
-                    bestScore = score;
-                    triangularArray[ply][ply] = captures[i]; //save the best capture
-                    for (int j = ply + 1; j < triangularLength[ply + 1]; j++) {
-                        triangularArray[ply][j] = triangularArray[ply + 1][j];
+            if(board.makeMove(captures[i])) {
+                score = -quiescenceSearch(board, ply + 1, -beta, -alpha);
+                board.unmakeMove();
+                if (score > alpha) {
+                    if (score >= beta) {
+                        //Fail Soft
+                        return score;
                     }
-                    triangularLength[ply] = triangularLength[ply + 1];
+
+                    alpha = score;
+                    if (score > bestScore) {
+                        bestScore = score;
+                        triangularArray[ply][ply] = captures[i]; //save the best capture
+                        for (int j = ply + 1; j < triangularLength[ply + 1]; j++) {
+                            triangularArray[ply][j] = triangularArray[ply + 1][j];
+                        }
+                        triangularLength[ply] = triangularLength[ply + 1];
+                    }
                 }
             }
         }

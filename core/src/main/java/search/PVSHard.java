@@ -161,24 +161,25 @@ public class PVSHard extends PVS {
         int num_captures = board.genCaptures(captures);
 
         for (int i = 0; i < num_captures; i++) {
-            board.makeMove(captures[i]);
-            score = -quiescenceSearch(board, ply + 1, -beta, -alpha);
-            board.unmakeMove();
-            if (score > alpha) {
-                if (score >= beta) {
-                    return score;
-                }
+            if (board.makeMove(captures[i])) {
+                score = -quiescenceSearch(board, ply + 1, -beta, -alpha);
+                board.unmakeMove();
+                if (score > alpha) {
+                    if (score >= beta) {
+                        return score;
+                    }
 
-                alpha = score;
-                //Fail Hard.
-                triangularArray[ply][ply] = captures[i];
-                for (int j = ply + 1; j < triangularLength[ply + 1]; j++) {
-                    triangularArray[ply][j] = triangularArray[ply + 1][j];
+                    alpha = score;
+                    //Fail Hard.
+                    triangularArray[ply][ply] = captures[i];
+                    for (int j = ply + 1; j < triangularLength[ply + 1]; j++) {
+                        triangularArray[ply][j] = triangularArray[ply + 1][j];
+                    }
+                    triangularLength[ply] = triangularLength[ply + 1];
+
                 }
-                triangularLength[ply] = triangularLength[ply + 1];
 
             }
-
         }
         return alpha; //Fail Hard
     }

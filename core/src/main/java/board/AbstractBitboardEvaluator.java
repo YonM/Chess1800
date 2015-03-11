@@ -380,8 +380,8 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
             if ((ISOLATED_WHITE[square] & whitePawns) == 0) {
                 score -= PENALTY_ISOLATED_PAWN;
             } else {
-                /*  Not isolated but maybe backwards if:
-                 *  1. the next square is controlled by an enemy pawn - PAWN_ATTACKS board used to check. AND
+                /*  Not isolated but maybe backwards if the following are both true:
+                 *  1. the next square is controlled by an enemy pawn
                  *  2. No pawns left that can defend the pawn.
                 */
 
@@ -490,8 +490,8 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
             if ((ISOLATED_BLACK[square] & blackPawns) == 0) {
                 score += PENALTY_ISOLATED_PAWN;
             } else {
-                /*  Not isolated but maybe backwards if:
-                 *  1. the next square is controlled by an enemy pawn - PAWN_ATTACKS board used to check. AND
+                /*  Not isolated but maybe backwards if the following are both true:
+                 *  1. the next square is controlled by an enemy pawn
                  *  2. No pawns left that can defend the pawn.
                 */
 

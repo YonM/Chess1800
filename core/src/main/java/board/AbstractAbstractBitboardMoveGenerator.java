@@ -160,20 +160,24 @@ public abstract class AbstractAbstractBitboardMoveGenerator extends AbstractBitb
             }
             insertIndex = i;
 
-            //Insert the capture into the correct position. Sorts the captures.
-            while(insertIndex >= 0 && captureValues[i] > captureValues[insertIndex]){
-                int tempCap = captures[i];
-                captures[i] = captures[insertIndex];
-                captures[insertIndex] = tempCap;
-
-                int tempCapVal = captureValues[i];
-                captureValues[i] = captureValues[insertIndex];
-                captureValues[insertIndex] = tempCapVal;
-
-                insertIndex--;
-            }
         }
+        sortCaptures(captureValues,captures,num_captures);
         return num_captures;
+    }
+
+    private void sortCaptures(int[] captureValues,int[] captures,int num_captures) {
+        //Insertion sort of captures.
+        for(int i=1;i<num_captures;i++){
+            int tempVal = captureValues[i];
+            int tempCapture = captures[i];
+            int j;
+            for(j = i-1; j>=0 && tempVal > captureValues[j];j--){
+                captureValues[j+1] = captureValues[j];
+                captures[j+1] = captures [j];
+            }
+            captureValues[j+1] = tempVal;
+            captures[j+1] = tempCapture;
+        }
     }
 
     private int getAllCaptures(int[] captures) {

@@ -37,11 +37,11 @@ public class Perft {
     public void perft() {
         b = new Bitboard();
         boolean loaded = b.initializeFromFEN(test1);
-        int i;
+        long i;
         if (loaded) {
             //System.out.println("true");
             long start = System.currentTimeMillis();
-            i = perft(b, 0, 5);
+            i = perft(b, 0, 6);
             long stop = System.currentTimeMillis();
             System.out.println("Found " + i + " nodes in " + (stop - start) + " ms.");
         } else {
@@ -50,12 +50,12 @@ public class Perft {
 
     }
 
-    private int perft(Bitboard b, int ply, int depth) {
+    private long perft(Bitboard b, int ply, int depth) {
         if (depth == 0) return 1;
 
         int[] moves = new int[b.MAX_MOVES];
         int num_moves = b.getAllMoves(moves);
-        int count = 0;
+        long count = 0;
 
         for (int i = 0; i < num_moves; i++) {
 
