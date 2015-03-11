@@ -137,7 +137,6 @@ public abstract class PVS implements Search {
         if (follow_pv && depth > 1) {
             for (i = nextIndex; i < num_moves; i++) {
                 if (moves[i] == lastPV[ply]) {
-                    if(moves[i]==0) System.out.println("oops");
                     tempMove = moves[i];
                     moves[i] = moves[nextIndex];
                     moves[nextIndex] = tempMove;

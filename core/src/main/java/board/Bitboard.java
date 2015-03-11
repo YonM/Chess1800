@@ -578,10 +578,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         // threefold repetition.
 
         // Stalemate
-        if (!legalMovesAvailable() && !isOwnKingAttacked()) {
-            System.out.println("draw by stalemate");
-            return DRAW_BY_STALEMATE;
-        }
+        if (!legalMovesAvailable() && !isOwnKingAttacked()) return DRAW_BY_STALEMATE;
 
         // Evaluate for draw due to insufficient material
         int whitePawnsTotal, whiteKnightsTotal, whiteBishopsTotal, whiteRooksTotal, whiteQueensTotal, whiteTotalMat;
@@ -605,42 +602,31 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         if (whitePawnsTotal == 0 && blackPawnsTotal == 0) {
 
             // king vs king
-            if (whiteTotalMat + blackTotalMat == 0){
-                System.out.println("draw by material");
+            if (whiteTotalMat + blackTotalMat == 0)
                 return DRAW_BY_MATERIAL;
-            }
 
             // king and knight vs king
             if (((whiteTotalMat == 3) && (whiteKnightsTotal == 1) && (blackTotalMat == 0)) ||
-                    ((blackTotalMat == 3)) && (blackKnightsTotal == 1) && (whiteTotalMat == 0)) {
-                System.out.println("draw by material");
+                    ((blackTotalMat == 3)) && (blackKnightsTotal == 1) && (whiteTotalMat == 0))
                 return DRAW_BY_MATERIAL;
-            }
+
 
             // 2 kings with one or more bishops and all bishops on the same colour
             if (whiteBishopsTotal + blackBishopsTotal > 0) {
                 if (whiteKnightsTotal + whiteRooksTotal + whiteQueensTotal + blackKnightsTotal + blackRooksTotal + blackQueensTotal == 0) {
                     if ((((whiteBishops | blackBishops) & WHITE_SQUARES) == 0) ||
-                            (((whiteBishops | blackBishops) & BLACK_SQUARES) == 0)){
-                        System.out.println("draw by rep");
+                            (((whiteBishops | blackBishops) & BLACK_SQUARES) == 0))
                             return DRAW_BY_MATERIAL;
-                    }
                 }
             }
         }
 
         //50Move rule
-        if (fiftyMove >= 100) {
-            System.out.println("draw by 50 move");
-            return DRAW_BY_FIFTYMOVE;
-        }
+        if (fiftyMove >= 100) return DRAW_BY_FIFTYMOVE;
 
         //Three fold repetition
-        if (repetitionCount() >= 3) {
-            System.out.println("draw by rep");
-            return DRAW_BY_REP;
+        if (repetitionCount() >= 3) return DRAW_BY_REP;
 
-        }
         return NO_DRAW;
     }
     public int repetitionCount() {
