@@ -1,14 +1,11 @@
 package com.chess1800.core;
 
-import board.Bitboard;
-import board.Chessboard;
+import com.chess1800.chess.board.Bitboard;
+import com.chess1800.chess.board.Chessboard;
 import junit.framework.TestCase;
-import move.Move;
 import org.junit.Test;
-import search.PVS;
-import search.PVSHard;
-import search.PVSSoft;
-import search.Search;
+import com.chess1800.chess.search.PVSHard;
+import com.chess1800.chess.search.Search;
 
 
 import java.io.BufferedReader;

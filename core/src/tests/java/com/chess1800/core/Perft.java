@@ -1,7 +1,6 @@
 package com.chess1800.core;
 
-import board.Bitboard;
-import board.AbstractAbstractBitboardMoveGenerator;
+import com.chess1800.chess.board.Bitboard;
 import org.junit.Test;
 
 /**
