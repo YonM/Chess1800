@@ -85,7 +85,11 @@ public class Chess1800Controller implements ActionListener, MouseListener, Mouse
             chessPiece.setVisible(true);
 
             // notifies move
-            chess.userMove(flip ? originComponent.getIndex() : 63 - originComponent.getIndex(), flip ? parent.getIndex() : 63 - parent.getIndex());
+            int from = flip ? originComponent.getIndex() : 63 - originComponent.getIndex();
+            int to= flip ? parent.getIndex() : 63 - parent.getIndex();
+            int move = model.getMoveFromIndices(from,to);
+            if(model.isMoveLegal(from, to))
+            model.userMove(flip ? originComponent.getIndex() : 63 - originComponent.getIndex(), flip ? parent.getIndex() : 63 - parent.getIndex());
         }
     }
 

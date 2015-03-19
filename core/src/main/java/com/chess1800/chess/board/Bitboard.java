@@ -1102,6 +1102,16 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
 
     }
 
+    @Override
+    public boolean isMoveLegal(int move) {
+        moves= new int[MAX_MOVES];
+        int legalMovesCount=getAllLegalMoves(moves);
+        for(int i=0; i<legalMovesCount; i++)
+            if(move == moves[i]) return true;
+
+        return false;
+    }
+
     private static long algebraic2Square(String name) {
         long aux = H1;
         for (int i = 0; i< 64; i++){
