@@ -1,4 +1,4 @@
-package com.chess1800.chess.gui;
+package com.chess1800.chess.application.gui;
 
 import javax.swing.JPanel;
 import javax.swing.ImageIcon;

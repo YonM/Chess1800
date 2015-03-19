@@ -1,4 +1,4 @@
-package com.chess1800.chess.gui;
+package com.chess1800.chess.application.gui;
 
 import com.chess1800.chess.board.Chessboard;
 import com.chess1800.chess.board.Bitboard;
