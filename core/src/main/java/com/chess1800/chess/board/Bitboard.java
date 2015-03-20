@@ -88,6 +88,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         key_history = new long[MAX_GAME_LENGTH];
     }
 
+    @Override
     public void initialize() {
         initializeFromFEN(START_FEN);
     }
@@ -199,6 +200,59 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
 
         //if fen is not valid
         return false;
+    }
+
+
+    @Override
+    public String getFEN() {
+        StringBuilder sb = new StringBuilder();
+        long i = A8;
+        int j = 0;
+        while (i != 0) {
+            char p = getPieceAt((int)i);
+            if (p == '.') {
+                j++;
+            }
+            if ((j != 0) && (p != '.' || ((i & b_r) != 0))) {
+                sb.append(j);
+                j = 0;
+            }
+            if (p != '.') {
+                sb.append(p);
+            }
+            if ((i != 1) && (i & b_r) != 0) {
+                sb.append("/");
+            }
+            i >>>= 1;
+        }
+        sb.append(" ");
+        sb.append(isWhiteToMove()? "w" : "b");
+        sb.append(" ");
+        boolean castleAvailable=false;
+        if ((castleWhite & CANCASTLEOO)!=0) {
+            sb.append("K");
+            castleAvailable=true;
+        }
+        if ((castleWhite & CANCASTLEOOO)!=0) {
+            sb.append("Q");
+            castleAvailable= true;
+        }
+        if ((castleBlack & CANCASTLEOO)!=0) {
+            sb.append("k");
+            castleAvailable = true;
+        }
+        if ((castleBlack & CANCASTLEOO)!=0) {
+            sb.append("q");
+            castleAvailable = true;
+        }
+        if(!castleAvailable)sb.append("-");
+        sb.append(" ");
+        sb.append((ePSquare != -1 ? index2Algebraic(ePSquare) : "-"));
+        sb.append(" ");
+        sb.append(fiftyMove);
+        sb.append(" ");
+        sb.append((moveNumber >> 1) + 1); // 0,1->1.. 2,3->2
+        return sb.toString();
     }
 
     @Override
@@ -567,8 +621,17 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         return isSquareAttacked(blackKing, whiteToMove);
     }
 
-    public boolean isEndOfGame() {
-        return (isDraw() != NO_DRAW) || isCheckMate();
+    public int isEndOfGame() {
+        int endGame= NOT_ENDED;
+        if(!legalMovesAvailable())
+            if(isCheck()){
+                endGame= whiteToMove? BLACK_WIN : WHITE_WIN;
+            }else{
+                endGame=isDraw();
+            }
+        else endGame=isDraw();
+
+        return endGame;
     }
 
     public int isDraw(){
@@ -627,7 +690,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         //Three fold repetition
         if (repetitionCount() >= 3) return DRAW_BY_REP;
 
-        return NO_DRAW;
+        return NOT_ENDED;
     }
     public int repetitionCount() {
         int i, lastI, rep = 1; // current position is at least 1 repetition
@@ -907,7 +970,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         return BitboardMagicAttacksAC.isSquareAttacked(this, whiteKing, !whiteToMove);
     }*/
 
-    public static int algebraic2Index(String name) {
+    public  int algebraic2Index(String name) {
         System.out.println("square checked: " +name);
         for (int i = 0; i < 64; i++) {
             if (name.equals(squareNames[i])) {
@@ -918,6 +981,9 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         return -1;
     }
 
+    public String index2Algebraic(int index) {
+        return squareNames[index];
+    }
 
     public boolean validateHashMove(int move) {
         if(!makeMove(move)) return false;
@@ -1112,7 +1178,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         return false;
     }
 
-    private static long algebraic2Square(String name) {
+    private long algebraic2Square(String name) {
         long aux = H1;
         for (int i = 0; i< 64; i++){
             if(name.equals(squareNames[i]))

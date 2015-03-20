@@ -12,7 +12,7 @@ public interface Evaluator extends MoveGenerator {
     public int isDraw();
 
     //Draw reason
-    public static final int NO_DRAW = 0;
+    public static final int NOT_ENDED = 0;
     public static final int DRAW_BY_STALEMATE = 1;
     public static final int DRAW_BY_MATERIAL = 2;
     public static final int DRAW_BY_FIFTYMOVE = 3;

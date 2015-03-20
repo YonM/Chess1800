@@ -8,7 +8,7 @@ import org.apache.commons.lang3.ArrayUtils;
  * Based on Alberto Ruibal's Carballo. Source @ https://githucom/albertoruibal/carballo/ &
  * Ulysse Carion's Godot. Source @ https://githucom/ucarion
  */
-public abstract class AbstractAbstractBitboardMoveGenerator extends AbstractBitboardMagicAttacks implements MoveGenerator {
+public abstract class AbstractBitboardMoveGenerator extends AbstractBitboardMagicAttacks implements MoveGenerator {
 
 
     private static final int RANK_1 = 0;

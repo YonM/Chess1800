@@ -87,7 +87,7 @@ public class BoardModel extends Observable {
     }
 
     public boolean isDraw() {
-        return b.isDraw() != Chessboard.NO_DRAW;
+        return b.isDraw() != Chessboard.NOT_ENDED;
     }
 
     public void displayConclusionInfo() {

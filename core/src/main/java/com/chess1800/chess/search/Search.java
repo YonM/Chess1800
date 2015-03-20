@@ -26,4 +26,7 @@ public interface Search {
 
     public static final int MAX_PLY = 64;
 
+    public void setObserver(SearchObserver observer);
+
+    public boolean isSearching();
 }

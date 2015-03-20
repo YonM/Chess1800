@@ -15,7 +15,7 @@ package com.chess1800.chess.board;
  * Scores calculated from white perspective and then returns the score from the perspective
  * of the side to move.
  */
-public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboardMoveGenerator implements Evaluator {
+public abstract class AbstractBitboardEvaluator extends AbstractBitboardMoveGenerator implements Evaluator {
 
     //Bonus/Penalty constants
     private final int PENALTY_DOUBLED_PAWN = 10;
@@ -283,7 +283,7 @@ public abstract class AbstractBitboardEvaluator extends AbstractAbstractBitboard
 
     public int eval() {
         if(isCheckMate()) return -CHECKMATE;
-        if(isDraw()!= NO_DRAW)return DRAWSCORE;
+        if(isDraw()!= NOT_ENDED)return DRAWSCORE;
         score = 0;
         whiteKingSquare = Long.numberOfTrailingZeros(whiteKing);
         blackKingSquare = Long.numberOfTrailingZeros(blackKing);

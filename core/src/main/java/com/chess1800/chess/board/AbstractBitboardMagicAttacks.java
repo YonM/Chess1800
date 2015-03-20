@@ -50,7 +50,7 @@ public abstract class AbstractBitboardMagicAttacks{
     protected static final long b2_r = 0x0303030303030303L; // right
     protected static final long b2_l = 0xC0C0C0C0C0C0C0C0L; // left
 
-    public static final String[] squareNames =
+    protected final String[] squareNames =
             {"a1","b1","c1","d1","e1","f1","g1","h1",
                     "a2","b2","c2","d2","e2","f2","g2","h2",
                     "a3","b3","c3","d3","e3","f3","g3","h3",

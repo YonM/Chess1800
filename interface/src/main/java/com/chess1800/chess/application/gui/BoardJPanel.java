@@ -20,16 +20,18 @@ public class BoardJPanel extends JPanel{
 
     JPanel chessBoard;
     PieceJLabel chessPiece;
-
+    String lastFen;
+    private boolean flip;
     final int height = 75*8;
     final int width = 75*8;
-    Chess1800View chess;
+
+    public boolean acceptInput;
 
     public JLayeredPane getLayeredPane() {
         return layeredPane;
     }
 
-    public BoardJPanel(Chess1800View chess) {
+    public BoardJPanel() {
         Dimension d = new Dimension(width, height);
 
         layeredPane = new JLayeredPane();
@@ -47,7 +49,6 @@ public class BoardJPanel extends JPanel{
         layeredPane.setBounds(0, 0, width, height);
         setBounds(0, 0, width, height);
 
-        this.chess = chess;
 
     }
 
@@ -56,4 +57,54 @@ public class BoardJPanel extends JPanel{
         layeredPane.addMouseListener(ml);
     }
 
+    public void setFEN(String fen, boolean flip, boolean redraw){
+        if (fen == null) return;
+        this.flip = flip;
+        lastFen = fen;
+        int i = 0;
+        int j = 0;
+        while (i < fen.length()) {
+            char p = fen.charAt(i++);
+            if (p != '/') {
+                int number = 0;
+                try {
+                    number = Integer.parseInt(String.valueOf(p));
+                } catch (Exception ignored) {}
+
+                for (int k = 0; k < (number == 0 ? 1 : number); k++) {
+                    SquareJPanel panel = (SquareJPanel) chessBoard.getComponent(flip ? 63 - j++ : j++);
+                    try {
+                        PieceJLabel label = (PieceJLabel) panel.getComponent(0);
+                        if (label.getPiece() != p || redraw) {
+                            label.setVisible(false);
+                            panel.remove(0);
+                            throw new Exception();
+                        }
+                    } catch (Exception e) {
+                        if (number == 0) panel.add(new PieceJLabel(p));
+                    }
+                    if (j>=64) {
+                        return; // security
+                    }
+                }
+            }
+        }
+
+
+    }
+
+    public void setAcceptInput(boolean acceptInput) {
+        this.acceptInput = acceptInput;
+    }
+
+    public void unHighlight() {
+        for (int i = 0; i< 64; i++) ((SquareJPanel) chessBoard.getComponent(i)).setHighlighted(false);
+    }
+
+    public void highlight(int from, int to) {
+        SquareJPanel squareFrom = (SquareJPanel) chessBoard.getComponent(flip ? from : 63 - from);
+        SquareJPanel squareTo = (SquareJPanel) chessBoard.getComponent(flip ? to : 63 - to);
+        squareFrom.setHighlighted(true);
+        squareTo.setHighlighted(true);
+    }
 }

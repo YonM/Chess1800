@@ -1,6 +1,7 @@
 package com.chess1800.chess.search;
 
 import com.chess1800.chess.board.Chessboard;
+import com.chess1800.chess.board.Evaluator;
 import com.chess1800.chess.move.Move;
 
 /**
@@ -15,6 +16,7 @@ public abstract class PVS implements Search {
     protected int[] triangularLength;
     protected final int MAX_DEPTH = 16;
     protected int evals;
+    protected SearchObserver observer;
     protected int[][] whiteHeuristics;
     protected int[][] blackHeuristics;
     protected int[] lastPV;
@@ -44,7 +46,7 @@ public abstract class PVS implements Search {
         nextTimeCheck = TIME_CHECK_INTERVAL;
         useFixedDepth = depth != 0;
 
-        if (board.isEndOfGame()){
+        if (board.isEndOfGame()!= Evaluator.NOT_ENDED){
             return NULLMOVE;
         }
 
@@ -96,10 +98,16 @@ public abstract class PVS implements Search {
         }
         if(VERBOSE)
             System.out.println(evals + " positions evaluated. Move returned->" + lastPV[0]);
+        if(observer!= null)observer.bestMove(lastPV[0]);
         return lastPV[0];
     }
 
     protected abstract int PVS(Chessboard board, int i, int currentDepth, int alpha, int beta);
+
+    @Override
+    public void setObserver(SearchObserver observer){
+        this.observer = observer;
+    }
 
     //Based on Mediocre Chess by Jonatan Pettersson. Source @ http://sourceforge.net/projects/mediocrechess/
     private int calculateTime(int timeLeft, int increment) {

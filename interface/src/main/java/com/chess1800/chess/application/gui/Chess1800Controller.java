@@ -1,5 +1,8 @@
 package com.chess1800.chess.application.gui;
 
+import com.chess1800.chess.board.Chessboard;
+import com.chess1800.chess.search.SearchObserver;
+
 import javax.swing.JLayeredPane;
 import java.awt.Component;
 import java.awt.Point;
@@ -12,7 +15,7 @@ import java.awt.event.MouseMotionListener;
 /**
  * Created by Yonathan on 18/03/2015.
  */
-public class Chess1800Controller implements ActionListener, MouseListener, MouseMotionListener {
+public class Chess1800Controller implements SearchObserver, ActionListener, MouseListener, MouseMotionListener {
     private Chess1800Model model;
     private Chess1800View view;
     private SquareJPanel originComponent;
@@ -23,15 +26,45 @@ public class Chess1800Controller implements ActionListener, MouseListener, Mouse
     private String lastFen;
     private boolean flip;
     private PieceJLabel chessPiece;
-    BoardJPanel boardJPanel;
+    BoardJPanel boardPanel;
 
     public Chess1800Controller(Chess1800Model model, Chess1800View view) {
         this.model = model;
         this.view = view;
+        userToMove = true;
+        flip = false;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        if ("restart".equals(e.getActionCommand())) {
+            view.unHighlight();
+            userToMove = true;
+            model.stop();
+            model.startPosition();
+            checkUserToMove();
+        } else if ("back".equals(e.getActionCommand())) {
+            view.unHighlight();
+            userToMove = true;
+            model.stop();
+            model.unmakeMove();
+            update(false);
+        }
+        else if ("fen".equals(e.getActionCommand())) {
+            view.unHighlight();
+            userToMove = true;
+            model.stop();
+            model.initializeFromFEN(view.getFEN());
+            update(false);
+        }
+        else if ("go".equals(e.getActionCommand())) {
+            if (!model.isSearching()) checkUserToMove();
+        }
+        else if ("opponent".equals(e.getActionCommand())) {
+            if (!model.isSearching()) checkUserToMove();
+        }
+        else if ("time".equals(e.getActionCommand()))
+            model.setMoveTime(view.getMoveTime());
 
     }
 
@@ -43,9 +76,9 @@ public class Chess1800Controller implements ActionListener, MouseListener, Mouse
     @Override
     public void mousePressed(MouseEvent e) {
         if( e.getComponent() instanceof BoardJPanel ) {
-            boardJPanel =(BoardJPanel) e.getComponent();
+            boardPanel =(BoardJPanel) e.getComponent();
             if (!acceptInput) return;
-            Component c = boardJPanel.getChessBoard().findComponentAt(e.getX(), e.getY());
+            Component c = boardPanel.getChessBoard().findComponentAt(e.getX(), e.getY());
 
             if (c instanceof SquareJPanel) return;
             originComponent = (SquareJPanel) c.getParent();
@@ -56,7 +89,7 @@ public class Chess1800Controller implements ActionListener, MouseListener, Mouse
             chessPiece = (PieceJLabel) c;
             chessPiece.setLocation(e.getX() + xAdjustment, e.getY() + yAdjustment);
             chessPiece.setSize(chessPiece.getWidth(), chessPiece.getHeight());
-            boardJPanel.getLayeredPane().add(chessPiece, JLayeredPane.DRAG_LAYER);
+            boardPanel.getLayeredPane().add(chessPiece, JLayeredPane.DRAG_LAYER);
         }
     }
 
@@ -64,13 +97,13 @@ public class Chess1800Controller implements ActionListener, MouseListener, Mouse
     public void mouseReleased(MouseEvent e) {
 
         if( e.getComponent() instanceof BoardJPanel ) {
-            boardJPanel =(BoardJPanel) e.getComponent();
+            boardPanel =(BoardJPanel) e.getComponent();
             if (!acceptInput) return;
             // Only if inside board
             if (chessPiece == null) return;
 
             chessPiece.setVisible(false);
-            Component c = boardJPanel.getChessBoard().findComponentAt(e.getX(), e.getY());
+            Component c = boardPanel.getChessBoard().findComponentAt(e.getX(), e.getY());
             if (c == null) c = originComponent;
 
             SquareJPanel parent;
@@ -87,11 +120,87 @@ public class Chess1800Controller implements ActionListener, MouseListener, Mouse
             // notifies move
             int from = flip ? originComponent.getIndex() : 63 - originComponent.getIndex();
             int to= flip ? parent.getIndex() : 63 - parent.getIndex();
-            int move = model.getMoveFromIndices(from,to);
-            if(model.isMoveLegal(from, to))
-            model.userMove(flip ? originComponent.getIndex() : 63 - originComponent.getIndex(), flip ? parent.getIndex() : 63 - parent.getIndex());
+            int move = model.getMoveFromIndices(from, to);
+            if(userToMove)
+                if(model.userMove(move)) {
+                    model.notifyObservers();
+                    update(true);
+                    checkUserToMove();
+                }
         }
     }
+
+    private void checkUserToMove() {
+        userToMove = false;
+
+        switch(view.getGameType()) {
+            case 0:
+                if (!model.isWhiteToMove()) userToMove = true;
+                break;
+            case 1:
+                if (model.isWhiteToMove()) userToMove = true;
+                break;
+            case 2:
+                if (!model.isWhiteToMove()) userToMove = true;
+                break;
+            case 3:
+                if (model.isWhiteToMove()) userToMove = true;
+                break;
+            default:
+                break;
+        }
+        view.setAcceptInput(userToMove);
+        update(!userToMove);
+
+        if (!userToMove && (model.isEndOfGame() == 0)){
+            int gameType=view.getGameType();
+
+            if(gameType== 0 | gameType == 1 ){  //AI1
+                model.engine1Move();
+            }
+            else if(gameType == 2 | gameType == 3){ //AI2
+                model.engine2Move();
+            }else if(gameType ==4){                 //AI1 is White vs AI2
+                if(model.isWhiteToMove()) model.engine1Move();
+                else model.engine2Move();
+            }else{                                  //AI1 is Black vs AI2
+                if(!model.isWhiteToMove()) model.engine1Move();
+                else model.engine2Move();
+            }
+        }
+
+        System.out.println("checkUserToMove... userToMove="+userToMove);
+    }
+
+    private void update(boolean thinking) {
+        System.out.println("value=" + model.eval());
+        switch (model.isEndOfGame()) {
+            case Chessboard.WHITE_WIN :
+                view.setMessageText("White win");
+                break;
+            case Chessboard.BLACK_WIN:
+                view.setMessageText("Black win");
+                break;
+            case Chessboard.DRAW_BY_MATERIAL:
+                view.setMessageText("Draw by Material");
+                break;
+            case Chessboard.DRAW_BY_FIFTYMOVE:
+                view.setMessageText("Draw by Fifty Move Rule");
+                break;
+            case Chessboard.DRAW_BY_REP:
+                view.setMessageText("Draw by Threefold Repetition");
+                break;
+            case Chessboard.DRAW_BY_STALEMATE:
+                view.setMessageText("Draw by Stalemate");
+                break;
+            default:
+                if (model.getMoveNumber() == 0) view.setMessageText("Chess1800");
+                if (model.isWhiteToMove()) view.setMessageText("White move" + (thinking ? " - Thinking..." : ""));
+                else view.setMessageText("Black move" + (thinking ? " - Thinking..." : ""));
+                break;
+        }
+    }
+
 
     @Override
     public void mouseEntered(MouseEvent e) {
@@ -114,5 +223,12 @@ public class Chess1800Controller implements ActionListener, MouseListener, Mouse
     @Override
     public void mouseMoved(MouseEvent e) {
 
+    }
+
+    @Override
+    public void bestMove(int bestMove) {
+        System.out.println("bestMove... userToMove="+userToMove);
+        if(userToMove) return;
+        view.unHighlight();
     }
 }
