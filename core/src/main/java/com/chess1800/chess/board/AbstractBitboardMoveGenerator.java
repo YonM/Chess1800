@@ -142,7 +142,7 @@ public abstract class AbstractBitboardMoveGenerator extends AbstractBitboardMagi
         return index;
     }
 
-    // Pseudo-Legal capture generator. Based on godot.
+    // Pseudo-Legal capture generator.
     public int genCaptures(int[] captures) {
         int[] captureValues = new int[MAX_MOVES];
         int num_captures = getAllCaptures(captures);
@@ -226,7 +226,9 @@ public abstract class AbstractBitboardMoveGenerator extends AbstractBitboardMagi
         return ePSquare;
     }
 
-
+    public long getAllPieces() {
+        return allPieces;
+    }
 
     public long getMyPieces() {
         return whiteToMove ? whitePieces : blackPieces;
@@ -239,7 +241,7 @@ public abstract class AbstractBitboardMoveGenerator extends AbstractBitboardMagi
     /**
      * Gets what is found at a particular location.
      *
-     * @param loc an integer in [0, 64) representing a position.
+     * @param loc an integer in [0, 63] representing a position.
      * @return a character representing the piece at the passed location.
      */
     public char getPieceAt(int loc) {

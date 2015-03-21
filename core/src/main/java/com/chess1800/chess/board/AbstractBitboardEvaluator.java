@@ -15,7 +15,7 @@ package com.chess1800.chess.board;
  * Scores calculated from white perspective and then returns the score from the perspective
  * of the side to move.
  */
-public abstract class AbstractBitboardEvaluator extends AbstractBitboardMoveGenerator implements Evaluator {
+public abstract class AbstractBitboardEvaluator extends AbstractBitboardMoveGenC implements Evaluator {
 
     //Bonus/Penalty constants
     private final int PENALTY_DOUBLED_PAWN = 10;

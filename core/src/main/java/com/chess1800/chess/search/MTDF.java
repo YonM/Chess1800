@@ -1,6 +1,7 @@
 package com.chess1800.chess.search;
 
 import com.chess1800.chess.board.Chessboard;
+import com.chess1800.chess.board.Evaluator;
 import com.chess1800.chess.board.MoveGenerator;
 import com.chess1800.chess.transposition_table.TranspositionTable;
 import com.chess1800.chess.move.Move;
@@ -47,6 +48,8 @@ public class MTDF implements Search{
     private boolean stopSearch;
     private long bestMoveTime;
 
+    private SearchObserver observer;
+    private boolean searching;
 
     private MTDF()
     {
@@ -60,12 +63,22 @@ public class MTDF implements Search{
         return bestMoveTime;
     }
 
+    @Override
+    public void setObserver(SearchObserver observer) {
+        this.observer= observer;
+    }
+
+    @Override
+    public boolean isSearching() {
+        return searching;
+    }
+
     public int findBestMove(Chessboard board, int depth, int timeLeft, int increment, int moveTime) {
         startTime = System.currentTimeMillis();
 
         legalMoves = 0;
 
-        if (board.isEndOfGame()) return NULLMOVE;
+        if (board.isEndOfGame()!= Evaluator.NOT_ENDED) return NULLMOVE;
 
         if (legalMoves == 1) return singleMove;
 
@@ -147,7 +160,7 @@ public class MTDF implements Search{
                 transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_EXACT, score, 0 ); //should never be called
         }
 
-        if (board.isEndOfGame()) {
+        if (board.isEndOfGame() != Evaluator.NOT_ENDED) {
             follow_pv = false;
             score = board.eval();
             if(score<= alpha){

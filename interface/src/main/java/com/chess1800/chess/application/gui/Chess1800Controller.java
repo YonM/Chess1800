@@ -26,18 +26,21 @@ public class Chess1800Controller implements SearchObserver, ActionListener, Mous
     private String lastFen;
     private boolean flip;
     private PieceJLabel chessPiece;
-    BoardJPanel boardPanel;
+    private boolean started;
+    //BoardJPanel boardPanel;
 
     public Chess1800Controller(Chess1800Model model, Chess1800View view) {
         this.model = model;
         this.view = view;
         userToMove = true;
         flip = false;
+        acceptInput = true;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         if ("restart".equals(e.getActionCommand())) {
+            System.out.println("go go go");
             view.unHighlight();
             userToMove = true;
             model.stop();
@@ -65,6 +68,11 @@ public class Chess1800Controller implements SearchObserver, ActionListener, Mous
         }
         else if ("time".equals(e.getActionCommand()))
             model.setMoveTime(view.getMoveTime());
+        else if ("flip".equals(e.getActionCommand())) {
+            flip = !flip;
+            view.unHighlight();
+            view.setFEN(view.getLastFEN(), flip, true);
+        }
 
     }
 
@@ -75,10 +83,8 @@ public class Chess1800Controller implements SearchObserver, ActionListener, Mous
 
     @Override
     public void mousePressed(MouseEvent e) {
-        if( e.getComponent() instanceof BoardJPanel ) {
-            boardPanel =(BoardJPanel) e.getComponent();
             if (!acceptInput) return;
-            Component c = boardPanel.getChessBoard().findComponentAt(e.getX(), e.getY());
+            Component c = view.getChessBoard().findComponentAt(e.getX(), e.getY());
 
             if (c instanceof SquareJPanel) return;
             originComponent = (SquareJPanel) c.getParent();
@@ -89,21 +95,18 @@ public class Chess1800Controller implements SearchObserver, ActionListener, Mous
             chessPiece = (PieceJLabel) c;
             chessPiece.setLocation(e.getX() + xAdjustment, e.getY() + yAdjustment);
             chessPiece.setSize(chessPiece.getWidth(), chessPiece.getHeight());
-            boardPanel.getLayeredPane().add(chessPiece, JLayeredPane.DRAG_LAYER);
-        }
+            view.addPiece(chessPiece, JLayeredPane.DRAG_LAYER);
+
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-
-        if( e.getComponent() instanceof BoardJPanel ) {
-            boardPanel =(BoardJPanel) e.getComponent();
             if (!acceptInput) return;
             // Only if inside board
             if (chessPiece == null) return;
 
             chessPiece.setVisible(false);
-            Component c = boardPanel.getChessBoard().findComponentAt(e.getX(), e.getY());
+            Component c = view.getChessBoard().findComponentAt(e.getX(), e.getY());
             if (c == null) c = originComponent;
 
             SquareJPanel parent;
@@ -121,15 +124,22 @@ public class Chess1800Controller implements SearchObserver, ActionListener, Mous
             int from = flip ? originComponent.getIndex() : 63 - originComponent.getIndex();
             int to= flip ? parent.getIndex() : 63 - parent.getIndex();
             int move = model.getMoveFromIndices(from, to);
+        System.out.println("Move:" + move);
             if(userToMove)
                 if(model.userMove(move)) {
                     model.notifyObservers();
                     update(true);
                     checkUserToMove();
                 }
-        }
+
     }
 
+    public void start(){
+        if(!started) {
+            started = true;
+            checkUserToMove();
+        }
+    }
     private void checkUserToMove() {
         userToMove = false;
 
@@ -149,7 +159,7 @@ public class Chess1800Controller implements SearchObserver, ActionListener, Mous
             default:
                 break;
         }
-        view.setAcceptInput(userToMove);
+        //view.setAcceptInput(userToMove);
         update(!userToMove);
 
         if (!userToMove && (model.isEndOfGame() == 0)){
@@ -173,6 +183,8 @@ public class Chess1800Controller implements SearchObserver, ActionListener, Mous
     }
 
     private void update(boolean thinking) {
+        view.setFEN(model.getFEN(), flip, false);
+        view.setFENText(model.getFEN());
         System.out.println("value=" + model.eval());
         switch (model.isEndOfGame()) {
             case Chessboard.WHITE_WIN :

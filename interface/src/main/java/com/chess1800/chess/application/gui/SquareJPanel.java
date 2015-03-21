@@ -29,7 +29,7 @@ public class SquareJPanel extends JPanel {
         super(new BorderLayout());
         this.index = index;
         this.highlighted = false;
-
+        setVisible(true);
         Dimension size = new Dimension(75, 75);
         setPreferredSize(size);
         setMinimumSize(size);

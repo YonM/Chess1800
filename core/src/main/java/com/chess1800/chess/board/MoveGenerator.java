@@ -21,4 +21,14 @@ public interface MoveGenerator {
     public static final int MAX_GAME_LENGTH = 1024; // Maximum number of half-moves, if 50-move rule is obeyed.
     public static final int MAX_MOVES = 256;
 
+    //Game State
+    public boolean isCheck();
+    public boolean isWhiteToMove();
+
+    //Pieces
+    public long getMyPieces();
+    public long getOpponentPieces();
+    public long getAllPieces();
+    public int getEPSquare();
+
 }

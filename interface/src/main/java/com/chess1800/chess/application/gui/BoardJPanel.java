@@ -12,31 +12,24 @@ import java.awt.event.MouseMotionListener;
  * Created by Yonathan on 19/03/2015.
  */
 public class BoardJPanel extends JPanel{
+
+    private String lastFEN;
+
     JLayeredPane layeredPane;
-
-    public JPanel getChessBoard() {
-        return chessBoard;
-    }
-
     JPanel chessBoard;
     PieceJLabel chessPiece;
-    String lastFen;
     private boolean flip;
     final int height = 75*8;
     final int width = 75*8;
 
-    public boolean acceptInput;
 
-    public JLayeredPane getLayeredPane() {
-        return layeredPane;
-    }
 
     public BoardJPanel() {
         Dimension d = new Dimension(width, height);
 
         layeredPane = new JLayeredPane();
         add(layeredPane);
-        layeredPane.setPreferredSize( d );
+        layeredPane.setPreferredSize(d);
 
         chessBoard = new JPanel();
         layeredPane.add(chessBoard, JLayeredPane.DEFAULT_LAYER);
@@ -49,18 +42,26 @@ public class BoardJPanel extends JPanel{
         layeredPane.setBounds(0, 0, width, height);
         setBounds(0, 0, width, height);
 
-
     }
 
-    public void addListeners(MouseMotionListener mml, MouseListener ml){
+    public void addMouseListeners(MouseMotionListener mml, MouseListener ml){
         layeredPane.addMouseMotionListener(mml);
         layeredPane.addMouseListener(ml);
     }
 
+    public JPanel getChessBoard() {
+        return chessBoard;
+    }
+
+    public JLayeredPane getLayeredPane() {
+        return layeredPane;
+    }
+
+
     public void setFEN(String fen, boolean flip, boolean redraw){
         if (fen == null) return;
         this.flip = flip;
-        lastFen = fen;
+        lastFEN = fen;
         int i = 0;
         int j = 0;
         while (i < fen.length()) {
@@ -93,10 +94,6 @@ public class BoardJPanel extends JPanel{
 
     }
 
-    public void setAcceptInput(boolean acceptInput) {
-        this.acceptInput = acceptInput;
-    }
-
     public void unHighlight() {
         for (int i = 0; i< 64; i++) ((SquareJPanel) chessBoard.getComponent(i)).setHighlighted(false);
     }
@@ -107,4 +104,13 @@ public class BoardJPanel extends JPanel{
         squareFrom.setHighlighted(true);
         squareTo.setHighlighted(true);
     }
+
+    public String getLastFEN() {
+        return lastFEN;
+    }
+
+    public void addPiece(PieceJLabel chessPiece, Integer dragLayer) {
+        layeredPane.add(chessPiece, dragLayer);
+    }
+
 }

@@ -52,8 +52,8 @@ public class Move{
         return toIndex | fromIndex << 6 | pieceMoved << 12 | (capture ? 1 << 15 : 0) | moveType << 16;
     }*/
 
-    public static final int genMove(int from, int to, int type, boolean capture, int flag) {
-        return (from) | (to << 6) | (type << 12) | ((capture ? 1 : 0) << 15)
+    public static final int genMove(int from, int to, int piece, boolean capture, int flag) {
+        return (from) | (to << 6) | (piece << 12) | ((capture ? 1 : 0) << 15)
                 | (flag << 16);
     }
 

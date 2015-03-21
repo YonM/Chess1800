@@ -16,6 +16,7 @@ public abstract class PVS implements Search {
     protected int[] triangularLength;
     protected final int MAX_DEPTH = 16;
     protected int evals;
+    protected boolean searching;
     protected SearchObserver observer;
     protected int[][] whiteHeuristics;
     protected int[][] blackHeuristics;
@@ -187,6 +188,9 @@ public abstract class PVS implements Search {
 
     protected abstract int quiescenceSearch(Chessboard board, int ply, int alpha, int beta);
 
+    public boolean isSearching(){
+        return searching;
+    }
 
     protected final void rememberPV() {
         System.out.println("Length of triangularLength[0]: " + triangularLength[0]);
