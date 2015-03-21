@@ -1,5 +1,6 @@
 package com.chess1800.chess.application.gui;
 
+import com.chess1800.chess.board.Bitboard;
 import com.chess1800.chess.board.Chessboard;
 import com.chess1800.chess.search.Search;
 
@@ -15,8 +16,9 @@ public class Chess1800Model extends Observable {
     private boolean searching;
     private int moveTime;
 
-    public Chess1800Model(Chessboard b, Search engine1, Search engine2) {
-        this.b = b;
+    public Chess1800Model(Search engine1, Search engine2) {
+        b= new Bitboard();
+        b.initialize();
         this.engine1 = engine1;
         this.engine2 = engine2;
     }

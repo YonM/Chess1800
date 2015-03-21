@@ -3,6 +3,8 @@ package com.chess1800.chess.application.gui;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -26,10 +28,10 @@ public class Chess1800View extends JFrame implements Observer {
 
 
     public Chess1800View() throws HeadlessException {
-
         control = new JPanel();
         control.setLayout(new GridLayout(17,1));
-
+        setSize(800, 800);
+        setResizable(true);
         label = new JLabel("Game");
         control.add(label);
 
@@ -73,7 +75,7 @@ public class Chess1800View extends JFrame implements Observer {
 
         boardPanel = new BoardJPanel();
         global = new JPanel();
-        global.setBackground(Color.LIGHT_GRAY);
+        global.setBackground(Color.BLUE);
         global.setLayout(new BorderLayout());
 
         JPanel control2 = new JPanel();
@@ -86,20 +88,29 @@ public class Chess1800View extends JFrame implements Observer {
 
         comboOpponent.setSelectedIndex(opponentDefaultIndex);
         comboTime.setSelectedIndex(timeDefaultIndex);
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        setVisible(true);
 
 
     }
 
-    public void addListener(ActionListener al){
-        for(Component c:this.getComponents()){
-            if(c instanceof JButton)
+    public void addActionListener(ActionListener al){
+        for(Component c: control.getComponents()){
+            if(c instanceof JButton){
                 ((JButton)c).addActionListener(al);
-            else if(c instanceof JComboBox)
+            }
+
+            else if(c instanceof JComboBox) {
                 ((JComboBox) c).addActionListener(al);
+            }
         }
 
 
     }
+    public void addBoardListener(MouseMotionListener mml, MouseListener ml){
+        boardPanel.addMouseListeners(mml, ml);
+    }
+
     @Override
     public void update(Observable o, Object arg) {
         invalidate();
@@ -129,10 +140,6 @@ public class Chess1800View extends JFrame implements Observer {
         return comboOpponent.getSelectedIndex();
     }
 
-    public void setAcceptInput(boolean acceptInput){
-        boardPanel.setAcceptInput(acceptInput);
-    }
-
     public void unHighlight() {
         boardPanel.unHighlight();
     }
@@ -143,5 +150,21 @@ public class Chess1800View extends JFrame implements Observer {
 
     public int getMoveTime() {
         return timeValues[comboTime.getSelectedIndex()];
+    }
+
+    public void setFEN(String fen, boolean flip, boolean redraw) {
+        boardPanel.setFEN(fen, flip, redraw);
+    }
+
+    public String getLastFEN() {
+        return boardPanel.getLastFEN();
+    }
+
+    public JPanel getChessBoard() {
+        return boardPanel.getChessBoard();
+    }
+
+    public void addPiece(PieceJLabel chessPiece, Integer dragLayer) {
+        boardPanel.addPiece(chessPiece, dragLayer);
     }
 }

@@ -101,7 +101,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
             while (st.hasMoreTokens()) {
                 arr.add(st.nextToken());
             }
-            // traversing the square-description part of the FEN
+            // setup the board squares first.
             int up = 7;
             int out;
             for (int i = 0; i < 8; i++) {
@@ -113,7 +113,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
                         }
                     }
                     else {
-                        long square = getSquare[up * 8 + out];
+                        long square = getSquare[(up * 8 + out)^7];
                         switch (c) {
                             case 'p':
                                 blackPawns |= square;
@@ -195,6 +195,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
             System.out.println("White castling: " + castleWhite);
             System.out.println("Black castling: " + castleBlack);
             System.out.println("ePSquare: " + ePSquare);*/
+            System.out.println(Long.toBinaryString(whiteQueens));
             return true;
         }// END if
 
@@ -209,15 +210,15 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         long i = A8;
         int j = 0;
         while (i != 0) {
-            char p = getPieceAt((int)i);
-            if (p == '.') {
+            char p = getPieceAt(Long.numberOfTrailingZeros(i));
+            if (p == ' ') {
                 j++;
             }
-            if ((j != 0) && (p != '.' || ((i & b_r) != 0))) {
+            if ((j != 0) && (p != ' ' || ((i & b_r) != 0))) {
                 sb.append(j);
                 j = 0;
             }
-            if (p != '.') {
+            if (p != ' ') {
                 sb.append(p);
             }
             if ((i != 1) && (i & b_r) != 0) {
@@ -1211,8 +1212,8 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
 
 
 
-    @Override
-    public String toString() {
+
+/*    public String toString() {
         String s = "     a   b   c   d   e   f   g   h\n";
         s += "   +---+---+---+---+---+---+---+---+\n 8 | ";
 
@@ -1236,27 +1237,23 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         s += "50 move rule: " + fiftyMove + "\n";
         s += "Move number: " + moveNumber + "\n";
         return s;
-    }
-
-//    public String toString(){
-//        StringBuilder sb = new StringBuilder();
-//        int j = 8;
-//        long i = BitboardUtilsAC.A8;
-//        while (i != 0) {
-//            sb.append(getPieceAt(Long.numberOfTrailingZeros(i)));
-//            sb.append(" ");
-//            if ((i & BitboardUtilsAC.b_r) != 0) {
-//                sb.append(j--);
-//                sb.append("\n");
-//            }
-//            i >>>= 1;
-//        }
-//        sb.append("a b c d e f g h  ");
-//        sb.append((whiteToMove ? "white move\n" : "blacks move\n"));
-//        return sb.toString();
-//    }
-    /*public long getAllPieces(){
-        return allPieces;
     }*/
-
+    @Override
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        int j = 8;
+        long i = A8;
+        while (i != 0) {
+            sb.append(getPieceAt(Long.numberOfTrailingZeros(i)));
+            sb.append(" ");
+            if ((i & b_r) != 0) {
+                sb.append(j--);
+                sb.append("\n");
+            }
+            i >>>= 1;
+        }
+        sb.append("a b c d e f g h  ");
+        sb.append((whiteToMove ? "white move\n" : "blacks move\n"));
+        return sb.toString();
+    }
 }

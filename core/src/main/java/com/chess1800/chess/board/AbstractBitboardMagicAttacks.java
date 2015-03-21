@@ -1,5 +1,4 @@
 package com.chess1800.chess.board;
-
 /**
  * Created by Yonathan on 07/12/2014.
  * Based on Alberto Ruibal's Carballo. Source @ https://githucom/albertoruibal/carballo/
@@ -37,8 +36,8 @@ public abstract class AbstractBitboardMagicAttacks{
 
     protected static final long A8 = 0x8000000000000000L;
     protected static final long H1 = 0x0000000000000001L; // AbstractBitboardMagicAttacks uses H1=0 A8=63
-    protected static final long WHITE_SQUARES = 0x55aa55aa55aa55aaL;
-    protected static final long BLACK_SQUARES = 0xaa55aa55aa55aa55L;
+    protected static final long WHITE_SQUARES = 0xaa55aa55aa55aa55L;
+    protected static final long BLACK_SQUARES = 0x55aa55aa55aa55aaL;
     // Board borders
     protected static final long b_d = 0x00000000000000ffL; // down
     protected static final long b_u = 0xff00000000000000L; // up
@@ -50,15 +49,17 @@ public abstract class AbstractBitboardMagicAttacks{
     protected static final long b2_r = 0x0303030303030303L; // right
     protected static final long b2_l = 0xC0C0C0C0C0C0C0C0L; // left
 
-    protected final String[] squareNames =
-            {"a1","b1","c1","d1","e1","f1","g1","h1",
-                    "a2","b2","c2","d2","e2","f2","g2","h2",
-                    "a3","b3","c3","d3","e3","f3","g3","h3",
-                    "a4","b4","c4","d4","e4","f4","g4","h4",
-                    "a5","b5","c5","d5","e5","f5","g5","h5",
-                    "a6","b6","c6","d6","e6","f6","g6","h6",
-                    "a7","b7","c7","d7","e7","f7","g7","h7",
-                    "a8","b8","c8","d8","e8","f8","g8","h8"};
+    protected final String[] squareNames =changeEndianArray64(new String []
+                   {"a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8", //
+                    "a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7", //
+                    "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6", //
+                    "a5", "b5", "c5", "d5", "e5", "f5", "g5", "h5", //
+                    "a4", "b4", "c4", "d4", "e4", "f4", "g4", "h4", //
+                    "a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3", //
+                    "a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2", //
+                    "a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1"});
+
+
 
     
     // 0 is a, 7 is h
@@ -96,6 +97,13 @@ public abstract class AbstractBitboardMagicAttacks{
     private static final byte[] bitTable = {63, 30, 3, 32, 25, 41, 22, 33, 15, 50, 42, 13, 11, 53, 19, 34, 61, 29, 2, 51, 21, 43, 45, 10, 18, 47, 1, 54, 9, 57,
             0, 35, 62, 31, 40, 4, 49, 5, 52, 26, 60, 6, 23, 44, 46, 27, 56, 16, 7, 39, 48, 24, 59, 14, 12, 55, 38, 28, 58, 20, 37, 17, 36, 8};
 
+    public static String[] changeEndianArray64(String sArray[]) {
+        String out[] = new String[64];
+        for (int i = 0; i < 64; i++) {
+            out[i] = sArray[63 - i];
+        }
+        return out;
+    }
 
 
     protected final void generateAttacks() {
@@ -235,14 +243,14 @@ public abstract class AbstractBitboardMagicAttacks{
     /**
      * Converts a square to its index 0=H1, 63=A8
      */
-    private static byte square2Index(long square) {
+    protected static byte square2Index(long square) {
         long b = square ^ (square - 1);
         int fold = (int) (b ^ (b >>> 32));
         return bitTable[(fold * 0x783a9b23) >>> 26];
     }
 
 
-    private boolean isIndexAttacked(byte i, boolean white) {
+    protected boolean isIndexAttacked(byte i, boolean white) {
         if (i < 0 || i > 63)
             return false;
         long others = white ? blackPieces: whitePieces;

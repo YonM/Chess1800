@@ -30,8 +30,8 @@ public interface Chessboard extends Evaluator {
 
     //Game state related
     public int isEndOfGame();
-    public boolean isCheck();
-    public boolean isWhiteToMove();
+
+
     public int getFiftyMove();
     public int getMoveNumber();
     public int movingSideMaterial();

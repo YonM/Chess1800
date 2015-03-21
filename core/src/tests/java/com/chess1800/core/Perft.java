@@ -36,11 +36,12 @@ public class Perft {
     public void perft() {
         b = new Bitboard();
         boolean loaded = b.initializeFromFEN(test1);
+        System.out.println(b);
         long i;
         if (loaded) {
             //System.out.println("true");
             long start = System.currentTimeMillis();
-            i = perft(b, 0, 6);
+            i = perft(b, 0, 1);
             long stop = System.currentTimeMillis();
             System.out.println("Found " + i + " nodes in " + (stop - start) + " ms.");
         } else {
