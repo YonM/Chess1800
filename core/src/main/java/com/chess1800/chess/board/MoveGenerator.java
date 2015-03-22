@@ -29,6 +29,6 @@ public interface MoveGenerator {
     public long getMyPieces();
     public long getOpponentPieces();
     public long getAllPieces();
-    public int getEPSquare();
+    public int getEPIndex();
 
 }

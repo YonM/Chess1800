@@ -167,7 +167,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
             if(arr.get(9).contains("k")) castleBlack += CANCASTLEOO;
             if(arr.get(9).contains("q")) castleBlack += CANCASTLEOOO;
             // en passant
-            ePSquare = algebraicLocToInt(arr.get(10));
+            ePIndex = algebraicLocToInt(arr.get(10));
             // 50mr
             if(arr.size() >12) {
                 fiftyMove = Integer.parseInt(arr.get(11));
@@ -194,8 +194,8 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
             System.out.println("50-Move: "+ fiftyMove);
             System.out.println("White castling: " + castleWhite);
             System.out.println("Black castling: " + castleBlack);
-            System.out.println("ePSquare: " + ePSquare);*/
-            System.out.println(Long.toBinaryString(whiteQueens));
+            System.out.println("ePIndex: " + ePIndex);*/
+            System.out.println(Long.toBinaryString(allPieces));
             return true;
         }// END if
 
@@ -248,7 +248,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         }
         if(!castleAvailable)sb.append("-");
         sb.append(" ");
-        sb.append((ePSquare != -1 ? index2Algebraic(ePSquare) : "-"));
+        sb.append((ePIndex != -1 ? index2Algebraic(ePIndex) : "-"));
         sb.append(" ");
         sb.append(fiftyMove);
         sb.append(" ");
@@ -315,6 +315,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         fiftyMove++;
         moveNumber++;
         //key ^= Zobrist.getKeyPieceIndex(from, PIECENAMES[piece]) ^ Zobrist.getKeyPieceIndex(to, PIECENAMES[piece]);
+
         if ((fromBoard & getMyPieces()) == 0) {
             return false;
         }
@@ -346,28 +347,29 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
             key ^= Zobrist.getKeyPieceIndex(pieceToRemoveIndex, pieceRemoved);
         }
         //remove en passant from Zobrist, if it already exists.
-        if (ePSquare != -1)
-            key ^= Zobrist.passantColumn[ePSquare % 8];
+        if (ePIndex != -1)
+            key ^= Zobrist.passantColumn[getColumnOfIndex(ePIndex)];
 
         //reset en passant location
-        ePSquare = -1;
+        ePIndex = -1;
 
         switch (piece) {
             case Move.PAWN:
                 fiftyMove = 0;
                 //Check if we need to update en passant square.
-                if (whiteToMove && (fromBoard << 16 & toBoard) != 0) ePSquare = Long.numberOfTrailingZeros(fromBoard << 8);
-                if (!whiteToMove && (fromBoard >>> 16 & toBoard) != 0) ePSquare = Long.numberOfTrailingZeros(fromBoard >>> 8);
+                if (whiteToMove && (fromBoard << 16 & toBoard) != 0) ePIndex = square2Index(fromBoard << 8);
+                if (!whiteToMove && (fromBoard >>> 16 & toBoard) != 0) ePIndex = square2Index(fromBoard >>> 8);
                 //add en passant column to key, if en passant is set.
-                if (ePSquare != -1)
-                    key ^= Zobrist.passantColumn[ePSquare % 8];
+                if (ePIndex != -1)
+                    key ^= Zobrist.passantColumn[getColumnOfIndex(ePIndex)];
+
                 //if promotion
                 if (Move.isPromotion(move)) {
                     if (whiteToMove) {
-                        whitePawns ^= fromBoard;
+                        whitePawns &= ~fromBoard;
                         key ^= Zobrist.getKeyPieceIndex(from, 'P');
                     } else {
-                        blackPawns ^= fromBoard;
+                        blackPawns &= ~fromBoard;
                         key ^= Zobrist.getKeyPieceIndex(from, 'p');
                     }
                     switch (moveType) {
@@ -410,8 +412,6 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
                             break;
                     }
                 } else {
-                    //No promotion
-                    //System.out.println("no promo");
                     if (whiteToMove) {
                         whitePawns ^= fromToBoard;
                         key ^= Zobrist.getKeyForMove(from, to, 'P');
@@ -466,30 +466,30 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
                 if (moveType == Move.TYPE_KINGSIDE_CASTLING) {
                     if (whiteToMove) {
                         castleWhite &= ~CANCASTLEOO;
-                        rookMask = 0xa0L;
-                        rookFromIndex = 7;
-                        rookToIndex = 5;
+                        rookMask = 0x05L;
+                        rookFromIndex = 0;
+                        rookToIndex = 2;
                         key ^= Zobrist.whiteKingSideCastling;
                     } else {
                         castleBlack &= ~CANCASTLEOO;
-                        rookMask = 0xa000000000000000L;
-                        rookFromIndex = 63;
-                        rookToIndex = 61;
+                        rookMask = 0x0500000000000000L;
+                        rookFromIndex = 56;
+                        rookToIndex = 58;
                         key ^= Zobrist.blackKingSideCastling;
                     }
                 }
                 if (moveType == Move.TYPE_QUEENSIDE_CASTLING) {
                     if (whiteToMove) {
                         castleWhite &= ~CANCASTLEOOO;
-                        rookMask = 0x9L;
-                        rookFromIndex = 0;
-                        rookToIndex = 3;
+                        rookMask = 0x90L;
+                        rookFromIndex = 7;
+                        rookToIndex = 4;
                         key ^= Zobrist.whiteQueenSideCastling;
                     } else {
                         castleBlack &= ~CANCASTLEOOO;
                         rookMask = 0x900000000000000L;
-                        rookFromIndex = 56;
-                        rookToIndex = 59;
+                        rookFromIndex = 63;
+                        rookToIndex = 60;
                         key ^= Zobrist.blackQueenSideCastling;
                     }
                 }
@@ -514,25 +514,26 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
                 return false;
         }
         updateAggregateBitboards();
+        //Update Castling information
         if (whiteToMove) {
-            if ((fromToBoard & 0x90L) != 0) { // 0x90 is e1 | h1 -- the king or
+            if ((fromToBoard & 0x0000000000000009L) != 0) { // 0x0000000000000009L is e1 | h1 -- the king or
                 // king's rook has moved
                 castleWhite &= ~CANCASTLEOO;
                 key ^= Zobrist.whiteKingSideCastling;
             }
-            if ((fromToBoard & 0x11L) != 0) { // 0x11 is e1 | a1 -- the king or
+            if ((fromToBoard & 0x0000000000000088L) != 0) { // 0x0000000000000088L is e1 | a1 -- the king or
                 // queen's rook has moved
                 castleWhite &= ~CANCASTLEOOO;
                 key ^= Zobrist.whiteQueenSideCastling;
             }
         } else {
-            if ((fromToBoard & 0x9000000000000000L) != 0) { // 0x90... is 0x90
+            if ((fromToBoard & 0x0900000000000000L) != 0) { // 0x09 is 0x0000000000000009L
                 // <<'d to
                 // black's side
                 castleBlack &= ~CANCASTLEOO;
                 key ^= Zobrist.blackKingSideCastling;
             }
-            if ((fromToBoard & 0x1100000000000000L) != 0) { // 0x11... is 0x11
+            if ((fromToBoard & 0x8800000000000000L) != 0) { // 0x88 is 0x0000000000000088L
                 // <<'d to
                 // black's side
                 castleBlack &= ~CANCASTLEOOO;
@@ -540,7 +541,6 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
             }
         }
         if (isOwnKingAttacked()) {
-            //if(piece==BISHOP && whiteToMove) System.out.println("cant do this");
             unmakeMove();
             return false;
         }
@@ -553,8 +553,8 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
     public void makeNullMove() {
         saveHistory(moveNumber);
         moveNumber++;
-        if (ePSquare != -1) key ^= Zobrist.passantColumn[ePSquare % 8];
-        ePSquare = -1;
+        if (ePIndex != -1) key ^= Zobrist.passantColumn[getColumnOfIndex(ePIndex)];
+        ePIndex = -1;
         whiteToMove = !whiteToMove;
         key ^= Zobrist.whiteMove;
     }
@@ -584,7 +584,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         allPieces = all_pieces_history[moveNumber];
         whiteToMove = whiteToMove_history[moveNumber];
         fiftyMove = fiftyMoveRule_history[moveNumber];
-        ePSquare = enPassant_history[moveNumber];
+        ePIndex = enPassant_history[moveNumber];
         castleWhite = white_castle_history[moveNumber];
         castleBlack = black_castle_history[moveNumber];
         key = key_history[moveNumber];
@@ -609,7 +609,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         all_pieces_history[moveNumber] = allPieces;
         whiteToMove_history[moveNumber] = whiteToMove;
         fiftyMoveRule_history[moveNumber] = fiftyMove;
-        enPassant_history[moveNumber] = ePSquare;
+        enPassant_history[moveNumber] = ePIndex;
         move_history[moveNumber] = move;
         white_castle_history[moveNumber] = castleWhite;
         black_castle_history[moveNumber] = castleBlack;
@@ -1202,11 +1202,11 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
      * @return the integer representation of the string
      */
     private static int algebraicLocToInt(String loc) {
-        if (loc.equals("-"))
-            return -1;
-        int out = loc.charAt(0) - 'a';
-        int up = Integer.parseInt(loc.charAt(1) + "") - 1;
-        return up * 8 + out;
+        for (int i = 0; i < 64; i++) {
+            if (loc.equals(squareNames[i]))
+                return i;
+        }
+        return -1;
     }
 
 
@@ -1232,8 +1232,8 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         s += "White: O-O: " + castleWhite + " -- O-O-O: " + castleWhite + "\n";
         s += "Black: O-O: " + castleBlack + " -- O-O-O: " + castleBlack + "\n";
         s +=
-                "En Passant: " + ePSquare + " ("
-                        + intToAlgebraicLoc(ePSquare) + ")\n";
+                "En Passant: " + ePIndex + " ("
+                        + intToAlgebraicLoc(ePIndex) + ")\n";
         s += "50 move rule: " + fiftyMove + "\n";
         s += "Move number: " + moveNumber + "\n";
         return s;

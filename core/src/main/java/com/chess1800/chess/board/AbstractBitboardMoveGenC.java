@@ -18,7 +18,7 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
     protected boolean whiteToMove;
     protected int castleWhite;
     protected int castleBlack;
-    protected int ePSquare;
+    protected int ePIndex; //en-passant index
     public static final int CANCASTLEOO = 1;
     public static final int CANCASTLEOOO = 2;
 
@@ -33,6 +33,7 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
         for (int i = 0; i < getSquare.length; i++) getSquare[i] = 1L << i;
     }
 
+    // 0 is File A, 7 is File H
     public static final long[] COLUMN = {b_l, b_r << 6, b_r << 5, b_r << 4, b_r << 3, b_r << 2, b_r << 1, b_r};
 
     // 0 is Rank 1, 7 is Rank 8
@@ -47,7 +48,7 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
         others = getOpponentPieces();
 
         int index = 0;
-        long square = 0x1L;
+        long square = H1;
         while (square != 0) {
             if (isWhiteToMove() == ((square & whitePieces) != 0)) {
 
@@ -59,17 +60,18 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
                     generateMovesFromAttacks(Move.QUEEN, index, (getRookAttacks(index, all) | getBishopAttacks(index, all)) & ~mines);
                 } else if ((square & (whiteKing | blackKing)) != 0) { // King
                     generateMovesFromAttacks(Move.KING, index, king[index] & ~mines);
-                } else if ((square & (whiteKnights| blackKnights)) != 0) { // Knight
+                } else if ((square & (whiteKnights | blackKnights)) != 0) { // Knight
                     generateMovesFromAttacks(Move.KNIGHT, index, knight[index] & ~mines);
                 } else if ((square & (whitePawns | blackPawns)) != 0) { // Pawns
                     if ((square & whitePieces) != 0) {
                         if (((square << 8) & all) == 0) {
                             addMoves(Move.PAWN, index, index + 8, false, 0);
-                            // Two squares if it is in he first row
+                            // Two squares if it is in RANK 2.
                             if (((square & b2_d) != 0) && (((square << 16) & all) == 0))
                                 addMoves(Move.PAWN, index, index + 16, false, 0);
                         }
-                        generatePawnCapturesFromAttacks(index, whitePawn[index], getEPSquare());
+                        long epSquare = getEPIndex()==-1? 0: getSquare[getEPIndex()] ;
+                        generatePawnCapturesFromAttacks(index, whitePawn[index], epSquare);
                     } else {
                         if (((square >>> 8) & all) == 0) {
                             addMoves(Move.PAWN, index, index - 8, false, 0);
@@ -77,7 +79,8 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
                             if (((square & b2_u) != 0) && (((square >>> 16) & all) == 0))
                                 addMoves(Move.PAWN, index, index - 16, false, 0);
                         }
-                        generatePawnCapturesFromAttacks(index, blackPawn[index], getEPSquare());
+                        long epSquare = getEPIndex()==-1? 0: getSquare[getEPIndex()] ;
+                        generatePawnCapturesFromAttacks(index, blackPawn[index], epSquare);
                     }
                 }
             }
@@ -159,8 +162,8 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
         return castleWhite;
     }
 
-    public int getEPSquare() {
-        return ePSquare;
+    public int getEPIndex() {
+        return ePIndex;
     }
 
 
