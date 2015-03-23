@@ -113,7 +113,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
                         }
                     }
                     else {
-                        long square = getSquare[(up * 8 + out)^7];
+                        long square = getSquare[up * 8 + out];
                         switch (c) {
                             case 'p':
                                 blackPawns |= square;
@@ -195,7 +195,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
             System.out.println("White castling: " + castleWhite);
             System.out.println("Black castling: " + castleBlack);
             System.out.println("ePSquare: " + ePSquare);*/
-            System.out.println(Long.toBinaryString(whiteQueens));
+            System.out.println(Long.toBinaryString(allPieces));
             return true;
         }// END if
 
@@ -210,7 +210,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         long i = A8;
         int j = 0;
         while (i != 0) {
-            char p = getPieceAt(Long.numberOfTrailingZeros(i));
+            char p = getPieceAt(Long.numberOfTrailingZeros(i)^7);
             if (p == ' ') {
                 j++;
             }
@@ -952,6 +952,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         int up = loc / 8;
         char outc = (char) (out + 'a');
         char upc = (char) (up + '1');
+        System.out.println("Algebraic Location: "+ outc + "" + upc);
         return outc + "" + upc;
     }
 
@@ -972,18 +973,23 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
     }*/
 
     public  int algebraic2Index(String name) {
-        System.out.println("square checked: " +name);
-        for (int i = 0; i < 64; i++) {
-            if (name.equals(squareNames[i])) {
-                System.out.println("index returned: " +i);
-                return i;
-            }
-        }
-        return -1;
+        if (name.equals("-"))
+            return -1;
+        int out = name.charAt(0) - 'a';
+        int up = Integer.parseInt(name.charAt(1) + "") - 1;
+        return up * 8 + out;
     }
 
     public String index2Algebraic(int index) {
-        return squareNames[index];
+        if (index == -1)
+            return "-";
+        System.out.println("index given: " + index);
+        int out = index % 8;
+        int up = index / 8;
+        char outc = (char) (out + 'a');
+        char upc = (char) (up + '1');
+        System.out.println("Algebraic returned: "+ outc + "" + upc);
+        return outc + "" + upc;
     }
 
     public boolean validateHashMove(int move) {
@@ -1244,7 +1250,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         int j = 8;
         long i = A8;
         while (i != 0) {
-            sb.append(getPieceAt(Long.numberOfTrailingZeros(i)));
+            sb.append(getPieceAt(Long.numberOfTrailingZeros(i)^7));
             sb.append(" ");
             if ((i & b_r) != 0) {
                 sb.append(j--);

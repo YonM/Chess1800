@@ -51,7 +51,9 @@ public class BoardModel extends Observable {
             for (int i = 0; i < num_moves; i++) {
                 if (s.equals(Bitboard.intToAlgebraicLoc(Move.getFromIndex(moves[i])) + "-"
                         + Bitboard.intToAlgebraicLoc(Move.getToIndex(moves[i])))) {
+
                     makeMove(moves[i]);
+                    System.out.println(Long.toBinaryString(b.getAllPieces()));
                     break;
                 }
             }

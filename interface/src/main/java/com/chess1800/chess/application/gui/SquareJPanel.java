@@ -1,6 +1,6 @@
 package com.chess1800.chess.application.gui;
 
-import javax.swing.JPanel;
+import javax.swing.*;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -18,6 +18,10 @@ public class SquareJPanel extends JPanel {
     static {
         imgWhite = new BufferedImage(75, 75, BufferedImage.TYPE_4BYTE_ABGR);
         imgBlack = new BufferedImage(75, 75, BufferedImage.TYPE_4BYTE_ABGR);
+        ImageIcon icon = new ImageIcon(SquareJPanel.class.getClass().getResource("/blue.png"));
+        imgWhite.getGraphics().drawImage(icon.getImage(), -75, 0, null);
+        imgBlack.getGraphics().drawImage(icon.getImage(), 0, 0, null);
+
     }
 
     private int index;

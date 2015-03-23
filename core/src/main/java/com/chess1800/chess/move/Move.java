@@ -61,7 +61,7 @@ public class Move{
         return move & SQUARE_MASK;
     }
 
-    public static final long getToSquare(int move) {
+    public static final long getFromSquare(int move) {
         return 0x1L << (move & SQUARE_MASK);
     }
 
@@ -69,7 +69,7 @@ public class Move{
         return ((move >>> 6) & SQUARE_MASK);
     }
 
-    public static final long getFromSquare(int move) {
+    public static final long getToSquare(int move) {
         return 0x1L << ((move >>> 6) & SQUARE_MASK);
     }
 

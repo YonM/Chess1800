@@ -37,10 +37,11 @@ public class Chess1800Model extends Observable {
         if(isMoveLegal(move)) {
             if(b.makeMove(move)){
                 System.out.println("move legal");
+                System.out.println(Long.toBinaryString(b.getAllPieces()));
                 setChanged();
                 return true;
             }
-            System.out.println("move illegal discrepancy");
+            System.out.println("move legality discrepancy (move not legal)");
             return false;
         }{
             System.out.println("move illegal");

@@ -35,7 +35,7 @@ public class Perft {
     @Test
     public void perft() {
         b = new Bitboard();
-        boolean loaded = b.initializeFromFEN(test1);
+        boolean loaded = b.initializeFromFEN(test2);
         System.out.println(b);
         long i;
         if (loaded) {
