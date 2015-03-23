@@ -381,11 +381,11 @@ public abstract class AbstractBitboardMagicAttacks{
 
         long all = allPieces;
 
-        return ((blackPieces & whitePawn[index] | whitePieces & blackPawn[index]) & (whitePawns & blackPawns))
-                | (knight[index] & (whiteKnights & blackKnights))
-                | (king[index] & (whiteKing & blackKing))
-                | (getRookAttacks(index, all) & ((whiteRooks & blackRooks) | (whiteQueens | blackQueens)))
-                | (getBishopAttacks(index, all) & ((whiteBishops & blackBishops) | (whiteQueens | blackQueens)));
+        return ((blackPieces & whitePawn[index] | whitePieces & blackPawn[index]) & (whitePawns | blackPawns))
+                | (knight[index] & (whiteKnights | blackKnights))
+                | (king[index] & (whiteKing | blackKing))
+                | (getRookAttacks(index, all) & ((whiteRooks | blackRooks) | (whiteQueens | blackQueens)))
+                | (getBishopAttacks(index, all) & ((whiteBishops | blackBishops) | (whiteQueens | blackQueens)));
     }
 
     protected final static int getColumnOfIndex(int index) {

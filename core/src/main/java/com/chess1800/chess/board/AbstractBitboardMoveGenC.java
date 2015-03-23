@@ -30,7 +30,7 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
     public static final long[] getSquare;
     static {
         getSquare = new long[64];
-        for (int i = 0; i < getSquare.length; i++) getSquare[i] = 1L << i;
+        for (int i = 0; i < getSquare.length; i++) getSquare[i] = H1 << i;
     }
 
     // 0 is File A, 7 is File H
