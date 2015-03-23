@@ -18,7 +18,7 @@ public class Chess1800View extends JFrame implements Observer {
     int timeDefaultIndex = 0;
     JPanel global, control;
     JComboBox comboOpponent, comboTime;
-    String opponentString[] = {"AI1 Whites", "A1 Blacks", "AI2 Whites", "AI2 Blacks", "AI 1 vs AI2", "AI2 vs A1"};
+    String opponentString[] = {"AI1 Whites", "AI1 Blacks", "AI2 Whites", "AI2 Blacks", "AI 1 vs AI2", "AI2 vs A1"};
     int opponentDefaultIndex = 1;
     private char[] boardPieces;
     private JTextField fenField;
@@ -52,6 +52,7 @@ public class Chess1800View extends JFrame implements Observer {
 
         comboOpponent = new JComboBox(opponentString);
         comboOpponent.setActionCommand("opponent");
+        control.add(comboOpponent);
 
 
         comboTime = new JComboBox(timeString);

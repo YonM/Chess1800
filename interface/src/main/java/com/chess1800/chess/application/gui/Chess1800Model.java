@@ -19,6 +19,7 @@ public class Chess1800Model extends Observable {
     public Chess1800Model(Search engine1, Search engine2) {
         b= new Bitboard();
         b.initialize();
+        moveTime=1000;
         this.engine1 = engine1;
         this.engine2 = engine2;
     }
@@ -28,18 +29,21 @@ public class Chess1800Model extends Observable {
 
     }
     public int getMoveFromIndices(int from, int to){
-        String move=b.index2Algebraic(from)+b.index2Algebraic(to);
+        String move=b.index2Algebraic(from^7)+b.index2Algebraic(to^7);
         return b.getMoveFromString(move, false);
     }
 
     public boolean userMove(int move) {
         if(isMoveLegal(move)) {
             if(b.makeMove(move)){
+                System.out.println("move legal");
                 setChanged();
                 return true;
             }
+            System.out.println("move illegal discrepancy");
             return false;
         }{
+            System.out.println("move illegal");
             return false;
         }
     }
@@ -53,7 +57,7 @@ public class Chess1800Model extends Observable {
     }
 
     public int isEndOfGame(){
-        return -1;
+        return b.isEndOfGame();
     }
 
     public int getMoveNumber() {
@@ -65,7 +69,8 @@ public class Chess1800Model extends Observable {
     }
 
     public void engine1Move() {
-
+            int move=engine1.findBestMove(b,0,0,0,moveTime);
+            userMove(move);
     }
 
     public void engine2Move() {

@@ -73,7 +73,7 @@ public class BoardJPanel extends JPanel{
                 } catch (Exception ignored) {}
 
                 for (int k = 0; k < (number == 0 ? 1 : number); k++) {
-                    SquareJPanel panel = (SquareJPanel) chessBoard.getComponent(flip ? 63 - j++ : j++);
+                    SquareJPanel panel = (SquareJPanel) chessBoard.getComponent(flip ? (63 - j++)^7 : (j++));
                     try {
                         PieceJLabel label = (PieceJLabel) panel.getComponent(0);
                         if (label.getPiece() != p || redraw) {
@@ -99,8 +99,8 @@ public class BoardJPanel extends JPanel{
     }
 
     public void highlight(int from, int to) {
-        SquareJPanel squareFrom = (SquareJPanel) chessBoard.getComponent(flip ? from : 63 - from);
-        SquareJPanel squareTo = (SquareJPanel) chessBoard.getComponent(flip ? to : 63 - to);
+        SquareJPanel squareFrom = (SquareJPanel) chessBoard.getComponent(flip ? (from)^7 : (63 - from)^7);
+        SquareJPanel squareTo = (SquareJPanel) chessBoard.getComponent(flip ? (to)^7 : (63 - to)^7);
         squareFrom.setHighlighted(true);
         squareTo.setHighlighted(true);
     }

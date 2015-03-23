@@ -32,6 +32,7 @@ public class Chess1800Controller implements SearchObserver, ActionListener, Mous
     public Chess1800Controller(Chess1800Model model, Chess1800View view) {
         this.model = model;
         this.view = view;
+        model.setMoveTime(view.getMoveTime());
         userToMove = true;
         flip = false;
         acceptInput = true;
@@ -72,6 +73,7 @@ public class Chess1800Controller implements SearchObserver, ActionListener, Mous
             flip = !flip;
             view.unHighlight();
             view.setFEN(view.getLastFEN(), flip, true);
+            view.update(model, null);
         }
 
     }
@@ -130,6 +132,8 @@ public class Chess1800Controller implements SearchObserver, ActionListener, Mous
                     model.notifyObservers();
                     update(true);
                     checkUserToMove();
+                }else{
+                    update(false);
                 }
 
     }
@@ -142,7 +146,7 @@ public class Chess1800Controller implements SearchObserver, ActionListener, Mous
     }
     private void checkUserToMove() {
         userToMove = false;
-
+        System.out.println(view.getGameType() + " << game type");
         switch(view.getGameType()) {
             case 0:
                 if (!model.isWhiteToMove()) userToMove = true;
@@ -159,23 +163,29 @@ public class Chess1800Controller implements SearchObserver, ActionListener, Mous
             default:
                 break;
         }
-        //view.setAcceptInput(userToMove);
+        acceptInput = userToMove;
         update(!userToMove);
-
+        System.out.println(userToMove +" << user to move");
         if (!userToMove && (model.isEndOfGame() == 0)){
             int gameType=view.getGameType();
 
             if(gameType== 0 | gameType == 1 ){  //AI1
+                System.out.println("AI 1 called");
                 model.engine1Move();
+                checkUserToMove();
             }
             else if(gameType == 2 | gameType == 3){ //AI2
+                System.out.println("AI 2 called");
                 model.engine2Move();
+                update(false);
             }else if(gameType ==4){                 //AI1 is White vs AI2
                 if(model.isWhiteToMove()) model.engine1Move();
                 else model.engine2Move();
+                update(true);
             }else{                                  //AI1 is Black vs AI2
                 if(!model.isWhiteToMove()) model.engine1Move();
                 else model.engine2Move();
+                update(true);
             }
         }
 
@@ -211,6 +221,7 @@ public class Chess1800Controller implements SearchObserver, ActionListener, Mous
                 else view.setMessageText("Black move" + (thinking ? " - Thinking..." : ""));
                 break;
         }
+        view.update(model,null);
     }
 
 
@@ -242,5 +253,6 @@ public class Chess1800Controller implements SearchObserver, ActionListener, Mous
         System.out.println("bestMove... userToMove="+userToMove);
         if(userToMove) return;
         view.unHighlight();
+        checkUserToMove();
     }
 }
