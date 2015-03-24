@@ -1,7 +1,7 @@
 package com.chess1800.core;
 
-import com.chess1800.chess.board.Bitboard;
-import com.chess1800.chess.board.Chessboard;
+import com.chess1800.core.board.Bitboard;
+import com.chess1800.core.board.Chessboard;
 import org.junit.Assert;
 import org.junit.Test;
 
