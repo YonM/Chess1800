@@ -1,4 +1,4 @@
-package com.chess1800.core.search;
+package java.com.chess1800.core.search;
 
 /**
  * Created by Yonathan on 19/03/2015.

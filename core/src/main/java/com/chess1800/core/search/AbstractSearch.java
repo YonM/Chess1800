@@ -1,11 +1,11 @@
-package com.chess1800.core.search;
+package java.com.chess1800.core.search;
 
-import com.chess1800.core.board.Chessboard;
+import java.com.chess1800.core.board.Chessboard;
 
 /**
  * Created by Yonathan on 24/03/2015.
  */
-public abstract class AbstractSearch extends AbstractSearchInfo implements Search{
+public abstract class AbstractSearch extends AbstractSearchInfo implements Search {
     protected boolean searching;
     protected boolean initialized;
     protected Thread thread;
@@ -16,21 +16,21 @@ public abstract class AbstractSearch extends AbstractSearchInfo implements Searc
     protected boolean stopSearch;
 
     protected AbstractSearch(Chessboard board) {
-        initialized= false;
-        if(AbstractSearch.board== null){
+        initialized = false;
+        if (AbstractSearch.board == null) {
             AbstractSearch.board = board;
             AbstractSearch.board.initialize();
         }
-        initialized= true;
+        initialized = true;
     }
 
     @Override
-    public Chessboard getBoard(){
+    public Chessboard getBoard() {
         return board;
     }
 
     @Override
-    public final boolean isSearching(){
+    public final boolean isSearching() {
         return searching;
     }
 
@@ -41,33 +41,34 @@ public abstract class AbstractSearch extends AbstractSearchInfo implements Searc
     }
 
     @Override
-    public void go(){
-        if(!initialized) return;
-        if(!isSearching()){
-            try{
+    public void go() {
+        if (!initialized) return;
+        if (!isSearching()) {
+            try {
                 setupRun();
                 thread = new Thread(this);
                 thread.start();
-            }catch (Exception e){
+            } catch (Exception e) {
 
             }
         }
     }
 
-    public final void stop(){
-        timeForMove =0;
-        depth =0;
+    public final void stop() {
+        timeForMove = 0;
+        depth = 0;
         stopSearch = true;
-        while(isSearching()){
-            try{
+        while (isSearching()) {
+            try {
                 Thread.sleep(10);
-            }catch (InterruptedException e){
+            } catch (InterruptedException e) {
 
             }
         }
     }
 
     protected abstract void setupRun();
+
     protected abstract void finishRun() throws SearchRunException;
 
 }

@@ -1,7 +1,8 @@
-package com.chess1800.core.board;
+package java.com.chess1800.core.board;
 
-import com.chess1800.core.move.Move;
 import org.apache.commons.lang3.ArrayUtils;
+
+import java.com.chess1800.core.move.Move;
 
 /**
  * Created by Yonathan on 15/01/2015.
@@ -56,7 +57,6 @@ public abstract class AbstractBitboardMoveGenerator extends AbstractBitboardMagi
     protected int castleBlack;
 
 
-
     protected int[] moves;
 
 
@@ -107,11 +107,11 @@ public abstract class AbstractBitboardMoveGenerator extends AbstractBitboardMagi
         return j;
     }
 
-    public boolean legalMovesAvailable(){
+    public boolean legalMovesAvailable() {
         int[] moves = new int[MAX_MOVES];
-        int lastIndex = getAllMoves( moves);
-        for(int i = 0; i<lastIndex; i++){
-            if(makeMove(moves[i])){
+        int lastIndex = getAllMoves(moves);
+        for (int i = 0; i < lastIndex; i++) {
+            if (makeMove(moves[i])) {
                 unmakeMove();
                 return true;
             }
@@ -148,12 +148,12 @@ public abstract class AbstractBitboardMoveGenerator extends AbstractBitboardMagi
         int num_captures = getAllCaptures(captures);
         int val;
         int insertIndex;
-        for(int i = 0; i < num_captures; i++){
+        for (int i = 0; i < num_captures; i++) {
             val = sEE(captures[i]);
             captureValues[i] = val;
-            if(val< MINCAPTVAL){
-                captures=ArrayUtils.remove(captures, i);
-                captureValues= ArrayUtils.remove(captureValues, i);
+            if (val < MINCAPTVAL) {
+                captures = ArrayUtils.remove(captures, i);
+                captureValues = ArrayUtils.remove(captureValues, i);
                 num_captures--;
                 i--;
                 continue;
@@ -161,30 +161,30 @@ public abstract class AbstractBitboardMoveGenerator extends AbstractBitboardMagi
             insertIndex = i;
 
         }
-        sortCaptures(captureValues,captures,num_captures);
+        sortCaptures(captureValues, captures, num_captures);
         return num_captures;
     }
 
-    private void sortCaptures(int[] captureValues,int[] captures,int num_captures) {
+    private void sortCaptures(int[] captureValues, int[] captures, int num_captures) {
         //Insertion sort of captures.
-        for(int i=1;i<num_captures;i++){
+        for (int i = 1; i < num_captures; i++) {
             int tempVal = captureValues[i];
             int tempCapture = captures[i];
             int j;
-            for(j = i-1; j>=0 && tempVal > captureValues[j];j--){
-                captureValues[j+1] = captureValues[j];
-                captures[j+1] = captures [j];
+            for (j = i - 1; j >= 0 && tempVal > captureValues[j]; j--) {
+                captureValues[j + 1] = captureValues[j];
+                captures[j + 1] = captures[j];
             }
-            captureValues[j+1] = tempVal;
-            captures[j+1] = tempCapture;
+            captureValues[j + 1] = tempVal;
+            captures[j + 1] = tempCapture;
         }
     }
 
     private int getAllCaptures(int[] captures) {
-        int lastIndex= getAllMoves(captures);
-        int num_captures=0;
-        for(int i=0; i< lastIndex; i++){
-            if(Move.isPromotion(captures[i]) || Move.isCapture(captures[i]))
+        int lastIndex = getAllMoves(captures);
+        int num_captures = 0;
+        for (int i = 0; i < lastIndex; i++) {
+            if (Move.isPromotion(captures[i]) || Move.isCapture(captures[i]))
                 captures[num_captures++] = captures[i];
         }
         return num_captures;
@@ -194,11 +194,11 @@ public abstract class AbstractBitboardMoveGenerator extends AbstractBitboardMagi
     public abstract int sEE(int move);
 
 
-    private int getAllNonCaptures(int[] nonCaptures){
-        int lastIndex= getAllMoves(nonCaptures);
-        int num_non_captures=0;
-        for(int i=0; i< lastIndex; i++){
-            if(!Move.isPromotion(nonCaptures[i]) || !Move.isCapture(nonCaptures[i]))
+    private int getAllNonCaptures(int[] nonCaptures) {
+        int lastIndex = getAllMoves(nonCaptures);
+        int num_non_captures = 0;
+        for (int i = 0; i < lastIndex; i++) {
+            if (!Move.isPromotion(nonCaptures[i]) || !Move.isCapture(nonCaptures[i]))
                 nonCaptures[num_non_captures++] = nonCaptures[i];
         }
         return num_non_captures;
@@ -248,17 +248,17 @@ public abstract class AbstractBitboardMoveGenerator extends AbstractBitboardMagi
     public char getPieceAt(int loc) {
         long sq = getSquare[loc];
         if (((whitePawns | blackPawns) & sq) != 0L)
-            return (whitePieces & sq) !=0 ? 'P': 'p';
+            return (whitePieces & sq) != 0 ? 'P' : 'p';
         if (((whiteKnights | blackKnights) & sq) != 0L)
-            return (whitePieces & sq) !=0 ? 'N': 'n';
+            return (whitePieces & sq) != 0 ? 'N' : 'n';
         if (((whiteBishops | blackBishops) & sq) != 0L)
-            return (whitePieces & sq) !=0 ? 'B': 'b';
+            return (whitePieces & sq) != 0 ? 'B' : 'b';
         if (((whiteRooks | blackRooks) & sq) != 0L)
-            return (whitePieces & sq) !=0 ? 'R': 'r';
+            return (whitePieces & sq) != 0 ? 'R' : 'r';
         if (((whiteQueens | blackQueens) & sq) != 0L)
-            return (whitePieces & sq) !=0 ? 'Q': 'q';
+            return (whitePieces & sq) != 0 ? 'Q' : 'q';
         if (((whiteKing | blackKing) & sq) != 0L)
-            return (whitePieces & sq) !=0 ? 'K': 'k';
+            return (whitePieces & sq) != 0 ? 'K' : 'k';
         return ' ';
     }
 
@@ -706,7 +706,7 @@ public abstract class AbstractBitboardMoveGenerator extends AbstractBitboardMagi
         while (rooks != 0) {
             long fromBoard = Long.lowestOneBit(rooks);
             int fromIndex = Long.numberOfTrailingZeros(fromBoard);
-            long movelocs =getRookAttacks(fromIndex, allPieces & ~fromBoard);
+            long movelocs = getRookAttacks(fromIndex, allPieces & ~fromBoard);
             movelocs &= ~blackPieces;
             while (movelocs != 0) {
                 long to = Long.lowestOneBit(movelocs);
@@ -722,7 +722,7 @@ public abstract class AbstractBitboardMoveGenerator extends AbstractBitboardMagi
         return num_moves_generated;
     }
 
-    public int getWhiteQueenMoves( int[] moves, int index) {
+    public int getWhiteQueenMoves(int[] moves, int index) {
         long queens = whiteQueens;
         int num_moves_generated = 0;
         while (queens != 0) {

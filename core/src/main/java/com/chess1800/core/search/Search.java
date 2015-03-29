@@ -1,7 +1,7 @@
-package com.chess1800.core.search;
+package java.com.chess1800.core.search;
 
-import com.chess1800.core.board.Chessboard;
-import com.chess1800.core.board.Evaluator;
+import java.com.chess1800.core.board.Chessboard;
+import java.com.chess1800.core.board.Evaluator;
 
 /**
  * Created by Yonathan on 02/02/2015.
@@ -12,7 +12,9 @@ public interface Search extends Runnable, SearchInfo {
     public void findBestMove() throws SearchRunException;
 
     public Chessboard getBoard();
+
     public void go();
+
     public void stop();
 
     public long getBestMoveTime();

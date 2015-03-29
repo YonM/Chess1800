@@ -1,4 +1,4 @@
-package com.chess1800.core.board;
+package java.com.chess1800.core.board;
 
 /**
  * Created by Yonathan on 02/03/2015.
@@ -14,8 +14,11 @@ public interface MoveGenerator {
     public int genCaptures(int[] captures);
 
     public boolean makeMove(int move);
+
     public void makeNullMove();
+
     public void unmakeMove();
+
     public void unmakeMove(int moveNumber);
 
     //Maximum moves per position and max game length.
@@ -24,12 +27,16 @@ public interface MoveGenerator {
 
     //Game State
     public boolean isCheck();
+
     public boolean isWhiteToMove();
 
     //Pieces
     public long getMyPieces();
+
     public long getOpponentPieces();
+
     public long getAllPieces();
+
     public int getEPSquare();
 
 }

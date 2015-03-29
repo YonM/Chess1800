@@ -1,10 +1,10 @@
-package com.chess1800.core.search;
+package java.com.chess1800.core.search;
 
 /**
  * Created by Yonathan on 24/03/2015.
  * Separate search parameters from the Search. Based on Alberto Ruibal's Carballo. Source @ https://githucom/albertoruibal/carballo/
  */
-public abstract class AbstractSearchParameters implements SearchParameters{
+public abstract class AbstractSearchParameters implements SearchParameters {
 
     // UCI parameters
     // Remaining time
@@ -42,6 +42,7 @@ public abstract class AbstractSearchParameters implements SearchParameters{
     public void setWInc(int wInc) {
         this.wInc = wInc;
     }
+
     @Override
     public void setBTime(int bTime) {
         this.bTime = bTime;
@@ -66,6 +67,7 @@ public abstract class AbstractSearchParameters implements SearchParameters{
     public void setNodes(int nodes) {
         this.nodes = nodes;
     }
+
     @Override
     public void setMoveTime(int moveTime) {
         this.moveTime = moveTime;
@@ -85,28 +87,28 @@ public abstract class AbstractSearchParameters implements SearchParameters{
 
 
     protected void setSearchParameters() {
-        if(moveTime==Integer.MAX_VALUE & !infinite) calculateTime(engineIsWhite);
+        if (moveTime == Integer.MAX_VALUE & !infinite) calculateTime(engineIsWhite);
         else timeForMove = moveTime;
-        if(depth != Integer.MAX_VALUE)useFixedDepth= true;
-        else useFixedDepth=false;
+        if (depth != Integer.MAX_VALUE) useFixedDepth = true;
+        else useFixedDepth = false;
         //nextTimeCheck = TIME_CHECK_INTERVAL;
     }
 
 
     //Based on Mediocre Chess by Jonatan Pettersson. Source @ http://sourceforge.net/projects/mediocrechess/
     protected void calculateTime(boolean isEngineWhite) {
-        int timeLeft= isEngineWhite? wTime : bTime;
-        int increment = isEngineWhite? wInc : bInc;
+        int timeLeft = isEngineWhite ? wTime : bTime;
+        int increment = isEngineWhite ? wInc : bInc;
         int tempTimeForMove; //Max time allowed for the move.
         int percent = 40; //Percentage of time that will be used. percent=20 -> 5% percent=40 ->2.5%
-        tempTimeForMove = timeLeft/percent + increment; //use percent + increment for the move.
+        tempTimeForMove = timeLeft / percent + increment; //use percent + increment for the move.
 
         //if the increment addition puts us above the timeleft, set the time for this move to timeleft-0.5s.
-        if(tempTimeForMove>=timeLeft) {
-            tempTimeForMove=timeLeft -500;
+        if (tempTimeForMove >= timeLeft) {
+            tempTimeForMove = timeLeft - 500;
             //if the timeleft was less than 0.5s then set tempTimeForMove to 0.1 seconds.
-            if(tempTimeForMove<0)
-                tempTimeForMove=100;
+            if (tempTimeForMove < 0)
+                tempTimeForMove = 100;
         }
         timeForMove = tempTimeForMove;
     }

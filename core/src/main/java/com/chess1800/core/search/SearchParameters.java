@@ -1,4 +1,4 @@
-package com.chess1800.core.search;
+package java.com.chess1800.core.search;
 
 /**
  * Created by Yonathan on 24/03/2015.
@@ -7,8 +7,11 @@ public interface SearchParameters {
 
     //Timing information White Time, White Increment, Black Time and Black Increment.
     public void setWTime(int wTime);
+
     public void setWInc(int wInc);
+
     public void setBTime(int bTime);
+
     public void setBInc(int bInc);
 
 

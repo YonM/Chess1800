@@ -1,6 +1,6 @@
-package com.chess1800.core;
+package java.com.chess1800.core;
 
-import com.chess1800.core.board.Bitboard;
+import java.com.chess1800.core.board.Bitboard;
 import org.junit.Test;
 
 /**

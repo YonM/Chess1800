@@ -1,9 +1,9 @@
-package com.chess1800.core.search;
+package java.com.chess1800.core.search;
 
-import com.chess1800.core.board.Chessboard;
-import com.chess1800.core.board.Evaluator;
-import com.chess1800.core.board.MoveGenerator;
-import com.chess1800.core.move.Move;
+import java.com.chess1800.core.board.Chessboard;
+import java.com.chess1800.core.board.Evaluator;
+import java.com.chess1800.core.board.MoveGenerator;
+import java.com.chess1800.core.move.Move;
 
 /**
  * Created by Yonathan on 02/03/2015.
@@ -19,14 +19,14 @@ public class PVSHard extends PVS {
         nodes++;
         triangularLength[ply] = ply;
         // Check if time is up
-        if(!useFixedDepth) {
+        if (!useFixedDepth) {
             //nextTimeCheck--;
             //if(nextTimeCheck == 0) {
-               // nextTimeCheck= TIME_CHECK_INTERVAL;
-                if(System.currentTimeMillis()- startTime > timeForMove && moveFound){
-                    finishRun();
-                }
+            // nextTimeCheck= TIME_CHECK_INTERVAL;
+            if (System.currentTimeMillis() - startTime > timeForMove && moveFound) {
+                finishRun();
             }
+        }
         //}
 
         if (depth <= 0) {
@@ -35,24 +35,25 @@ public class PVSHard extends PVS {
         }
 
         // End of game check, evaluate the board if so to check if it's a draw or checkmate.
-        int endGameCheck= board.isEndOfGame();
-        if (endGameCheck!=Chessboard.NOT_ENDED) {
+        int endGameCheck = board.isEndOfGame();
+        if (endGameCheck != Chessboard.NOT_ENDED) {
             follow_pv = false;
-            if(endGameCheck != Chessboard.WHITE_WIN || endGameCheck != Chessboard.BLACK_WIN)return endGameCheck; //if draw
-            return endGameCheck +ply -1; //if checkmate
+            if (endGameCheck != Chessboard.WHITE_WIN || endGameCheck != Chessboard.BLACK_WIN)
+                return endGameCheck; //if draw
+            return endGameCheck + ply - 1; //if checkmate
         }
 
         int score;
         // Try Null move
-        if(nullAllowed()){
-                    null_allowed = false;
-                    board.makeNullMove();
-                    score = -PVS(ply, depth - NULLMOVE_REDUCTION, -beta, -beta + 1);
-                    board.unmakeMove();
-                    null_allowed = true;
-                    if (score >= beta) {
-                        return beta; //Fail Hard
-                    }
+        if (nullAllowed()) {
+            null_allowed = false;
+            board.makeNullMove();
+            score = -PVS(ply, depth - NULLMOVE_REDUCTION, -beta, -beta + 1);
+            board.unmakeMove();
+            null_allowed = true;
+            if (score >= beta) {
+                return beta; //Fail Hard
+            }
         }
 
         null_allowed = true;
@@ -63,11 +64,11 @@ public class PVSHard extends PVS {
 
 
         //try the first legal move with an open window.
-        int j,pvIndex=0;
-        for (int i = 0;i<num_moves;i++) {
+        int j, pvIndex = 0;
+        for (int i = 0; i < num_moves; i++) {
             selectBestMoveFirst(moves, num_moves, ply, depth, i);
             if (board.makeMove(moves[i])) {
-                pvIndex=i;
+                pvIndex = i;
                 movesFound++;
                 score = -PVS(ply + 1, depth - 1, -beta, -alpha);
                 board.unmakeMove();
@@ -115,7 +116,7 @@ public class PVSHard extends PVS {
                         blackHeuristics[Move.getFromIndex(moves[i])][Move.getToIndex(moves[i])] += depth * depth;
                     return beta;
                 }
-                if(score>alpha) {
+                if (score > alpha) {
                     pvMovesFound++;
                     triangularArray[ply][ply] = moves[i];    //save the move
                     for (j = ply + 1; j < triangularLength[ply + 1]; j++)

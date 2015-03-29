@@ -1,4 +1,4 @@
-package com.chess1800.core.board;
+package java.com.chess1800.core.board;
 
 
 /**
@@ -11,7 +11,7 @@ package com.chess1800.core.board;
  * -Piece Square Tables including bonus for Rooking being on open file or behind a passed pawn.
  * -King protection by own pawns in the opening and mid-game and away from enemy pieces.
  * -King positional bonus/penalty different in end game, must be central and near his own pawns.
- *
+ * <p/>
  * Scores calculated from white perspective and then returns the score from the perspective
  * of the side to move.
  */
@@ -28,8 +28,6 @@ public abstract class AbstractBitboardEvaluator extends AbstractBitboardMoveGene
     private final int BONUS_TWO_ROOKS_ON_OPEN_FILE = 20;
     private final int BONUS_PAWN_SHIELD_STRONG = 9;
     private final int BONUS_PAWN_SHIELD_WEAK = 4;
-
-
 
 
     //King Distance Safety
@@ -150,10 +148,9 @@ public abstract class AbstractBitboardEvaluator extends AbstractBitboardMoveGene
     private final long[] BACKWARD_BLACK;
     private final long[] STRONG_SAFE_BLACK;
     private final long[] WEAK_SAFE_BLACK;
-    
 
 
-    public AbstractBitboardEvaluator(){
+    public AbstractBitboardEvaluator() {
         //White Piece Square Tables
         PAWN_POS_W = new int[64];
         KNIGHT_POS_W = new int[64];
@@ -282,8 +279,8 @@ public abstract class AbstractBitboardEvaluator extends AbstractBitboardMoveGene
     }
 
     public int eval() {
-        if(isCheckMate()) return -CHECKMATE;
-        if(isDraw()!= NOT_ENDED)return DRAWSCORE;
+        if (isCheckMate()) return -CHECKMATE;
+        if (isDraw() != NOT_ENDED) return DRAWSCORE;
         score = 0;
         whiteKingSquare = Long.numberOfTrailingZeros(whiteKing);
         blackKingSquare = Long.numberOfTrailingZeros(blackKing);
@@ -323,15 +320,13 @@ public abstract class AbstractBitboardEvaluator extends AbstractBitboardMoveGene
     }
 
     public abstract int whitePieceMaterial();
-    
+
     public abstract int blackPieceMaterial();
 
     public abstract boolean isCheckMate();
 
 
     public abstract boolean isCheck();
-
-
 
 
     public abstract int isDraw();
@@ -405,8 +400,8 @@ public abstract class AbstractBitboardEvaluator extends AbstractBitboardMoveGene
     }
 
     private void evaluateWhiteBishops() {
-        if(Long.bitCount(whiteBishopCount)>1)
-                score += BONUS_BISHOP_PAIR;
+        if (Long.bitCount(whiteBishopCount) > 1)
+            score += BONUS_BISHOP_PAIR;
         temp = whiteBishops;
         while (temp != 0) {
             square = getIndexFromBoard(temp);
@@ -432,7 +427,7 @@ public abstract class AbstractBitboardEvaluator extends AbstractBitboardMoveGene
             if ((COLUMN[square % 8] & blackPawns) == 0) {
                 score += BONUS_ROOK_ON_OPEN_FILE;
                 if ((COLUMN[square % 8] & (whiteRooks & ~Long.lowestOneBit(temp))) != 0)
-                    score+=BONUS_TWO_ROOKS_ON_OPEN_FILE;
+                    score += BONUS_TWO_ROOKS_ON_OPEN_FILE;
             }
             temp ^= getSquare[square];
         }
@@ -515,8 +510,8 @@ public abstract class AbstractBitboardEvaluator extends AbstractBitboardMoveGene
     }
 
     private void evaluateBlackBishops() {
-        if(Long.bitCount(blackBishopCount)>1)
-                score -= BONUS_BISHOP_PAIR;
+        if (Long.bitCount(blackBishopCount) > 1)
+            score -= BONUS_BISHOP_PAIR;
         temp = blackBishops;
         while (temp != 0) {
             square = getIndexFromBoard(temp);

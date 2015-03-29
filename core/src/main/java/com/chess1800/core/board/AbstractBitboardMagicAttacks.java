@@ -1,9 +1,10 @@
-package com.chess1800.core.board;
+package java.com.chess1800.core.board;
+
 /**
  * Created by Yonathan on 07/12/2014.
  * Based on Alberto Ruibal's Carballo. Source @ https://githucom/albertoruibal/carballo/
  */
-public abstract class AbstractBitboardMagicAttacks{
+public abstract class AbstractBitboardMagicAttacks {
 
     public long[] rook;
     public long[] rookMask;
@@ -50,18 +51,16 @@ public abstract class AbstractBitboardMagicAttacks{
     protected static final long b2_l = 0xC0C0C0C0C0C0C0C0L; // left
 
     protected final String[] squareNames =
-                           {"a1","b1","c1","d1","e1","f1","g1","h1",
-                            "a2","b2","c2","d2","e2","f2","g2","h2",
-                            "a3","b3","c3","d3","e3","f3","g3","h3",
-                            "a4","b4","c4","d4","e4","f4","g4","h4",
-                            "a5","b5","c5","d5","e5","f5","g5","h5",
-                            "a6","b6","c6","d6","e6","f6","g6","h6",
-                            "a7","b7","c7","d7","e7","f7","g7","h7",
-                            "a8","b8","c8","d8","e8","f8","g8","h8"};
+            {"a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1",
+                    "a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2",
+                    "a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3",
+                    "a4", "b4", "c4", "d4", "e4", "f4", "g4", "h4",
+                    "a5", "b5", "c5", "d5", "e5", "f5", "g5", "h5",
+                    "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6",
+                    "a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7",
+                    "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8"};
 
 
-
-    
     // 0 is a, 7 is h
     public static final long[] COLUMN = {b_l, b_r << 6, b_r << 5, b_r << 4, b_r << 3, b_r << 2, b_r << 1, b_r};
 
@@ -99,16 +98,16 @@ public abstract class AbstractBitboardMagicAttacks{
 
 
     protected final void generateAttacks() {
-        rook = new long [64];
+        rook = new long[64];
         rookMask = new long[64];
         rookMagic = new long[64][];
-        bishop = new long [64];
+        bishop = new long[64];
         bishopMask = new long[64];
         bishopMagic = new long[64][];
         knight = new long[64];
-        king = new long [64];
-        blackPawn = new long [64];
-        whitePawn = new long [64];
+        king = new long[64];
+        blackPawn = new long[64];
+        whitePawn = new long[64];
         long square = 1;
         byte i = 0;
         while (square != 0) {
@@ -117,7 +116,7 @@ public abstract class AbstractBitboardMagicAttacks{
                     | squareAttackedAuxSlider(square, -8, b_d)
                     | squareAttackedAuxSlider(square, -1, b_r)
                     | squareAttackedAuxSlider(square, +1, b_l);
-            
+
             rookMask[i] = squareAttackedAuxSliderMask(square, +8, b_u)
                     | squareAttackedAuxSliderMask(square, -8, b_d)
                     | squareAttackedAuxSliderMask(square, -1, b_r)
@@ -245,7 +244,7 @@ public abstract class AbstractBitboardMagicAttacks{
     protected boolean isIndexAttacked(byte i, boolean white) {
         if (i < 0 || i > 63)
             return false;
-        long others = white ? blackPieces: whitePieces;
+        long others = white ? blackPieces : whitePieces;
         long all = allPieces;
         if (((white ? whitePawn[i] : blackPawn[i])
                 & (whitePawns | blackPawns) & others) != 0)
@@ -255,10 +254,10 @@ public abstract class AbstractBitboardMagicAttacks{
         if ((knight[i] & (whiteKnights | blackKnights) & others) != 0)
             return true;
         if ((getRookAttacks(i, all)
-                & ( (whiteRooks | blackRooks) | (whiteQueens | blackQueens) ) & others) != 0)
+                & ((whiteRooks | blackRooks) | (whiteQueens | blackQueens)) & others) != 0)
             return true;
         if ((getBishopAttacks(i, all)
-                & ( (whiteBishops | blackBishops) | (whiteQueens | blackQueens) ) & others) != 0)
+                & ((whiteBishops | blackBishops) | (whiteQueens | blackQueens)) & others) != 0)
             return true;
         return false;
     }
@@ -278,7 +277,6 @@ public abstract class AbstractBitboardMagicAttacks{
                 i, all) & ((whiteBishops | blackBishops) | (whiteQueens | blackQueens))))
                 & all;
     }
-
 
 
     protected int magicTransform(long b, long magic, int bits) {

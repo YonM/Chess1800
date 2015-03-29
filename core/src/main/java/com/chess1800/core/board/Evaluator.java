@@ -1,4 +1,4 @@
-package com.chess1800.core.board;
+package java.com.chess1800.core.board;
 
 /**
  * Created by Yonathan on 02/03/2015.
@@ -9,6 +9,7 @@ public interface Evaluator extends MoveGenerator {
 
     //Game state related
     public boolean isCheckMate();
+
     public int isDraw();
 
     //Draw reason
@@ -27,5 +28,5 @@ public interface Evaluator extends MoveGenerator {
     public static final int KING_VALUE = 999999;
     public static final int CHECKMATE = KING_VALUE;
     public static final int DRAWSCORE = 0;
-    public static final int INFINITY = KING_VALUE +1;
+    public static final int INFINITY = KING_VALUE + 1;
 }

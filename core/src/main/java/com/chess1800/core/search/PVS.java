@@ -1,9 +1,8 @@
-package com.chess1800.core.search;
+package java.com.chess1800.core.search;
 
-import com.chess1800.core.board.Bitboard;
-import com.chess1800.core.board.Chessboard;
-import com.chess1800.core.board.Evaluator;
-import com.chess1800.core.move.Move;
+import java.com.chess1800.core.board.Chessboard;
+import java.com.chess1800.core.board.Evaluator;
+import java.com.chess1800.core.move.Move;
 
 /**
  * Created by Yonathan on 21/12/2014.
@@ -11,7 +10,7 @@ import com.chess1800.core.move.Move;
  * Based on Winglet by Stef Luijten's Winglet Chess @
  * http://web.archive.org/web/20120621100214/http://www.sluijten.com/winglet/
  */
-public abstract class PVS extends AbstractSearch{
+public abstract class PVS extends AbstractSearch {
 
 
     protected final String type;
@@ -34,18 +33,18 @@ public abstract class PVS extends AbstractSearch{
     protected int[] lastPV;
     protected boolean follow_pv;
     protected boolean null_allowed;
-    protected static final boolean VERBOSE= true;
+    protected static final boolean VERBOSE = true;
 
     private long bestMoveTime;
     private int globalBestMove;
 
 
-    protected PVS(Chessboard b, String type){
+    protected PVS(Chessboard b, String type) {
         super(b);
-        this.type=type;
+        this.type = type;
     }
 
-    protected final boolean nullAllowed(){
+    protected final boolean nullAllowed() {
         if (!follow_pv && null_allowed)
             if (board.movingSideMaterial() > NULLMOVE_THRESHOLD) //TO prevent null in zugzwang situations.
                 if (!board.isCheck()) return true; //Don't allow null move when under check.
@@ -53,35 +52,35 @@ public abstract class PVS extends AbstractSearch{
     }
 
     public final void findBestMove() throws SearchRunException {
-        if (board.isEndOfGame()!= Evaluator.NOT_ENDED){
+        if (board.isEndOfGame() != Evaluator.NOT_ENDED) {
             finishRun();
         }
-        System.out.println(type+"\n"+"last move: " + board.getLastMove());
+        System.out.println(type + "\n" + "last move: " + board.getLastMove());
         int currentDepth;
-        for (currentDepth= 1; currentDepth <= MAX_DEPTH; currentDepth++) {
+        for (currentDepth = 1; currentDepth <= MAX_DEPTH; currentDepth++) {
             triangularArray = new int[MAX_GAME_LENGTH][MAX_GAME_LENGTH];
             triangularLength = new int[MAX_GAME_LENGTH];
             follow_pv = true;
             null_allowed = true;
             score = PVS(0, currentDepth, alpha, beta);
 
-            if(stopSearch){
-                if(VERBOSE)System.out.println("Search stopped at depth:" +currentDepth);
+            if (stopSearch) {
+                if (VERBOSE) System.out.println("Search stopped at depth:" + currentDepth);
                 break;
             }
 
 
-            if(VERBOSE)
+            if (VERBOSE)
                 System.out.println("(" + currentDepth + ") "
-                        + ( (System.currentTimeMillis() - startTime) / 1000.0) + "s ("
+                        + ((System.currentTimeMillis() - startTime) / 1000.0) + "s ("
                         + Move.moveToString(lastPV[0]) + ") -- " + nodes
                         + " nodes evaluated.");
             // stop searching if the current depth leads to a forced mate:
             if ((score > (Chessboard.CHECKMATE - currentDepth)) || (score < -(Chessboard.CHECKMATE - currentDepth))) {
-                if(VERBOSE) System.out.println("cut search");
+                if (VERBOSE) System.out.println("cut search");
                 currentDepth = MAX_DEPTH;
             }
-            if(moveFound) {
+            if (moveFound) {
                 if (currentDepth == depth) break;
 
                 else if (moveTime != Integer.MAX_VALUE) {
@@ -99,7 +98,7 @@ public abstract class PVS extends AbstractSearch{
             }
 
         }
-        if(VERBOSE) {
+        if (VERBOSE) {
             System.out.println("(" + currentDepth + ") "
                     + ((System.currentTimeMillis() - startTime) / 1000.0) + "s ("
                     + Move.moveToString(lastPV[0]) + ") -- " + nodes
@@ -113,7 +112,6 @@ public abstract class PVS extends AbstractSearch{
 
 
     protected abstract int quiescenceSearch(int ply, int alpha, int beta) throws SearchRunException;
-
 
 
     protected final void selectBestMoveFirst(int[] moves, int num_moves, int ply, int depth, int nextIndex) {
@@ -168,9 +166,9 @@ public abstract class PVS extends AbstractSearch{
         for (int i = 0; i < triangularLength[0]; i++) {
             lastPV[i] = triangularArray[0][i];
         }
-        if(globalBestMove != lastPV[0]){
+        if (globalBestMove != lastPV[0]) {
             moveFound = true;
-            bestMoveTime = System.currentTimeMillis() -startTime;
+            bestMoveTime = System.currentTimeMillis() - startTime;
             globalBestMove = lastPV[0];
         }
     }
@@ -197,28 +195,28 @@ public abstract class PVS extends AbstractSearch{
     }
 
     @Override
-    protected void finishRun() throws SearchRunException{
+    protected void finishRun() throws SearchRunException {
         board.unmakeMove(initialPly);
         searching = false;
-        if(observer != null){
+        if (observer != null) {
             observer.bestMove(globalBestMove);
         }
-        if(VERBOSE) displaySearchStats();
+        if (VERBOSE) displaySearchStats();
 
         throw new SearchRunException();
 
     }
 
-    protected void notifyMoveFound(int bestMove, int bestScore, int alpha, int beta){
+    protected void notifyMoveFound(int bestMove, int bestScore, int alpha, int beta) {
 
         AbstractSearchInfo info = new AbstractSearchInfo();
-        if(observer!=null){
+        if (observer != null) {
             observer.info(info);
         }
 
     }
 
-    protected void clear(){
+    protected void clear() {
 
     }
 
@@ -226,7 +224,6 @@ public abstract class PVS extends AbstractSearch{
     public Chessboard getBoard() {
         return board;
     }
-
 
 
     public final void run() {
@@ -239,21 +236,16 @@ public abstract class PVS extends AbstractSearch{
     }
 
 
-
-
     @Override
-    public void setObserver(SearchObserver observer){
+    public void setObserver(SearchObserver observer) {
         this.observer = observer;
     }
-
 
 
     @Override
     public final long getBestMoveTime() {
         return bestMoveTime;
     }
-
-
 
 
 }

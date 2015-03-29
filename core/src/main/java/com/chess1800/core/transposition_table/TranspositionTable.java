@@ -1,14 +1,14 @@
-package com.chess1800.core.transposition_table;
+package java.com.chess1800.core.transposition_table;
 
-import com.chess1800.core.board.Bitboard;
-import com.chess1800.core.search.Search;
+import java.com.chess1800.core.board.Bitboard;
+import java.com.chess1800.core.search.Search;
 
 /**
  * Created by Yonathan on 02/02/2015.
  * Used for MTDF, specifically in the alphaBetaM call of the class.
  * Based on Mediocre Chess by Jonatan Pettersson sources @ http://sourceforge.net/projects/mediocrechess/
  */
-public class TranspositionTable{
+public class TranspositionTable {
     //For Transposition table
     public static final int HASH_EXACT = 0;
     public static final int HASH_ALPHA = 1;
@@ -17,6 +17,7 @@ public class TranspositionTable{
     public final int HASHSIZE; // The number of slots either table will have
 
     public static final int SLOTS = 4;
+
     public TranspositionTable(int sizeInMb) {
         this.HASHSIZE = sizeInMb * 1024 * 1024 * 8 / 32 / SLOTS;
         hashTable = new int[HASHSIZE * SLOTS];
@@ -114,11 +115,10 @@ public class TranspositionTable{
     /**
      * Collects the principal variation starting from the position on the board
      *
-     * @param b
-     * The position to collect pv from
-//     * @param current_depth
-     * How deep the pv goes (avoids situations where keys point to
-     * each other infinitely)
+     * @param b The position to collect pv from
+     *          //     * @param current_depth
+     *          How deep the pv goes (avoids situations where keys point to
+     *          each other infinitely)
      * @return collectString The moves in a string
      */
     public int[] collectPV(Bitboard b) {
@@ -126,7 +126,7 @@ public class TranspositionTable{
         int move = getMove(b.getKey());
         int i = 20;
         int index = 0;
-        int pv_error=0;
+        int pv_error = 0;
         while (i > 0) {
             if (move == 0 || !b.validateHashMove(move))
                 break;
@@ -135,8 +135,8 @@ public class TranspositionTable{
                 move = getMove(b.getKey());
                 i--;
                 index++;
-            }else{
-                if(++pv_error==1)System.out.println("pv error");
+            } else {
+                if (++pv_error == 1) System.out.println("pv error");
             }
 
         }

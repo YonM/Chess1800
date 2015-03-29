@@ -1,9 +1,10 @@
-package com.chess1800.core;
+package java.com.chess1800.core;
 
-import com.chess1800.core.board.Bitboard;
-import com.chess1800.core.board.Chessboard;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.com.chess1800.core.board.Bitboard;
+import java.com.chess1800.core.board.Chessboard;
 
 /**
  * Created by Yonathan on 03/03/2015.

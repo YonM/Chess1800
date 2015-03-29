@@ -1,7 +1,7 @@
-package com.chess1800.core.move;
+package java.com.chess1800.core.move;
 
 
-import com.chess1800.core.board.Bitboard;
+import java.com.chess1800.core.board.Bitboard;
 
 /**
  * Created by Yonathan on 03/12/2014.
@@ -9,18 +9,19 @@ import com.chess1800.core.board.Bitboard;
  * A move is represented by an int, which contains 32-bits. Based
  * on Alberto Ruibal's Carballo. Source @ https://github.com/albertoruibal/carballo/
  * The format is as follows:
+ * <p/>
+ * Type | c | piece | To       | From  |
+ * 100  | 0 | 001   | 111111   | 110111|
+ * MSB                             LSB
+ * Where 'Type' is the move type, such as a promotion (as in the above case).
+ * 'c' is capture, representing whether the move is a capture or not.
+ * 'piece' is the piece that is moving represented by a number from 1 to 6.
+ * 'To' is the square on the bitboard, the piece is moving to. 6 bits for 0-63.
+ * 'From' is the square the piece started its move from. Again, 6 bits for 0-63.
  *
- *  Type | c | piece | To       | From  |
- *  100  | 0 | 001   | 111111   | 110111|
- *  MSB                             LSB
- *  Where 'Type' is the move type, such as a promotion (as in the above case).
- *  'c' is capture, representing whether the move is a capture or not.
- *  'piece' is the piece that is moving represented by a number from 1 to 6.
- *  'To' is the square on the bitboard, the piece is moving to. 6 bits for 0-63.
- *  'From' is the square the piece started its move from. Again, 6 bits for 0-63.
- *  @author Alberto Alonso Ruibal updated by Yonathan Maalo
+ * @author Alberto Alonso Ruibal updated by Yonathan Maalo
  */
-public class Move{
+public class Move {
 
 
     // Move pieces ordered by value
@@ -43,7 +44,7 @@ public class Move{
     public static final int TYPE_PROMOTION_KNIGHT = 5;
     public static final int TYPE_PROMOTION_BISHOP = 6;
     public static final int TYPE_PROMOTION_ROOK = 7;
-    
+
     //Masks
     public static final int SQUARE_MASK = 0x3f;
     public static final int TYPE_MASK = 0x7;
@@ -98,10 +99,10 @@ public class Move{
     }
 
     public static String moveToString(int move) {
-        String moveString= "";
-        if(Move.getMoveType(move) == Move.TYPE_KINGSIDE_CASTLING)
+        String moveString = "";
+        if (Move.getMoveType(move) == Move.TYPE_KINGSIDE_CASTLING)
             return "0-0";
-        if(Move.getMoveType(move) == Move.TYPE_QUEENSIDE_CASTLING)
+        if (Move.getMoveType(move) == Move.TYPE_QUEENSIDE_CASTLING)
             return "0-0-0";
         switch (Move.getPieceMoved(move)) {
             case Move.KNIGHT:
