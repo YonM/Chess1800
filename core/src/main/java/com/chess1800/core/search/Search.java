@@ -1,5 +1,6 @@
 package com.chess1800.core.search;
 
+import com.chess1800.core.board.Chessboard;
 import com.chess1800.core.board.Evaluator;
 
 /**
@@ -10,6 +11,7 @@ public interface Search extends Runnable, SearchInfo {
 
     public void findBestMove() throws SearchRunException;
 
+    public Chessboard getBoard();
     public void go();
     public void stop();
 
@@ -31,4 +33,5 @@ public interface Search extends Runnable, SearchInfo {
     public void setObserver(SearchObserver observer);
 
     public boolean isSearching();
+
 }

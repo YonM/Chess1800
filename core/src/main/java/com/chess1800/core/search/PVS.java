@@ -14,6 +14,7 @@ import com.chess1800.core.move.Move;
 public abstract class PVS extends AbstractSearch{
 
 
+    protected final String type;
     protected int initialPly;
 
     protected int score;
@@ -39,8 +40,9 @@ public abstract class PVS extends AbstractSearch{
     private int globalBestMove;
 
 
-    protected PVS(Chessboard b){
+    protected PVS(Chessboard b, String type){
         super(b);
+        this.type=type;
     }
 
     protected final boolean nullAllowed(){
@@ -54,8 +56,9 @@ public abstract class PVS extends AbstractSearch{
         if (board.isEndOfGame()!= Evaluator.NOT_ENDED){
             finishRun();
         }
-        System.out.println("last move: " + ((Bitboard) board).getLastMove());
-        for (int currentDepth = 1; currentDepth <= MAX_DEPTH; currentDepth++) {
+        System.out.println(type+"\n"+"last move: " + board.getLastMove());
+        int currentDepth;
+        for (currentDepth= 1; currentDepth <= MAX_DEPTH; currentDepth++) {
             triangularArray = new int[MAX_GAME_LENGTH][MAX_GAME_LENGTH];
             triangularLength = new int[MAX_GAME_LENGTH];
             follow_pv = true;
@@ -78,24 +81,31 @@ public abstract class PVS extends AbstractSearch{
                 if(VERBOSE) System.out.println("cut search");
                 currentDepth = MAX_DEPTH;
             }
-            if(currentDepth == depth)break;
+            if(moveFound) {
+                if (currentDepth == depth) break;
 
-            else if(moveTime!=Integer.MAX_VALUE){
-                if(System.currentTimeMillis() - startTime > timeForMove) {
-                    if(VERBOSE) System.out.println("TimeForMove exceeded. Higher depth search prevented.");
-                    break;
-                }
-            }else{
-                if(System.currentTimeMillis() - startTime > timeForMove*0.8){
-                    if(VERBOSE) System.out.println("80% of timeForMove exceeded. Higher depth search prevented.");
-                    break;
-                }
+                else if (moveTime != Integer.MAX_VALUE) {
+                    if (System.currentTimeMillis() - startTime > timeForMove) {
+                        if (VERBOSE) System.out.println("TimeForMove exceeded. Higher depth search prevented.");
+                        break;
+                    }
+                } else {
+                    if (System.currentTimeMillis() - startTime > timeForMove * 0.8) {
+                        if (VERBOSE) System.out.println("80% of timeForMove exceeded. Higher depth search prevented.");
+                        break;
+                    }
 
+                }
             }
 
         }
-        if(VERBOSE)
+        if(VERBOSE) {
+            System.out.println("(" + currentDepth + ") "
+                    + ((System.currentTimeMillis() - startTime) / 1000.0) + "s ("
+                    + Move.moveToString(lastPV[0]) + ") -- " + nodes
+                    + " nodes evaluated.");
             System.out.println(nodes + " positions evaluated. Move returned->" + lastPV[0]);
+        }
         finishRun();
     }
 
@@ -159,6 +169,7 @@ public abstract class PVS extends AbstractSearch{
             lastPV[i] = triangularArray[0][i];
         }
         if(globalBestMove != lastPV[0]){
+            moveFound = true;
             bestMoveTime = System.currentTimeMillis() -startTime;
             globalBestMove = lastPV[0];
         }
@@ -169,6 +180,8 @@ public abstract class PVS extends AbstractSearch{
     protected void setupRun() {
         startTime = System.currentTimeMillis();
         engineIsWhite = board.isWhiteToMove();
+        if (engineIsWhite) System.out.println("engine is white");
+        else System.out.println("engine is black");
         initialPly = board.getMoveNumber();
         moveFound = false;
         setSearchParameters();
@@ -238,13 +251,6 @@ public abstract class PVS extends AbstractSearch{
     @Override
     public final long getBestMoveTime() {
         return bestMoveTime;
-    }
-
-
-    //Based on Mediocre Chess by Jonatan Pettersson. Source @ http://sourceforge.net/projects/mediocrechess/
-    protected final boolean shouldWeStop() {
-        if(System.currentTimeMillis()- startTime > timeForMove) return true;
-        return false;
     }
 
 

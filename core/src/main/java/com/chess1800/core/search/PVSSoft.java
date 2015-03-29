@@ -12,7 +12,7 @@ import com.chess1800.core.move.Move;
 public class PVSSoft extends PVS {
 
     public PVSSoft(Chessboard b) {
-        super(b);
+        super(b, "SOFT");
     }
 
     //Fail Soft implementation
@@ -21,15 +21,14 @@ public class PVSSoft extends PVS {
         triangularLength[ply] = ply;
         // Check if time is up
         if(!useFixedDepth) {
-            nextTimeCheck--;
-            if(nextTimeCheck == 0) {
-                nextTimeCheck= TIME_CHECK_INTERVAL;
-                if(shouldWeStop()){
-                    stopSearch = true;
-                    return 0;
+            //nextTimeCheck--;
+            //if(nextTimeCheck == 0) {
+               // nextTimeCheck= TIME_CHECK_INTERVAL;
+                if(System.currentTimeMillis()- startTime > timeForMove && moveFound){
+                    finishRun();
                 }
             }
-        }
+        //}
 
         if (depth <= 0) {
             follow_pv = false;
@@ -37,11 +36,11 @@ public class PVSSoft extends PVS {
         }
 
         // End of game check, evaluate the board if so to check if it's a draw or checkmate.
-        int endGameCheck= board.eval();
-        if (endGameCheck == Evaluator.DRAWSCORE || endGameCheck == -Evaluator.CHECKMATE) {
+        int endGameCheck= board.isEndOfGame();
+        if (endGameCheck!=Chessboard.NOT_ENDED) {
             follow_pv = false;
-            if(endGameCheck == Evaluator.DRAWSCORE)return endGameCheck;
-            return endGameCheck +ply -1;
+            if(endGameCheck != Chessboard.WHITE_WIN || endGameCheck != Chessboard.BLACK_WIN)return endGameCheck; //if draw
+            return endGameCheck +ply -1; //if checkmate
         }
 
         int score;
@@ -62,7 +61,6 @@ public class PVSSoft extends PVS {
         int[] moves = new int[MoveGenerator.MAX_MOVES];
         int num_moves = board.getAllMoves(moves);
         int bestScore = 0;
-        //System.out.println("number of moves: " + num_moves);
 
 
         //try the first legal move with an open window.

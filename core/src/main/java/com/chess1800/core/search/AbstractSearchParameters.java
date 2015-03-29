@@ -26,9 +26,9 @@ public abstract class AbstractSearchParameters implements SearchParameters{
     protected long startTime;
 
     //Time Management
-    protected int nextTimeCheck;
+    //protected int nextTimeCheck;
     protected int timeForMove;
-    protected final static int TIME_CHECK_INTERVAL=10000; //Check every 10,000 nodes.
+    //protected final static int TIME_CHECK_INTERVAL=10000; //Check every 10,000 nodes.
     protected boolean engineIsWhite;
     protected boolean useFixedDepth;
 
@@ -87,7 +87,9 @@ public abstract class AbstractSearchParameters implements SearchParameters{
     protected void setSearchParameters() {
         if(moveTime==Integer.MAX_VALUE & !infinite) calculateTime(engineIsWhite);
         else timeForMove = moveTime;
-        nextTimeCheck = TIME_CHECK_INTERVAL;
+        if(depth != Integer.MAX_VALUE)useFixedDepth= true;
+        else useFixedDepth=false;
+        //nextTimeCheck = TIME_CHECK_INTERVAL;
     }
 
 
@@ -118,5 +120,6 @@ public abstract class AbstractSearchParameters implements SearchParameters{
         depth = Integer.MAX_VALUE;
         nodes = Integer.MAX_VALUE;
         moveTime = Integer.MAX_VALUE;
+        infinite = false;
     }
 }

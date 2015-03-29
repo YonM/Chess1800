@@ -12,23 +12,22 @@ import com.chess1800.core.move.Move;
 public class PVSHard extends PVS {
 
     public PVSHard(Chessboard b) {
-        super(b);
+        super(b, "HARD");
     }
 
-    protected int PVS(int ply, int depth, int alpha, int beta) {
+    protected int PVS(int ply, int depth, int alpha, int beta) throws SearchRunException {
         nodes++;
         triangularLength[ply] = ply;
         // Check if time is up
         if(!useFixedDepth) {
-            nextTimeCheck--;
-            if(nextTimeCheck == 0) {
-                nextTimeCheck= TIME_CHECK_INTERVAL;
-                if(shouldWeStop()){
-                    stopSearch = true;
-                    return 0;
+            //nextTimeCheck--;
+            //if(nextTimeCheck == 0) {
+               // nextTimeCheck= TIME_CHECK_INTERVAL;
+                if(System.currentTimeMillis()- startTime > timeForMove && moveFound){
+                    finishRun();
                 }
             }
-        }
+        //}
 
         if (depth <= 0) {
             follow_pv = false;
@@ -36,11 +35,11 @@ public class PVSHard extends PVS {
         }
 
         // End of game check, evaluate the board if so to check if it's a draw or checkmate.
-        int endGameCheck= board.eval();
-        if (endGameCheck == Evaluator.DRAWSCORE || endGameCheck == -Evaluator.CHECKMATE) {
+        int endGameCheck= board.isEndOfGame();
+        if (endGameCheck!=Chessboard.NOT_ENDED) {
             follow_pv = false;
-            if(endGameCheck == Evaluator.DRAWSCORE) return endGameCheck;
-            return endGameCheck +ply -1;
+            if(endGameCheck != Chessboard.WHITE_WIN || endGameCheck != Chessboard.BLACK_WIN)return endGameCheck; //if draw
+            return endGameCheck +ply -1; //if checkmate
         }
 
         int score;
@@ -141,7 +140,7 @@ public class PVSHard extends PVS {
         return alpha; //Fail Hard
     }
 
-    protected int quiescenceSearch(int ply, int alpha, int beta) {
+    protected int quiescenceSearch(int ply, int alpha, int beta) throws SearchRunException {
         triangularLength[ply] = ply;
 
         //Check if we are in check.
@@ -151,7 +150,7 @@ public class PVSHard extends PVS {
         int score;
         score = board.eval();
         if (score >= beta) {
-            return score;
+            return beta;
         }
         if (score > alpha) alpha = score;
 
@@ -165,12 +164,11 @@ public class PVSHard extends PVS {
                 score = -quiescenceSearch(ply + 1, -beta, -alpha);
                 board.unmakeMove();
                 if (score > alpha) {
-                    if (score >= beta) {
-                        return score;
-                    }
+                    if (score >= beta) return beta;
+
 
                     alpha = score;
-                    //Fail Hard.
+
                     triangularArray[ply][ply] = captures[i];
                     for (int j = ply + 1; j < triangularLength[ply + 1]; j++) {
                         triangularArray[ply][j] = triangularArray[ply + 1][j];

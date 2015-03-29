@@ -169,6 +169,7 @@ public class Chess1800Controller implements SearchObserver, ActionListener, Mous
         update(!userToMove);
         System.out.println(userToMove +" << user to move");
         if (!userToMove && (model.isEndOfGame() == 0)){
+            if(model.isEndOfGame()!=0)System.out.println("model is end of game:" + model.isEndOfGame() );
             int gameType=view.getGameType();
 
             if(gameType== 0 | gameType == 1 ){  //AI1

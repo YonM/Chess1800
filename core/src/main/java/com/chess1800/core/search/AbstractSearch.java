@@ -24,6 +24,10 @@ public abstract class AbstractSearch extends AbstractSearchInfo implements Searc
         initialized= true;
     }
 
+    @Override
+    public Chessboard getBoard(){
+        return board;
+    }
 
     @Override
     public final boolean isSearching(){
