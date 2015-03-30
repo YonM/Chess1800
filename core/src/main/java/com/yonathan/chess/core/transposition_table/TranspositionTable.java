@@ -37,12 +37,16 @@ public class TranspositionTable {
      *
      * @param zobrist
      * @param depth
-     * @param flag
+     * @param lowerBound
      * @param eval
      * @param move
      */
-    public void record(long zobrist, int depth, int flag, int eval, int move) {
+    public void record(long zobrist, int depth, int lowerBound, int upperBound, int eval, int move) {
         // Always replace scheme
+        int flag;
+        if (eval <= lowerBound) flag = HASH_ALPHA;
+        else if (eval >= upperBound) flag = HASH_BETA;
+        else flag = HASH_EXACT;
         int hashKey = (int) (zobrist % HASHSIZE) * SLOTS;
         hashTable[hashKey] = 0 | (eval + 0x1FFFF)
                 | ((1) << 18) | (flag << 20)

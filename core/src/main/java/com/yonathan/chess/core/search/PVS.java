@@ -3,6 +3,7 @@ package com.yonathan.chess.core.search;
 import com.yonathan.chess.core.board.Chessboard;
 import com.yonathan.chess.core.board.Evaluator;
 import com.yonathan.chess.core.move.Move;
+import com.yonathan.chess.core.transposition_table.TranspositionTable;
 
 /**
  * Created by Yonathan on 21/12/2014.
@@ -41,10 +42,13 @@ public abstract class PVS extends AbstractSearch {
     private long bestMoveTime;
     private int globalBestMove;
 
+    protected TranspositionTable transpositionTable;
+
 
     protected PVS(Chessboard b, String type) {
         super(b);
         this.type = type;
+        transpositionTable = new TranspositionTable(64);
     }
 
     protected final boolean nullAllowed() {
@@ -60,7 +64,6 @@ public abstract class PVS extends AbstractSearch {
             finishRun();
         }
         System.out.println(type + "\n" + "last move: " + board.getLastMove());
-        int currentDepth;
         for (currentDepth = 1; currentDepth <= MAX_DEPTH; currentDepth++) {
             triangularArray = new int[MAX_GAME_LENGTH][MAX_GAME_LENGTH];
             triangularLength = new int[MAX_GAME_LENGTH];

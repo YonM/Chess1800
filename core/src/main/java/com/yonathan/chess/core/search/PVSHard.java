@@ -4,6 +4,7 @@ import com.yonathan.chess.core.board.Chessboard;
 import com.yonathan.chess.core.board.Evaluator;
 import com.yonathan.chess.core.board.MoveGenerator;
 import com.yonathan.chess.core.move.Move;
+import com.yonathan.chess.core.transposition_table.TranspositionTable;
 
 /**
  * Created by Yonathan on 02/03/2015.
@@ -38,12 +39,30 @@ public class PVSHard extends PVS {
         int endGameCheck = board.isEndOfGame();
         if (endGameCheck != Chessboard.NOT_ENDED) {
             follow_pv = false;
-            if (endGameCheck != Chessboard.WHITE_WIN || endGameCheck != Chessboard.BLACK_WIN)
+            if (endGameCheck != Chessboard.WHITE_WIN && endGameCheck != Chessboard.BLACK_WIN)
                 return Evaluator.DRAWSCORE; //if draw
             return -Evaluator.CHECKMATE + ply - 1; //if checkmate
         }
 
-        int score;
+        //Check Transposition Table
+        int hashMove;
+        int hashScore;
+        boolean foundTT;
+        if(transpositionTable.entryExists(board.getKey()) && transpositionTable.getDepth(board.getKey())>=depth){
+            foundTT = true;
+            if (nodeType != NODE_ROOT)
+                if (transpositionTable.getFlag(board.getKey()) == TranspositionTable.HASH_EXACT)
+                    return transpositionTable.getEval(board.getKey());
+                else if (transpositionTable.getFlag(board.getKey()) == TranspositionTable.HASH_ALPHA && transpositionTable.getEval(board.getKey()) <= alpha)
+                    return transpositionTable.getEval(board.getKey());
+                else if (transpositionTable.getFlag(board.getKey()) == TranspositionTable.HASH_BETA && transpositionTable.getEval(board.getKey()) >= beta)
+                    return transpositionTable.getEval(board.getKey());
+            hashMove = transpositionTable.getMove(board.getKey());
+
+        }
+
+        int score= -Evaluator.CHECKMATE;
+        int bestMove =Move.EMPTY;
         // Try Null move
         if (nullAllowed()) {
             null_allowed = false;
@@ -62,7 +81,6 @@ public class PVSHard extends PVS {
         int[] moves = new int[MoveGenerator.MAX_MOVES];
         int num_moves = board.getAllMoves(moves);
 
-
         //try the first legal move with an open window.
         int j, pvIndex = 0;
         for (int i = 0; i < num_moves; i++) {
@@ -74,12 +92,14 @@ public class PVSHard extends PVS {
                 board.unmakeMove();
                 if (score > alpha) {
                     if (score >= beta) { //beta cutoff
-                        if (board.isWhiteToMove())
-                            whiteHeuristics[Move.getFromIndex(moves[i])][Move.getToIndex(moves[i])] += depth * depth;
-                        else
-                            blackHeuristics[Move.getFromIndex(moves[i])][Move.getToIndex(moves[i])] += depth * depth;
+                        if (!Move.isCapture(moves[i])) //Non Capture save to History Array
+                            if (board.isWhiteToMove())
+                                whiteHeuristics[Move.getFromIndex(moves[i])][Move.getToIndex(moves[i])] += depth * depth;
+                            else
+                                blackHeuristics[Move.getFromIndex(moves[i])][Move.getToIndex(moves[i])] += depth * depth;
                         return beta; //fail hard
                     }
+                    bestMove=moves[i];
                     pvMovesFound++;
                     triangularArray[ply][ply] = moves[i];    //save the move
                     for (j = ply + 1; j < triangularLength[ply + 1]; j++)
@@ -110,13 +130,16 @@ public class PVSHard extends PVS {
                 board.unmakeMove();
 
                 if (score >= beta) {
-                    if (board.isWhiteToMove())
-                        whiteHeuristics[Move.getFromIndex(moves[i])][Move.getToIndex(moves[i])] += depth * depth;
-                    else
-                        blackHeuristics[Move.getFromIndex(moves[i])][Move.getToIndex(moves[i])] += depth * depth;
+                    if (!Move.isCapture(moves[i]))
+                        if (board.isWhiteToMove())
+                            whiteHeuristics[Move.getFromIndex(moves[i])][Move.getToIndex(moves[i])] += depth * depth;
+                        else
+                            blackHeuristics[Move.getFromIndex(moves[i])][Move.getToIndex(moves[i])] += depth * depth;
                     return beta;
                 }
                 if (score > alpha) {
+                    bestMove = moves[i];
+                    alpha = score;
                     pvMovesFound++;
                     triangularArray[ply][ply] = moves[i];    //save the move
                     for (j = ply + 1; j < triangularLength[ply + 1]; j++)
@@ -138,6 +161,8 @@ public class PVSHard extends PVS {
 
         if (board.getFiftyMove() >= 100) return Evaluator.DRAWSCORE;                 //Fifty-move rule
 
+        if(bestMove!=Move.EMPTY)
+        transpositionTable.record(board.getKey(), currentDepth, alpha, beta, score, bestMove );
         return alpha; //Fail Hard
     }
 
