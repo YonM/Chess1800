@@ -24,8 +24,8 @@ public class PVSSoft extends PVS {
             //nextTimeCheck--;
             //if(nextTimeCheck == 0) {
             // nextTimeCheck= TIME_CHECK_INTERVAL;
-            if (System.currentTimeMillis() - startTime > timeForMove && moveFound && nodeType!=NODE_ROOT) {
-                finishRun();
+            if (System.currentTimeMillis() - startTime > timeForMove && moveFound && nodeType != NODE_ROOT) {
+               finishRun();
             }
         }
         //}
@@ -39,7 +39,7 @@ public class PVSSoft extends PVS {
         int endGameCheck = board.isEndOfGame();
         if (endGameCheck != Chessboard.NOT_ENDED) {
             follow_pv = false;
-            if (endGameCheck != Chessboard.WHITE_WIN || endGameCheck != Chessboard.BLACK_WIN)
+            if (endGameCheck != Chessboard.WHITE_WIN && endGameCheck != Chessboard.BLACK_WIN)
                 return Evaluator.DRAWSCORE; //if draw
             return -Evaluator.CHECKMATE + ply - 1; //if checkmate
         }
@@ -49,7 +49,7 @@ public class PVSSoft extends PVS {
         if (nullAllowed()) {
             null_allowed = false;
             board.makeNullMove();
-            score = -PVS(NODE_NULL,ply, depth - NULLMOVE_REDUCTION, -beta, -beta + 1);
+            score = -PVS(NODE_NULL, ply, depth - NULLMOVE_REDUCTION, -beta, -beta + 1);
             board.unmakeMove();
             null_allowed = true;
             if (score >= beta) return score; //Fail Soft

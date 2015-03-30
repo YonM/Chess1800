@@ -113,7 +113,7 @@ public abstract class AbstractSearchParameters implements SearchParameters {
         timeForMove = tempTimeForMove;
     }
 
-    private void setDefaultParameters() {
+    public void setDefaultParameters() {
         wTime = 0;
         bTime = 0;
         wInc = 0;

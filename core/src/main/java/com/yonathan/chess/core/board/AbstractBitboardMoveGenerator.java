@@ -206,7 +206,6 @@ public abstract class AbstractBitboardMoveGenerator extends AbstractBitboardMagi
 
     public abstract boolean makeMove(int move);
 
-    protected abstract boolean isOwnKingAttacked();
 
 
     public abstract void makeNullMove();

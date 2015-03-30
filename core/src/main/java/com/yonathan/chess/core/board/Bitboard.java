@@ -542,15 +542,20 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
                 }
             }
         }
-        if (isOwnKingAttacked()) {
+        whiteToMove = !whiteToMove;
+        key ^= Zobrist.whiteMove;
+        if (isOtherKingAttacked()) {
+            whiteToMove = !whiteToMove;
+            key ^= Zobrist.whiteMove;
             unmakeMove();
             return false;
         }
 
-        whiteToMove = !whiteToMove;
-        key ^= Zobrist.whiteMove;
+
         return true;
     }
+
+
 
     public void makeNullMove() {
         saveHistory(0);
@@ -624,7 +629,10 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
 
     }
 
-    protected boolean isOwnKingAttacked() {
+    private boolean isOtherKingAttacked() {
+        return isSquareAttacked((blackKing | whiteKing) & getOpponentPieces(), !whiteToMove);
+    }
+    private boolean isOwnKingAttacked() {
         if (whiteToMove) return isSquareAttacked(whiteKing, whiteToMove);
         return isSquareAttacked(blackKing, whiteToMove);
     }
@@ -718,8 +726,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
     }
 
     public boolean isCheck() {
-        return isSquareAttacked(whiteKing, true)
-                || isSquareAttacked(blackKing, false);
+        return isSquareAttacked((whiteKing | blackKing)& getMyPieces(), whiteToMove? true : false);
     }
 
     public int movingSideMaterial() {

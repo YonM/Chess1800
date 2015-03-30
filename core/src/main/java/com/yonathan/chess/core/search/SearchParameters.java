@@ -31,4 +31,6 @@ public interface SearchParameters {
 
     //Set all timing related info to default and set the new MoveTime.
     public void resetMoveTime(int moveTime);
+
+    public void setDefaultParameters();
 }
