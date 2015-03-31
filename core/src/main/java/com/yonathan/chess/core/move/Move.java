@@ -24,6 +24,9 @@ import com.yonathan.chess.core.board.Chessboard;
  */
 public class Move {
 
+    //For TT entry
+    public static final int MOVE_MASK = 0x7FFFF;
+    public static final int MOVE_SHIFT =19;
 
     // Move pieces ordered by value
     public static final int EMPTY = 0;

@@ -13,6 +13,9 @@ public interface MoveGenerator {
 
     public int genCaptures(int[] captures);
 
+    public int genNonCaptures (int[] nonCaptures);
+
+
     public boolean makeMove(int move);
 
     public void makeNullMove();

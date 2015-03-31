@@ -107,6 +107,7 @@ public abstract class AbstractBitboardMoveGenerator extends AbstractBitboardMagi
         return j;
     }
 
+    //For Stalemate checking (redundant)
     public boolean legalMovesAvailable() {
         int[] moves = new int[MAX_MOVES];
         int lastIndex = getAllMoves(moves);
@@ -163,6 +164,10 @@ public abstract class AbstractBitboardMoveGenerator extends AbstractBitboardMagi
         }
         sortCaptures(captureValues, captures, num_captures);
         return num_captures;
+    }
+
+    public int genNonCaptures (int[] nonCaptures){
+        return 1;
     }
 
     private void sortCaptures(int[] captureValues, int[] captures, int num_captures) {

@@ -146,38 +146,38 @@ public class MTDF extends AbstractSearch implements Search {
 
         //Check if the hash table value exists and is stored at the same or higher depth.
         long key = board.getKey();
-        if (transpositionTable.entryExists(key) && transpositionTable.getDepth(key) >= depth) {
-            if (transpositionTable.getFlag(key) == TranspositionTable.HASH_EXACT)
-                return transpositionTable.getEval(key); // should never be called
-            if (transpositionTable.getFlag(key) == TranspositionTable.HASH_ALPHA && transpositionTable.getEval(key) <= alpha)
-                return transpositionTable.getEval(key);
-            else if (transpositionTable.getFlag(key) == TranspositionTable.HASH_BETA && transpositionTable.getEval(key) >= beta)
-                return transpositionTable.getEval(key);
-            if (alpha >= beta) return transpositionTable.getEval(key);
-            alpha = Integer.max(alpha, transpositionTable.getEval(key));
+        if (transpositionTable.entryExists(key) && transpositionTable.getDepth() >= depth) {
+            if (transpositionTable.getFlag() == TranspositionTable.HASH_EXACT)
+                return transpositionTable.getScore(); // should never be called
+            if (transpositionTable.getFlag() == TranspositionTable.HASH_ALPHA && transpositionTable.getScore() <= alpha)
+                return transpositionTable.getScore();
+            else if (transpositionTable.getFlag() == TranspositionTable.HASH_BETA && transpositionTable.getScore() >= beta)
+                return transpositionTable.getScore();
+            if (alpha >= beta) return transpositionTable.getScore();
+            alpha = Integer.max(alpha, transpositionTable.getScore());
         }
         if (depth <= 0) {
             follow_pv = false;
             score = quiescenceSearch(board, ply, alpha, beta);
-            if (score <= alpha) {
+            /*if (score <= alpha) {
                 transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_ALPHA, score, 0);
             } else if (score >= beta)
                 transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_BETA, score, 0);
             else
                 transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_EXACT, score, 0); //should never be called
-        }
+        */}
 
         if (board.isEndOfGame() != Evaluator.NOT_ENDED) {
             follow_pv = false;
             score = board.eval();
-            if (score <= alpha) {
+            /*if (score <= alpha) {
                 transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_ALPHA, score, 0);
             } else if (score >= beta)
                 transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_BETA, score, 0);
             else
                 transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_EXACT, score, 0); // should never be called
             if (score == Chessboard.DRAWSCORE) return score;
-            return score + ply - 1;
+            */return score + ply - 1;
         }
 
 
@@ -198,7 +198,7 @@ public class MTDF extends AbstractSearch implements Search {
         }
 
         null_allowed = true;
-        int hashMove = transpositionTable.getMove(board.getKey());
+        int hashMove = transpositionTable.getMove();
         //if(hashMove != 0 && !b.validateHashMove(hashMove)) hashMove = 0;
         int movesFound = 0;
         int pvMovesFound = 0;
@@ -234,7 +234,7 @@ public class MTDF extends AbstractSearch implements Search {
                     board.unmakeMove();
                     if (score > bestScore) {
                         if (score >= beta) {
-                            transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_BETA, score, moves[i]);
+                            //transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_BETA, score, moves[i]);
                             if (board.isWhiteToMove())
                                 whiteHeuristics[Move.getFromIndex(moves[i])][Move.getToIndex(moves[i])] += depth * depth;
                             else

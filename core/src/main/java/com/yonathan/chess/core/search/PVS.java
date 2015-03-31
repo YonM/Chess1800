@@ -69,7 +69,7 @@ public abstract class PVS extends AbstractSearch {
             triangularLength = new int[MAX_GAME_LENGTH];
             follow_pv = true;
             null_allowed = true;
-            score = PVS(NODE_ROOT,0, currentDepth, alpha, beta);
+            score = PVS(NODE_ROOT, 0, currentDepth, alpha, beta);
 
             if (stopSearch) {
                 if (VERBOSE) System.out.println("Search stopped at depth:" + currentDepth);
@@ -174,8 +174,8 @@ public abstract class PVS extends AbstractSearch {
             lastPV[i] = triangularArray[0][i];
         }
         if (globalBestMove != lastPV[0]) {
-            moveFound = true;
             bestMoveTime = System.currentTimeMillis() - startTime;
+            moveFound = true;
             globalBestMove = lastPV[0];
         }
     }
@@ -191,7 +191,7 @@ public abstract class PVS extends AbstractSearch {
         moveFound = false;
         setSearchParameters();
         searching = true;
-        globalBestMove = 0;
+        globalBestMove = Move.EMPTY;
         nodes = 0;
         whiteHeuristics = new int[MAX_PLY][MAX_PLY];
         blackHeuristics = new int[MAX_PLY][MAX_PLY];
@@ -213,6 +213,22 @@ public abstract class PVS extends AbstractSearch {
 
         throw new SearchRunException();
 
+    }
+
+    protected int evaluateEndgame(int distanceToInitialPly) {
+        if (board.isCheck()) {
+            return valueMatedIn(distanceToInitialPly);
+        } else {
+            return Evaluator.DRAWSCORE;
+        }
+    }
+
+    protected int valueMatedIn(int distanceToInitialPly) {
+        return -Evaluator.CHECKMATE + distanceToInitialPly;
+    }
+
+    protected int valueMateIn(int distanceToInitialPly) {
+        return Evaluator.CHECKMATE - distanceToInitialPly;
     }
 
     protected void notifyMoveFound(int bestMove, int bestScore, int alpha, int beta) {

@@ -58,10 +58,6 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
 
     public Bitboard() {
         generateAttacks();
-        moves = new int[MAX_GAME_LENGTH * 4];
-        for (int i = 0; i < moves.length; i++) {
-            moves[i] = 0;
-        }
         seeGain = new int[32];
 
         white_pawn_history = new long[MAX_GAME_LENGTH];
@@ -161,10 +157,10 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
             // turn
             whiteToMove = arr.get(8).equals("w");
             // castling
-            if (arr.get(9).contains("K")) castleWhite += CANCASTLEOO;
-            if (arr.get(9).contains("Q")) castleWhite += CANCASTLEOOO;
-            if (arr.get(9).contains("k")) castleBlack += CANCASTLEOO;
-            if (arr.get(9).contains("q")) castleBlack += CANCASTLEOOO;
+            if (arr.get(9).contains("K")) castleWhite |= CANCASTLEOO;
+            if (arr.get(9).contains("Q")) castleWhite |= CANCASTLEOOO;
+            if (arr.get(9).contains("k")) castleBlack |= CANCASTLEOO;
+            if (arr.get(9).contains("q")) castleBlack |= CANCASTLEOOO;
             // en passant
             ePSquare = algebraicLocToInt(arr.get(10));
             // 50mr
@@ -574,7 +570,6 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
 
     public void unmakeMove(int moveNumber) {
         if (moveNumber < 0 || moveNumber < initMoveNumber){
-            System.out.println("bad unmake move");
             return;
         }
 
@@ -653,11 +648,11 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
     public int isDraw() {
 
         // Checks if the current position is a draw due to:
-        // stalemate, insufficient material, 50-move rule or
+        // insufficient material, 50-move rule or
         // threefold repetition.
 
         // Stalemate
-        if (!legalMovesAvailable() && !isOwnKingAttacked()) return DRAW_BY_STALEMATE;
+        //if (!legalMovesAvailable() && !isOwnKingAttacked()) return DRAW_BY_STALEMATE;
 
         // Evaluate for draw due to insufficient material
         int whitePawnsTotal, whiteKnightsTotal, whiteBishopsTotal, whiteRooksTotal, whiteQueensTotal, whiteTotalMat;
@@ -1148,9 +1143,9 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
                 pieceMoved = Move.KING;
                 if (fromIndex == 4 || fromIndex == 4 + (8 * 7)) {
                     if (toIndex == (fromIndex + 2))
-                        moveType = Move.TYPE_QUEENSIDE_CASTLING;
-                    if (toIndex == (fromIndex - 2))
                         moveType = Move.TYPE_KINGSIDE_CASTLING;
+                    if (toIndex == (fromIndex - 2))
+                        moveType = Move.TYPE_QUEENSIDE_CASTLING;
                 }
             }
 

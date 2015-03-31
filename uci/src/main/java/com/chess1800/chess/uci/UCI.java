@@ -41,7 +41,7 @@ public class UCI implements SearchObserver {
                 int index = 0;
                 String command = tokens[index++].toLowerCase();
                 if ("uci".equals(command)) {
-                    System.out.println("id name " + NAME);
+                    System.out.println("id name " + NAME +" USA");
                     System.out.println("id author " + AUTHOR);
                     System.out.println("uciok");
                 } else if ("isready".equals(command)) {

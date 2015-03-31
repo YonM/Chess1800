@@ -44,10 +44,16 @@ public class Chess1800Controller implements SearchObserver, ActionListener, Mous
     @Override
     public void actionPerformed(ActionEvent e) {
         if ("restart".equals(e.getActionCommand())) {
-            System.out.println("go go go");
             view.unHighlight();
             userToMove = true;
             model.stop();
+            while(model.isSearching()){
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
+            }
             model.startPosition();
             checkUserToMove();
         } else if ("back".equals(e.getActionCommand())) {
@@ -253,7 +259,8 @@ public class Chess1800Controller implements SearchObserver, ActionListener, Mous
     @Override
     public void bestMove(int bestMove) {
         System.out.println("bestMove: " + bestMove);
-        System.out.println(Move.getFromIndex(bestMove));
+        System.out.println("From Index: " +  Move.getFromIndex(bestMove));
+        System.out.println("move to UCI: " + Move.toString(bestMove, model.getBoard()));
         if(userToMove) return;
         view.unHighlight();
         view.highlight(Move.getFromIndex(bestMove), Move.getToIndex(bestMove));

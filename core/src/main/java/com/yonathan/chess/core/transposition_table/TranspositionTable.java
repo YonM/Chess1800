@@ -1,7 +1,10 @@
 package com.yonathan.chess.core.transposition_table;
 
 import com.yonathan.chess.core.board.Bitboard;
+import com.yonathan.chess.core.move.Move;
 import com.yonathan.chess.core.search.Search;
+
+import java.util.Arrays;
 
 /**
  * Created by Yonathan on 02/02/2015.
@@ -13,21 +16,36 @@ public class TranspositionTable {
     public static final int HASH_EXACT = 0;
     public static final int HASH_ALPHA = 1;
     public static final int HASH_BETA = 2;
-    public int[] hashTable; // Used for transposition table
-    public final int HASHSIZE; // The number of slots either table will have
 
+    public static final int HASH_MASK = 0x3f;
+    public static final int HASH_SHIFT = 2;
+
+    public static final int DEPTH_SHIFT = 5; //Max search depth is 16, so shift is 5 bits.
+    public static final int DEPTH_MASK = 0x1F;
+    private int entriesOccupied;
+    public long[] keys; //for zobrist keys
+    public long[] infos;
+
+    private int size;
+    private long info;
+    private int sizeBits;
     public static final int SLOTS = 4;
+    private int score;
 
-    public TranspositionTable(int sizeInMb) {
-        this.HASHSIZE = sizeInMb * 1024 * 1024 * 8 / 32 / SLOTS;
-        hashTable = new int[HASHSIZE * SLOTS];
+    public TranspositionTable(int sizeMb) {
+        sizeBits = Bitboard.square2Index(sizeMb) + 16;
+        size = 1 << sizeBits;
+        keys = new long[size];
+        infos = new long[size];
+        entriesOccupied = 0;
     }
 
     /**
      * Clears the transposition table
      */
     public void clear() {
-        hashTable = new int[HASHSIZE * SLOTS];
+        entriesOccupied = 0;
+        Arrays.fill(keys, 0);
     } // END clear()
 
 
@@ -38,22 +56,21 @@ public class TranspositionTable {
      * @param zobrist
      * @param depth
      * @param lowerBound
-     * @param eval
+     * @param score
      * @param move
      */
-    public void record(long zobrist, int depth, int lowerBound, int upperBound, int eval, int move) {
+    public void record(long zobrist, int depth, int lowerBound, int upperBound, int score, int move) {
         // Always replace scheme
         int flag;
-        if (eval <= lowerBound) flag = HASH_ALPHA;
-        else if (eval >= upperBound) flag = HASH_BETA;
+        if (score <= lowerBound) flag = HASH_ALPHA;
+        else if (score >= upperBound) flag = HASH_BETA;
         else flag = HASH_EXACT;
-        int hashKey = (int) (zobrist % HASHSIZE) * SLOTS;
-        hashTable[hashKey] = 0 | (eval + 0x1FFFF)
-                | ((1) << 18) | (flag << 20)
-                | (depth << 22);
-        hashTable[hashKey + 1] = move;
-        hashTable[hashKey + 2] = (int) (zobrist >>> 32);
-        hashTable[hashKey + 3] = (int) (zobrist);
+        int index =(int) zobrist>>> (64-sizeBits);
+        keys[index] = zobrist;
+        info = (move & Move.MOVE_MASK) | ((flag & HASH_MASK) << Move.MOVE_SHIFT) | (depth << (HASH_SHIFT + Move.MOVE_SHIFT)) |(long) (score<< (HASH_SHIFT + Move.MOVE_SHIFT + DEPTH_SHIFT));
+        infos[index] = info;
+
+
     }
 
     /**
@@ -63,91 +80,51 @@ public class TranspositionTable {
      * @param zobrist
      */
     public boolean entryExists(long zobrist) {
-        int hashKey = (int) (zobrist % HASHSIZE) * SLOTS;
-        return hashTable[hashKey + 2] == (int) (zobrist >>> 32) && hashTable[hashKey + 3] == (int) (zobrist) &&
-                hashTable[hashKey] != 0;
+        info = 0;
+        score = 0;
+        int index= (int) zobrist >>> (64 - sizeBits);
+        if(keys[index]==zobrist){
+            info = infos[index];
+            score = (int)(info >>> (HASH_SHIFT + Move.MOVE_SHIFT + DEPTH_SHIFT));
+            return true;
+        }
+        return false;
     } // END entryExists
 
     /**
      * Returns the eval at the right index if the zobrist matches
      *
-     * @param zobrist
+     *
      */
-    public int getEval(long zobrist) {
-        int hashKey = (int) (zobrist % HASHSIZE) * SLOTS;
-        if (hashTable[hashKey + 2] == (int) (zobrist >>> 32) && hashTable[hashKey + 3] == (int) (zobrist))
-            return ((hashTable[hashKey] & 0x3FFFF) - 0x1FFFF);
-        return 0;
-    } // END getEval
+    public int getScore() {
+        return score;
+    } // END getScore
 
     /**
      * Returns the flag at the right index if the zobrist matches
      *
-     * @param zobrist
+     *
      */
-    public int getFlag(long zobrist) {
-        int hashKey = (int) (zobrist % HASHSIZE) * SLOTS;
-        if (hashTable[hashKey + 2] == (int) (zobrist >>> 32) && hashTable[hashKey + 3] == (int) (zobrist))
-            return ((hashTable[hashKey] >> 20) & 3);
-        return 0;
+    public int getFlag() {
+        return (int) (info>>>Move.MOVE_SHIFT) & HASH_MASK;
     } // END getFlag
 
     /**
      * Returns the move at the right index if the zobrist matches
      *
-     * @param zobrist
+     *
      */
-    public int getMove(long zobrist) {
-        int hashKey = (int) (zobrist % HASHSIZE) * SLOTS;
-        if (hashTable[hashKey + 2] == (int) (zobrist >>> 32) && hashTable[hashKey + 3] == (int) (zobrist))
-            return hashTable[hashKey + 1];
-        return 0;
+    public int getMove() {
+        return (int) info & Move.MOVE_MASK;
     } // END getMove
 
     /**
      * Returns the depth at the right index if the zobrist matches
      *
-     * @param zobrist
+     *
      */
-    public int getDepth(long zobrist) {
-        int hashKey = (int) (zobrist % HASHSIZE) * SLOTS;
-        if (hashTable[hashKey + 2] == (int) (zobrist >>> 32) && hashTable[hashKey + 3] == (int) (zobrist))
-            return (hashTable[hashKey] >> 22);
-        return 0;
+    public int getDepth() {
+        return (int) (info >>>(HASH_SHIFT + Move.MOVE_SHIFT) & DEPTH_MASK );
     } // END getDepth
 
-    /**
-     * Collects the principal variation starting from the position on the board
-     *
-     * @param b The position to collect pv from
-     *          //     * @param current_depth
-     *          How deep the pv goes (avoids situations where keys point to
-     *          each other infinitely)
-     * @return collectString The moves in a string
-     */
-    public int[] collectPV(Bitboard b) {
-        int[] arrayPV = new int[Search.MAX_PLY];
-        int move = getMove(b.getKey());
-        int i = 20;
-        int index = 0;
-        int pv_error = 0;
-        while (i > 0) {
-            if (move == 0 || !b.validateHashMove(move))
-                break;
-            arrayPV[index] = move;
-            if (b.makeMove(move)) {
-                move = getMove(b.getKey());
-                i--;
-                index++;
-            } else {
-                if (++pv_error == 1) System.out.println("pv error");
-            }
-
-        }
-        // Unmake the moves
-        for (i = index - 1; i >= 0; i--) {
-            b.unmakeMove(arrayPV[i]);
-        }
-        return arrayPV;
-    } // END collectPV()
 }

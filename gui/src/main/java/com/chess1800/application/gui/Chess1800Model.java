@@ -25,6 +25,7 @@ public class Chess1800Model {
     }
     public int getMoveFromIndices(int from, int to){
         String move= b.index2Algebraic(from ^ 7)+b.index2Algebraic(to ^ 7);
+        System.out.println("String User Move: " + move);
         return b.getMoveFromString(move, false);
     }
 
@@ -108,5 +109,8 @@ public class Chess1800Model {
     public void setMoveTime(int time){
         engine1.resetMoveTime(time);
         engine2.resetMoveTime(time);
+    }
+    public Chessboard getBoard(){
+        return b;
     }
 }

@@ -2,6 +2,7 @@ package com.yonathan.chess.core;
 
 import com.yonathan.chess.core.board.Bitboard;
 
+import com.yonathan.chess.core.move.Move;
 import org.junit.Test;
 
 /**
@@ -12,6 +13,26 @@ import org.junit.Test;
 public class Perft {
     Bitboard b;
 
+    private final int DEPTH =5;
+    long moveCount[];
+    long captures[];
+    long passantCaptures[];
+    long castles[];
+    long promotions[];
+    long checks[];
+    long checkMates[];
+    long pawnMoves[];
+    long knightMoves[];
+    long bishopMoves[];
+    long queenMoves[];
+    long rookMoves[];
+    long kingMoves[];
+    long pawnCaptures[];
+    long knightCaptures[];
+    long bishopCaptures[];
+    long queenCaptures[];
+    long rookCaptures[];
+    long kingCaptures[];
     /*
     * This test starts from the initial position. The theoretical results should be:
     *
@@ -33,22 +54,71 @@ public class Perft {
     */
     private final static String test2 = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
 
+    private final static String test3 = "8/3K4/2p5/p2b2r1/5k2/8/8/1q6 b - - 1 67";
+
+    private final static String test4 = "8/7p/p5pb/4k3/P1pPn3/8/P5PP/1rB2RK1 b - d3 0 28";
+
+    private final static String test5 = "rnbqkb1r/ppppp1pp/7n/4Pp2/8/8/PPPP1PPP/RNBQKBNR w KQkq f6 0 3";
+
+    private final static String test6 = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -";
+
+
+
     @Test
     public void perft() {
+        moveCount = new long[DEPTH];
+        captures = new long[DEPTH];
+        passantCaptures = new long[DEPTH];
+        castles = new long[DEPTH];
+        promotions = new long[DEPTH];
+        checks = new long[DEPTH];
+        checkMates = new long[DEPTH];
+        pawnMoves= new long [DEPTH];
+        knightMoves= new long [DEPTH];
+        bishopMoves= new long [DEPTH];
+        queenMoves= new long [DEPTH];
+        rookMoves= new long [DEPTH];
+        kingMoves= new long [DEPTH];
+        pawnCaptures= new long [DEPTH];
+        knightCaptures= new long [DEPTH];
+        bishopCaptures= new long [DEPTH];
+        queenCaptures= new long [DEPTH];
+        rookCaptures= new long [DEPTH];
+        kingCaptures= new long [DEPTH];
         b = new Bitboard();
         boolean loaded = b.initializeFromFEN(test2);
         System.out.println(b);
-        long i;
+        long nodes;
         if (loaded) {
             //System.out.println("true");
             long start = System.currentTimeMillis();
-            i = perft(b, 0, 5);
+            nodes = perft(b, 0, DEPTH-1);
             long stop = System.currentTimeMillis();
-            System.out.println("Found " + i + " nodes in " + (stop - start) + " ms.");
+            System.out.println("Found " + nodes + " nodes in " + (stop - start) + " ms.");
+            for (int i = 1; i < DEPTH; i++) {
+                System.out.println("Moves: " + moveCount[i] + " Pawn Moves: "+ pawnMoves[i] +
+                        " Knight Moves: "+ knightMoves[i] + " Bishop Moves: "+ bishopMoves[i] +
+                        " Rook Moves: "+ rookMoves[i] + " Queen Moves: "+ queenMoves[i] +
+                        " King Moves: "+ kingMoves[i] + " Pawn Captures: "+ pawnCaptures[i] +
+                        " Knight Captures: "+ knightCaptures[i] + " Bishop Captures: "+ bishopCaptures[i] +
+                        " Rook Captures: "+ rookCaptures[i] + " Queen Captures: "+ queenCaptures[i] +
+                        " King Captures: "+ kingCaptures[i] +
+                        " Captures=" + captures[i] + " E.P.=" + passantCaptures[i] + " Castles="
+                        + castles[i] + " Promotions=" + promotions[i] + " Checks="
+                        + checks[i] + " CheckMates=" + checkMates[i]);
+            }
         } else {
             System.out.print("false");
         }
 
+    }
+    private void print(int depth) {
+        for (int i = 0; i < depth; i++) {
+            System.out.println("Moves: " + " Captures="
+                    + captures[i] + " E.P.=" + passantCaptures[i] + " Castles="
+                    + castles[i] + " Promotions=" + promotions[i] + " Checks="
+                    + checks[i] + " CheckMates=" + checkMates[i]);
+        }
     }
 
     private long perft(Bitboard b, int ply, int depth) {
@@ -61,6 +131,46 @@ public class Perft {
         for (int i = 0; i < num_moves; i++) {
 
             if (b.makeMove(moves[i])) {
+                if(depth>0) {
+                    moveCount[depth]++;
+                    if (Move.isCapture(moves[i])) captures[depth]++;
+                    if (Move.getMoveType(moves[i]) == Move.TYPE_EN_PASSANT) passantCaptures[depth]++;
+                    if (Move.getMoveType(moves[i]) == Move.TYPE_KINGSIDE_CASTLING
+                            || Move.getMoveType(moves[i]) == Move.TYPE_QUEENSIDE_CASTLING) castles[depth]++;
+                    if (Move.isPromotion(moves[i])) promotions[depth]++;
+                    if (b.isCheck()) {
+                        checks[depth]++;
+                    }
+                    if (b.isCheckMate()) {
+                        checkMates[depth]++;
+                    }
+                    switch(Move.getPieceMoved(moves[i])){
+                        case Move.PAWN:
+                            pawnMoves[depth]++;
+                            if(Move.isCapture(moves[i]))pawnCaptures[depth]++;
+                            break;
+                        case Move.KNIGHT:
+                            knightMoves[depth]++;
+                            if(Move.isCapture(moves[i]))knightCaptures[depth]++;
+                            break;
+                        case Move.BISHOP:
+                            bishopMoves[depth]++;
+                            if(Move.isCapture(moves[i]))bishopCaptures[depth]++;
+                            break;
+                        case Move.ROOK:
+                            rookMoves[depth]++;
+                            if(Move.isCapture(moves[i]))rookCaptures[depth]++;
+                            break;
+                        case Move.QUEEN:
+                            queenMoves[depth]++;
+                            if(Move.isCapture(moves[i]))queenCaptures[depth]++;
+                            break;
+                        case Move.KING:
+                            kingMoves[depth]++;
+                            if(Move.isCapture(moves[i]))kingCaptures[depth]++;
+                            break;
+                    }
+                }
                 count += perft(b, ply + 1, depth - 1);
                 b.unmakeMove();
             }

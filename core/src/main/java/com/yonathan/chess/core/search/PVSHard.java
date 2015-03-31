@@ -19,6 +19,7 @@ public class PVSHard extends PVS {
     protected int PVS(int nodeType, int ply, int depth, int alpha, int beta) throws SearchRunException {
         nodes++;
         triangularLength[ply] = ply;
+        int distanceToInitialPly = board.getMoveNumber() - initialPly;
         // Check if time is up
         if (!useFixedDepth) {
             //nextTimeCheck--;
@@ -35,29 +36,32 @@ public class PVSHard extends PVS {
             return quiescenceSearch(nodeType, ply, alpha, beta);
         }
 
-        // End of game check, evaluate the board if so to check if it's a draw or checkmate.
-        int endGameCheck = board.isEndOfGame();
+        // Draw check, evaluate the board if so to check if it's a draw.
+        int endGameCheck = board.isDraw();
         if (endGameCheck != Chessboard.NOT_ENDED) {
             follow_pv = false;
-            if (endGameCheck != Chessboard.WHITE_WIN && endGameCheck != Chessboard.BLACK_WIN)
-                return Evaluator.DRAWSCORE; //if draw
-            return -Evaluator.CHECKMATE + ply - 1; //if checkmate
+            return Evaluator.DRAWSCORE;
         }
+
+        /*// Mate distance pruning
+        alpha = Math.max(valueMatedIn(distanceToInitialPly), alpha);
+        beta = Math.min(valueMateIn(distanceToInitialPly + 1), beta);
+        if(alpha>=beta) return alpha;*/
 
         //Check Transposition Table
         int hashMove;
         int hashScore;
         boolean foundTT;
-        if(transpositionTable.entryExists(board.getKey()) && transpositionTable.getDepth(board.getKey())>=depth){
+        if(transpositionTable.entryExists(board.getKey()) && transpositionTable.getDepth()>=depth){
             foundTT = true;
             if (nodeType != NODE_ROOT)
-                if (transpositionTable.getFlag(board.getKey()) == TranspositionTable.HASH_EXACT)
-                    return transpositionTable.getEval(board.getKey());
-                else if (transpositionTable.getFlag(board.getKey()) == TranspositionTable.HASH_ALPHA && transpositionTable.getEval(board.getKey()) <= alpha)
-                    return transpositionTable.getEval(board.getKey());
-                else if (transpositionTable.getFlag(board.getKey()) == TranspositionTable.HASH_BETA && transpositionTable.getEval(board.getKey()) >= beta)
-                    return transpositionTable.getEval(board.getKey());
-            hashMove = transpositionTable.getMove(board.getKey());
+                if (transpositionTable.getFlag() == TranspositionTable.HASH_EXACT)
+                    return transpositionTable.getScore();
+                else if (transpositionTable.getFlag() == TranspositionTable.HASH_ALPHA && transpositionTable.getScore() <= alpha)
+                    return transpositionTable.getScore();
+                else if (transpositionTable.getFlag() == TranspositionTable.HASH_BETA && transpositionTable.getScore() >= beta)
+                    return transpositionTable.getScore();
+            hashMove = transpositionTable.getMove();
 
         }
 
@@ -92,6 +96,7 @@ public class PVSHard extends PVS {
                 board.unmakeMove();
                 if (score > alpha) {
                     if (score >= beta) { //beta cutoff
+                        transpositionTable.record(board.getKey(), depth, alpha, beta, score, bestMove );
                         if (!Move.isCapture(moves[i])) //Non Capture save to History Array
                             if (board.isWhiteToMove())
                                 whiteHeuristics[Move.getFromIndex(moves[i])][Move.getToIndex(moves[i])] += depth * depth;
@@ -161,8 +166,13 @@ public class PVSHard extends PVS {
 
         if (board.getFiftyMove() >= 100) return Evaluator.DRAWSCORE;                 //Fifty-move rule
 
+        if (movesFound == 0){
+            if(board.isCheck()) return -Evaluator.CHECKMATE +ply-1;
+            score = Evaluator.DRAWSCORE;
+        }
+
         if(bestMove!=Move.EMPTY)
-        transpositionTable.record(board.getKey(), currentDepth, alpha, beta, score, bestMove );
+        transpositionTable.record(board.getKey(), depth, alpha, beta, score, bestMove );
         return alpha; //Fail Hard
     }
 

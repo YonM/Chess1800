@@ -234,7 +234,7 @@ public abstract class AbstractBitboardMagicAttacks {
     /**
      * Converts a square to its index 0=H1, 63=A8
      */
-    protected static byte square2Index(long square) {
+    public static byte square2Index(long square) {
         long b = square ^ (square - 1);
         int fold = (int) (b ^ (b >>> 32));
         return bitTable[(fold * 0x783a9b23) >>> 26];
