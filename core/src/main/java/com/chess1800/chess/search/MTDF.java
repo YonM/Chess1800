@@ -1,16 +1,16 @@
-package com.chess1800.chess.search;
+package com.yonathan.chess.core.search;
 
-import com.chess1800.chess.board.Chessboard;
-import com.chess1800.chess.board.Evaluator;
-import com.chess1800.chess.board.MoveGenerator;
-import com.chess1800.chess.transposition_table.TranspositionTable;
-import com.chess1800.chess.move.Move;
+import com.yonathan.chess.core.board.Chessboard;
+import com.yonathan.chess.core.board.Evaluator;
+import com.yonathan.chess.core.board.MoveGenerator;
+import com.yonathan.chess.core.transposition_table.TranspositionTable;
+import com.yonathan.chess.core.move.Move;
 
 /**
  * Created by Yonathan on 02/02/2015.
  * MTD(f) based A.I for the secondary AI. Not Functioning.
  */
-public class MTDF implements Search{
+public class MTDF extends AbstractSearch implements Search {
     private static MTDF instance;
     public Integer legalMoves;
     public int singleMove = 0;
@@ -33,7 +33,7 @@ public class MTDF implements Search{
     private boolean null_allowed;
 
     // For printing extra information to the command line.
-    private static final boolean VERBOSE= false;
+    private static final boolean VERBOSE = false;
 
     // MTD(f)
     private int firstGuess;
@@ -43,7 +43,7 @@ public class MTDF implements Search{
     private long startTime;
     private int timeForMove;
     private int nextTimeCheck;
-    private static int TIME_CHECK_INTERVAL=10000;
+    private static int TIME_CHECK_INTERVAL = 10000;
     private boolean useFixedDepth;
     private boolean stopSearch;
     private long bestMoveTime;
@@ -51,11 +51,10 @@ public class MTDF implements Search{
     private SearchObserver observer;
     private boolean searching;
 
-    private MTDF()
-    {
+    public MTDF(Chessboard b) {
+        super(b);
         transpositionTable = new TranspositionTable(64);
     }
-
 
 
     @Override
@@ -65,12 +64,17 @@ public class MTDF implements Search{
 
     @Override
     public void setObserver(SearchObserver observer) {
-        this.observer= observer;
+        this.observer = observer;
     }
 
     @Override
-    public boolean isSearching() {
-        return searching;
+    protected void setupRun() {
+
+    }
+
+    @Override
+    protected void finishRun() throws SearchRunException {
+
     }
 
     public int findBestMove(Chessboard board, int depth, int timeLeft, int increment, int moveTime) {
@@ -78,11 +82,11 @@ public class MTDF implements Search{
 
         legalMoves = 0;
 
-        if (board.isEndOfGame()!= Evaluator.NOT_ENDED) return NULLMOVE;
+        if (board.isEndOfGame() != Evaluator.NOT_ENDED) return NULLMOVE;
 
         if (legalMoves == 1) return singleMove;
 
-        if(moveTime==0) timeForMove = calculateTime(board,timeLeft,increment);
+        if (moveTime == 0) timeForMove = calculateTime(board, timeLeft, increment);
         useFixedDepth = depth != 0;
         evals = 0;
         whiteHeuristics = new int[MAX_PLY][MAX_PLY];
@@ -96,20 +100,20 @@ public class MTDF implements Search{
             firstGuess = memoryEnhancedTestDriver(board, currentDepth, firstGuess);
            /* if(firstGuess == prevGuess) break;
             prevGuess = firstGuess;*/
-            if(VERBOSE)
+            if (VERBOSE)
                 System.out.println("(" + currentDepth + ") "
-                        + ( (System.currentTimeMillis() - start) / 1000.0) + "s ("
+                        + ((System.currentTimeMillis() - start) / 1000.0) + "s ("
                         + Move.moveToString(lastPV[0]) + ") -- " + evals
                         + " nodes evaluated.");
-            if(useFixedDepth) {
-                if (currentDepth==depth || firstGuess == -(Chessboard.CHECKMATE+6)) break;
+            if (useFixedDepth) {
+                if (currentDepth == depth || firstGuess == -(Chessboard.CHECKMATE + 6)) break;
             }
             /*if ((firstGuess > (CHECKMATE - currentDepth)) || (firstGuess < -(CHECKMATE - currentDepth)))
                 currentDepth = MAX_DEPTH;*/
         }
-        if(VERBOSE)
+        if (VERBOSE)
             System.out.println(evals + " positions evaluated.");
-        bestMoveTime=System.currentTimeMillis() - startTime;
+        bestMoveTime = System.currentTimeMillis() - startTime;
         return firstGuess;
     }
 
@@ -118,19 +122,19 @@ public class MTDF implements Search{
         return 0;
     }
 
-    private int memoryEnhancedTestDriver(Chessboard board,int currentDepth, int first) {
+    private int memoryEnhancedTestDriver(Chessboard board, int currentDepth, int first) {
         int g = first;
         int upperBound = Chessboard.INFINITY;
         int lowerBound = -Chessboard.INFINITY;
         int beta;
-        do{
-            if(g == lowerBound) beta = g+1;
+        do {
+            if (g == lowerBound) beta = g + 1;
             else beta = g;
-            g = alphaBetaM(board,0, currentDepth, beta-1, beta);
-            if(g<beta) upperBound = g;
+            g = alphaBetaM(board, 0, currentDepth, beta - 1, beta);
+            if (g < beta) upperBound = g;
             else lowerBound = g;
 
-        }while(lowerBound < upperBound);
+        } while (lowerBound < upperBound);
         return g;
     }
 
@@ -142,37 +146,39 @@ public class MTDF implements Search{
 
         //Check if the hash table value exists and is stored at the same or higher depth.
         long key = board.getKey();
-        if(transpositionTable.entryExists(key) && transpositionTable.getDepth(key)>=depth){
-            if(transpositionTable.getFlag(key) == TranspositionTable.HASH_EXACT) return transpositionTable.getEval(key); // should never be called
-            if(transpositionTable.getFlag(key) == TranspositionTable.HASH_ALPHA && transpositionTable.getEval(key)<= alpha) return transpositionTable.getEval(key);
-            else if(transpositionTable.getFlag(key) == TranspositionTable.HASH_BETA && transpositionTable.getEval(key)>= beta) return transpositionTable.getEval(key);
-            if(alpha>=beta) return transpositionTable.getEval(key);
-            alpha= Integer.max(alpha,transpositionTable.getEval(key));
+        if (transpositionTable.entryExists(key) && transpositionTable.getDepth(key) >= depth) {
+            if (transpositionTable.getFlag(key) == TranspositionTable.HASH_EXACT)
+                return transpositionTable.getEval(key); // should never be called
+            if (transpositionTable.getFlag(key) == TranspositionTable.HASH_ALPHA && transpositionTable.getEval(key) <= alpha)
+                return transpositionTable.getEval(key);
+            else if (transpositionTable.getFlag(key) == TranspositionTable.HASH_BETA && transpositionTable.getEval(key) >= beta)
+                return transpositionTable.getEval(key);
+            if (alpha >= beta) return transpositionTable.getEval(key);
+            alpha = Integer.max(alpha, transpositionTable.getEval(key));
         }
         if (depth <= 0) {
             follow_pv = false;
-            score= quiescenceSearch(board, ply, alpha, beta);
-            if(score<= alpha){
-                transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_ALPHA, score, 0 );
-            } else if(score>=beta)
-                transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_BETA, score, 0 );
+            score = quiescenceSearch(board, ply, alpha, beta);
+            /*if (score <= alpha) {
+                transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_ALPHA, score, 0);
+            } else if (score >= beta)
+                transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_BETA, score, 0);
             else
-                transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_EXACT, score, 0 ); //should never be called
-        }
+                transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_EXACT, score, 0); //should never be called
+        */}
 
         if (board.isEndOfGame() != Evaluator.NOT_ENDED) {
             follow_pv = false;
             score = board.eval();
-            if(score<= alpha){
-                transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_ALPHA, score, 0 );
-            } else if(score>=beta)
-                transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_BETA, score, 0 );
+            /*if (score <= alpha) {
+                transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_ALPHA, score, 0);
+            } else if (score >= beta)
+                transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_BETA, score, 0);
             else
-                transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_EXACT, score, 0 ); // should never be called
-            if(score == Chessboard.DRAWSCORE) return score;
-            return score +ply -1;
+                transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_EXACT, score, 0); // should never be called
+            */if (score == Chessboard.DRAWSCORE) return score;
+            return score + ply - 1;
         }
-
 
 
         //Try Null move
@@ -192,25 +198,24 @@ public class MTDF implements Search{
         }
 
         null_allowed = true;
-        int hashMove=transpositionTable.getMove(board.getKey());
+        int hashMove = transpositionTable.getMove(board.getKey());
         //if(hashMove != 0 && !b.validateHashMove(hashMove)) hashMove = 0;
         int movesFound = 0;
         int pvMovesFound = 0;
 
         //Try hash move
-        if(hashMove !=0 ) {
-            if(board.makeMove(hashMove)){
+        if (hashMove != 0) {
+            if (board.makeMove(hashMove)) {
                 movesFound++;
                 score = -alphaBetaM(board, ply + 1, depth - 1, -alpha - 1, -alpha);
                 board.unmakeMove();
                 // TODO
-                if(score > bestScore) return score;
-            }else
+                if (score > bestScore) return score;
+            } else
                 hashMove = 0;
         }
         int[] moves = new int[MoveGenerator.MAX_MOVES];
         int num_moves = board.getAllMoves(moves);
-
 
 
         for (int i = 0; i < num_moves; i++) {
@@ -229,7 +234,7 @@ public class MTDF implements Search{
                     board.unmakeMove();
                     if (score > bestScore) {
                         if (score >= beta) {
-                            transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_BETA, score, moves[i]);
+//                            transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_BETA, score, moves[i]);
                             if (board.isWhiteToMove())
                                 whiteHeuristics[Move.getFromIndex(moves[i])][Move.getToIndex(moves[i])] += depth * depth;
                             else
@@ -337,7 +342,7 @@ public class MTDF implements Search{
 
             if (score >= beta) return score;
 
-            if(score > alpha) alpha=score;
+            if (score > alpha) alpha = score;
             if (score > bestScore) {
                 bestScore = score;
                 /*triangularArray[ply][ply] = captures[i];
@@ -361,4 +366,8 @@ public class MTDF implements Search{
         }*/
     }
 
+    @Override
+    public void run() {
+
+    }
 }
