@@ -7,9 +7,15 @@ import com.chess1800.chess.board.Evaluator;
  * Created by Yonathan on 02/02/2015.
  * Simple Search interface.
  */
-public interface Search {
+public interface Search extends Runnable, SearchInfo {
 
-    public int findBestMove(Chessboard b, int depth, int timeLeft, int increment, int moveTime);
+    public void findBestMove() throws SearchRunException;
+
+    public Chessboard getBoard();
+
+    public void go();
+
+    public void stop();
 
     public long getBestMoveTime();
 
@@ -29,4 +35,5 @@ public interface Search {
     public void setObserver(SearchObserver observer);
 
     public boolean isSearching();
+
 }

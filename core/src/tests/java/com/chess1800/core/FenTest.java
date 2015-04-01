@@ -1,6 +1,6 @@
 package com.chess1800.core;
 
-import com.chess1800.chess.board.Bitboard;
+import com.chess1800.chess.board.Board;
 import com.chess1800.chess.board.Chessboard;
 import org.junit.Assert;
 import org.junit.Test;
@@ -11,7 +11,7 @@ import org.junit.Test;
 public class FenTest {
     @Test
     public void test_InitializeFromFEN_With_Real_FEN(){
-        Chessboard board = new Bitboard();
+        Chessboard board = new Board();
         String fen = "1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b - -";
 
 
@@ -20,7 +20,7 @@ public class FenTest {
 
     @Test
     public void test_InitializeFromFEN_With_False_FEN(){
-        Chessboard board = new Bitboard();
+        Chessboard board = new Board();
         String fen = "1k1r4/pp1b1R2/3q2pp/4p3/2B5/4Q3/PPP2B2/2K5 b ";
 
 

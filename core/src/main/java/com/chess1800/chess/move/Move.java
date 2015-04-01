@@ -1,7 +1,7 @@
 package com.chess1800.chess.move;
 
 
-import com.chess1800.chess.board.Bitboard;
+import com.chess1800.chess.board.Chessboard;
 
 /**
  * Created by Yonathan on 03/12/2014.
@@ -9,19 +9,23 @@ import com.chess1800.chess.board.Bitboard;
  * A move is represented by an int, which contains 32-bits. Based
  * on Alberto Ruibal's Carballo. Source @ https://github.com/albertoruibal/carballo/
  * The format is as follows:
+ * <p/>
+ * Type | c | piece | To       | From  |
+ * 100  | 0 | 001   | 111111   | 110111|
+ * MSB                             LSB
+ * Where 'Type' is the move type, such as a promotion (as in the above case).
+ * 'c' is capture, representing whether the move is a capture or not.
+ * 'piece' is the piece that is moving represented by a number from 1 to 6.
+ * 'To' is the square on the bitboard, the piece is moving to. 6 bits for 0-63.
+ * 'From' is the square the piece started its move from. Again, 6 bits for 0-63.
  *
- *  Type | c | piece | To       | From  |
- *  100  | 0 | 001   | 111111   | 110111|
- *  MSB                             LSB
- *  Where 'Type' is the move type, such as a promotion (as in the above case).
- *  'c' is capture, representing whether the move is a capture or not.
- *  'piece' is the piece that is moving represented by a number from 1 to 6.
- *  'To' is the square on the bitboard, the piece is moving to. 6 bits for 0-63.
- *  'From' is the square the piece started its move from. Again, 6 bits for 0-63.
- *  @author Alberto Alonso Ruibal updated by Yonathan Maalo
+ * @author Alberto Alonso Ruibal updated by Yonathan Maalo
  */
-public class Move{
+public class Move {
 
+    //For TT entry
+    public static final int MOVE_MASK = 0x7FFFF;
+    public static final int MOVE_SHIFT =19;
 
     // Move pieces ordered by value
     public static final int EMPTY = 0;
@@ -43,10 +47,12 @@ public class Move{
     public static final int TYPE_PROMOTION_KNIGHT = 5;
     public static final int TYPE_PROMOTION_BISHOP = 6;
     public static final int TYPE_PROMOTION_ROOK = 7;
-    
+
     //Masks
     public static final int SQUARE_MASK = 0x3f;
     public static final int TYPE_MASK = 0x7;
+
+
 
    /* public static int genMove(int fromIndex, int toIndex, int pieceMoved, boolean capture, int moveType) {
         return toIndex | fromIndex << 6 | pieceMoved << 12 | (capture ? 1 << 15 : 0) | moveType << 16;
@@ -61,7 +67,7 @@ public class Move{
         return move & SQUARE_MASK;
     }
 
-    public static final long getToSquare(int move) {
+    public static final long getFromSquare(int move) {
         return 0x1L << (move & SQUARE_MASK);
     }
 
@@ -69,7 +75,7 @@ public class Move{
         return ((move >>> 6) & SQUARE_MASK);
     }
 
-    public static final long getFromSquare(int move) {
+    public static final long getToSquare(int move) {
         return 0x1L << ((move >>> 6) & SQUARE_MASK);
     }
 
@@ -97,11 +103,27 @@ public class Move{
         return Move.getMoveType(move) >= TYPE_PROMOTION_QUEEN;
     }
 
-    public static String moveToString(int move) {
-        String moveString= "";
-        if(Move.getMoveType(move) == Move.TYPE_KINGSIDE_CASTLING)
+    public static final String getPromotionPiece(int move){
+        switch (getMoveType(move)) {
+            case TYPE_PROMOTION_QUEEN:
+                return "q";
+            case TYPE_PROMOTION_ROOK:
+                return "r";
+            case TYPE_PROMOTION_KNIGHT:
+                return "n";
+            case TYPE_PROMOTION_BISHOP:
+                return "b";
+            default:
+                return " ";
+        }
+    }
+
+    //SAN representation
+    public static String moveToString(int move, Chessboard board) {
+        String moveString = "";
+        if (Move.getMoveType(move) == Move.TYPE_KINGSIDE_CASTLING)
             return "0-0";
-        if(Move.getMoveType(move) == Move.TYPE_QUEENSIDE_CASTLING)
+        if (Move.getMoveType(move) == Move.TYPE_QUEENSIDE_CASTLING)
             return "0-0-0";
         switch (Move.getPieceMoved(move)) {
             case Move.KNIGHT:
@@ -123,12 +145,12 @@ public class Move{
                 moveString = "";
                 break;
         }
-        moveString += Bitboard.intToAlgebraicLoc(Move.getFromIndex(move));
+        moveString += board.index2Algebraic(Move.getFromIndex(move));
         if (Move.isCapture(move))
             moveString += "x";
         else
             moveString += "-";
-        moveString += Bitboard.intToAlgebraicLoc(Move.getToIndex(move));
+        moveString += board.index2Algebraic(Move.getToIndex(move));
 
         switch (Move.getMoveType(move)) {
             case Move.TYPE_EN_PASSANT:
@@ -149,6 +171,19 @@ public class Move{
         }
         return moveString;
     }
+
+    //For UCI
+    public static String toString (int move, Chessboard board){
+        if(move ==0) return "none";
+        String moveString="";
+        moveString+=board.index2Algebraic(Move.getFromIndex(move));
+        moveString+=board.index2Algebraic(Move.getToIndex(move));
+
+        if(Move.isPromotion(move))moveString+=Move.getPromotionPiece(move);
+
+        return moveString;
+    }
+
 
 
 }

@@ -1,10 +1,12 @@
-package com.yonathan.chess.core.search;
+package com.chess1800.chess.search;
 
-import com.yonathan.chess.core.board.Chessboard;
-import com.yonathan.chess.core.board.Evaluator;
-import com.yonathan.chess.core.board.MoveGenerator;
-import com.yonathan.chess.core.transposition_table.TranspositionTable;
-import com.yonathan.chess.core.move.Move;
+import com.chess1800.chess.board.Chessboard;
+import com.chess1800.chess.board.Evaluator;
+import com.chess1800.chess.board.MoveGenerator;
+import com.chess1800.chess.move.Move;
+import com.chess1800.chess.search.AbstractSearch;
+import com.chess1800.chess.transposition_table.TranspositionTable;
+
 
 /**
  * Created by Yonathan on 02/02/2015.
@@ -146,15 +148,15 @@ public class MTDF extends AbstractSearch implements Search {
 
         //Check if the hash table value exists and is stored at the same or higher depth.
         long key = board.getKey();
-        if (transpositionTable.entryExists(key) && transpositionTable.getDepth(key) >= depth) {
-            if (transpositionTable.getFlag(key) == TranspositionTable.HASH_EXACT)
-                return transpositionTable.getEval(key); // should never be called
-            if (transpositionTable.getFlag(key) == TranspositionTable.HASH_ALPHA && transpositionTable.getEval(key) <= alpha)
-                return transpositionTable.getEval(key);
-            else if (transpositionTable.getFlag(key) == TranspositionTable.HASH_BETA && transpositionTable.getEval(key) >= beta)
-                return transpositionTable.getEval(key);
-            if (alpha >= beta) return transpositionTable.getEval(key);
-            alpha = Integer.max(alpha, transpositionTable.getEval(key));
+        if (transpositionTable.entryExists(key) && transpositionTable.getDepth() >= depth) {
+            if (transpositionTable.getFlag() == TranspositionTable.HASH_EXACT)
+                return transpositionTable.getScore(); // should never be called
+            if (transpositionTable.getFlag() == TranspositionTable.HASH_ALPHA && transpositionTable.getScore() <= alpha)
+                return transpositionTable.getScore();
+            else if (transpositionTable.getFlag() == TranspositionTable.HASH_BETA && transpositionTable.getScore() >= beta)
+                return transpositionTable.getScore();
+            if (alpha >= beta) return transpositionTable.getScore();
+            alpha = Integer.max(alpha, transpositionTable.getScore());
         }
         if (depth <= 0) {
             follow_pv = false;
@@ -176,8 +178,8 @@ public class MTDF extends AbstractSearch implements Search {
                 transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_BETA, score, 0);
             else
                 transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_EXACT, score, 0); // should never be called
-            */if (score == Chessboard.DRAWSCORE) return score;
-            return score + ply - 1;
+            if (score == Chessboard.DRAWSCORE) return score;
+            */return score + ply - 1;
         }
 
 
@@ -198,7 +200,7 @@ public class MTDF extends AbstractSearch implements Search {
         }
 
         null_allowed = true;
-        int hashMove = transpositionTable.getMove(board.getKey());
+        int hashMove = transpositionTable.getMove();
         //if(hashMove != 0 && !b.validateHashMove(hashMove)) hashMove = 0;
         int movesFound = 0;
         int pvMovesFound = 0;
@@ -234,7 +236,7 @@ public class MTDF extends AbstractSearch implements Search {
                     board.unmakeMove();
                     if (score > bestScore) {
                         if (score >= beta) {
-//                            transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_BETA, score, moves[i]);
+                            //transpositionTable.record(board.getKey(), depth, TranspositionTable.HASH_BETA, score, moves[i]);
                             if (board.isWhiteToMove())
                                 whiteHeuristics[Move.getFromIndex(moves[i])][Move.getToIndex(moves[i])] += depth * depth;
                             else
@@ -246,7 +248,6 @@ public class MTDF extends AbstractSearch implements Search {
                     /*triangularArray[ply][ply] = moves[i];    //save the move
                     for (j = ply + 1; j < triangularLength[ply + 1]; j++)
                         triangularArray[ply][j] = triangularArray[ply + 1][j];  //appends latest best PV from deeper plies
-
                     triangularLength[ply] = triangularLength[ply + 1];*/
                         if (ply == 0) rememberPV();
 

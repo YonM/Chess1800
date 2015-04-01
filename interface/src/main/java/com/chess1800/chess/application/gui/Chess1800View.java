@@ -1,24 +1,34 @@
 package com.chess1800.chess.application.gui;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.WindowConstants;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.awt.HeadlessException;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.util.Observable;
-import java.util.Observer;
+
 
 /**
  * Created by Yonathan on 18/03/2015.
  * Reworked interface based on Alberto Ruibal's Carballo. Source @ https://githucom/albertoruibal/carballo/ &
  */
-public class Chess1800View extends JFrame implements Observer {
+public class Chess1800View extends JFrame{
     String timeString[] = {"1 second", "2 seconds", "5 seconds", "15 seconds", "30 seconds", "60 seconds", "No Time Limit"};
     int timeValues[] = {1000, 2000, 5000, 15000, 30000, 60000, 0};
     int timeDefaultIndex = 0;
     JPanel global, control;
     JComboBox comboOpponent, comboTime;
-    String opponentString[] = {"AI1 Whites", "A1 Blacks", "AI2 Whites", "AI2 Blacks", "AI 1 vs AI2", "AI2 vs A1"};
+    String opponentString[] = {"AI1 Whites", "AI1 Blacks", "AI2 Whites", "AI2 Blacks", "AI 1 vs AI2", "AI2 vs A1"};
     int opponentDefaultIndex = 1;
     private char[] boardPieces;
     private JTextField fenField;
@@ -52,6 +62,7 @@ public class Chess1800View extends JFrame implements Observer {
 
         comboOpponent = new JComboBox(opponentString);
         comboOpponent.setActionCommand("opponent");
+        control.add(comboOpponent);
 
 
         comboTime = new JComboBox(timeString);
@@ -111,8 +122,7 @@ public class Chess1800View extends JFrame implements Observer {
         boardPanel.addMouseListeners(mml, ml);
     }
 
-    @Override
-    public void update(Observable o, Object arg) {
+    public void update(){
         invalidate();
         validate();
         repaint();
@@ -144,6 +154,10 @@ public class Chess1800View extends JFrame implements Observer {
         boardPanel.unHighlight();
     }
 
+    public void highlight(int fromIndex, int toIndex) {
+        boardPanel.highlight(fromIndex, toIndex);
+    }
+
     public String getFEN() {
         return fenField.getText();
     }
@@ -167,4 +181,6 @@ public class Chess1800View extends JFrame implements Observer {
     public void addPiece(PieceJLabel chessPiece, Integer dragLayer) {
         boardPanel.addPiece(chessPiece, dragLayer);
     }
+
+
 }

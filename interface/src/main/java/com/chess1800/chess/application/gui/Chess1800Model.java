@@ -1,8 +1,8 @@
 package com.chess1800.chess.application.gui;
 
-import com.chess1800.chess.board.Bitboard;
 import com.chess1800.chess.board.Chessboard;
 import com.chess1800.chess.search.Search;
+import com.chess1800.chess.search.SearchObserver;
 
 import java.util.Observable;
 
@@ -16,9 +16,8 @@ public class Chess1800Model extends Observable {
     private boolean searching;
     private int moveTime;
 
-    public Chess1800Model(Search engine1, Search engine2) {
-        b= new Bitboard();
-        b.initialize();
+    public Chess1800Model(Chessboard board, Search engine1, Search engine2) {
+        b= board;
         this.engine1 = engine1;
         this.engine2 = engine2;
     }
@@ -64,16 +63,30 @@ public class Chess1800Model extends Observable {
         return b.isWhiteToMove();
     }
 
-    public void engine1Move() {
-
+    public void setSearchObserver(SearchObserver observer){
+        engine1.setObserver(observer);
+        engine2.setObserver(observer);
     }
 
-    public void engine2Move() {
-
+    public void engine1Go() {
+        engine1.go();
     }
 
-    public void stop() {
+    public void engine2Go() {
+        engine2.go();
+    }
 
+    public void stop(){
+        stopEngine1();
+        stopEngine2();
+    }
+
+    public void stopEngine1() {
+        engine1.stop();
+    }
+
+    public void stopEngine2() {
+        engine2.stop();
     }
 
     public void startPosition() {
@@ -93,6 +106,11 @@ public class Chess1800Model extends Observable {
     }
 
     public void setMoveTime(int time){
-        moveTime = time;
+        engine1.resetMoveTime(time);
+        engine2.resetMoveTime(time);
+    }
+
+    public Chessboard getBoard(){
+        return b;
     }
 }

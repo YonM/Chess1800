@@ -16,6 +16,7 @@ public interface MoveGenerator {
     public boolean makeMove(int move);
     public void makeNullMove();
     public void unmakeMove();
+    public void unmakeMove(int moveNumber);
 
     //Maximum moves per position and max game length.
     public static final int MAX_GAME_LENGTH = 1024; // Maximum number of half-moves, if 50-move rule is obeyed.
@@ -29,6 +30,16 @@ public interface MoveGenerator {
     public long getMyPieces();
     public long getOpponentPieces();
     public long getAllPieces();
-    public int getEPSquare();
+    public int getEPIndex();
+    public long getWhitePieces();
+    public long getBlackPieces();
+
+    //castling
+    public int getCastleWhite();
+    public int getCastleBlack();
+
+    //SEE
+    public int sEE(int move);
+    public int sEE(int fromIndex, int toIndex, int pieceMoved, int capturedPiece);
 
 }

@@ -1,7 +1,7 @@
 package com.chess1800.chess.application.gui;
 
 import com.chess1800.chess.board.Chessboard;
-import com.chess1800.chess.board.Bitboard;
+import com.chess1800.chess.board.Board;
 import com.chess1800.chess.board.MoveGenerator;
 import com.chess1800.chess.search.PVSHard;
 import com.chess1800.chess.search.PVSSoft;
@@ -23,8 +23,8 @@ public class BoardModel extends Observable {
     public BoardModel(Chessboard b, BoardView view) {
         this.b=b;
         this.view=view;
-        searchSoft = new PVSSoft();
-        searchHard = new PVSHard();
+        searchSoft = new PVSSoft(this.b);
+        searchHard = new PVSHard(this.b);
     }
     public void makeMove(int move) {
         if (b.getMoveNumber() % 2 == 0)
@@ -49,8 +49,8 @@ public class BoardModel extends Observable {
             int[] moves = new int[MoveGenerator.MAX_MOVES];
             int num_moves = b.getAllLegalMoves(moves);
             for (int i = 0; i < num_moves; i++) {
-                if (s.equals(Bitboard.intToAlgebraicLoc(Move.getFromIndex(moves[i])) + "-"
-                        + Bitboard.intToAlgebraicLoc(Move.getToIndex(moves[i])))) {
+                if (s.equals(Board.intToAlgebraicLoc(Move.getFromIndex(moves[i])) + "-"
+                        + Board.intToAlgebraicLoc(Move.getToIndex(moves[i])))) {
                     makeMove(moves[i]);
                     break;
                 }
@@ -59,13 +59,13 @@ public class BoardModel extends Observable {
     }
 
     public void makeEngineMove(int engine_time) {
-        int move = searchSoft.findBestMove(b,6,engine_time,10000,0);
-        makeMove(move);
+        //int move = searchSoft.findBestMove(b,6,engine_time,10000,0);
+        //makeMove(move);
     }
 
     public void makeEngineMove2(int engine_time){
-        int move = searchHard.findBestMove(b,6,engine_time,10000,0);
-        makeMove(move);
+        //int move = searchHard.findBestMove(b,6,engine_time,10000,0);
+        //makeMove(move);
     }
 
     public void unmakeMove() {

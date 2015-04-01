@@ -1,6 +1,6 @@
 package com.chess1800.chess.zobrist;
 
-import com.chess1800.chess.board.Bitboard;
+import com.chess1800.chess.board.Board;
 
 /**
  * Created by Yonathan on 04/12/2014.
@@ -54,21 +54,21 @@ public class Zobrist{
         }
     }
 
-    public static long getKeyFromBoard(Bitboard b) {
+    public static long getKeyFromBoard(Board b) {
         long key = 0;
         for (int loc = 0; loc < 64; loc++) {
             key ^= getKeyPieceIndex(loc, b.getPieceAt(loc));
         }
-        if ((b.getCastleWhite() & Bitboard.CANCASTLEOO) != 0)
+        if ((b.getCastleWhite() & Board.CANCASTLEOO) != 0)
             key ^= whiteKingSideCastling;
-        if ((b.getCastleWhite() & Bitboard.CANCASTLEOOO) != 0)
+        if ((b.getCastleWhite() & Board.CANCASTLEOOO) != 0)
             key ^= whiteQueenSideCastling;
-        if ((b.getCastleBlack() & Bitboard.CANCASTLEOO) != 0)
+        if ((b.getCastleBlack() & Board.CANCASTLEOO) != 0)
             key ^= blackKingSideCastling;
-        if ((b.getCastleBlack() & Bitboard.CANCASTLEOOO) != 0)
+        if ((b.getCastleBlack() & Board.CANCASTLEOOO) != 0)
             key ^= blackQueenSideCastling;
-        if (b.getEPSquare() != -1)
-            key ^= passantColumn[b.getEPSquare() % 8];
+        if (b.getEPIndex() != -1)
+            key ^= passantColumn[b.getEPIndex() % 8];
         if (b.isWhiteToMove())
             key ^= whiteMove;
         return key;

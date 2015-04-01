@@ -1,6 +1,6 @@
 package com.chess1800.core;
 
-import com.chess1800.chess.board.Bitboard;
+import com.chess1800.chess.board.Board;
 import com.chess1800.chess.board.Chessboard;
 import junit.framework.TestCase;
 import org.junit.Test;
@@ -32,8 +32,9 @@ public class EloTest extends TestCase {
 
     @Test
     public void testBT2450(){
-        search = new PVSHard();
-        b= new Bitboard();
+        b= new Board();
+        search = new PVSHard(b);
+
         long time = processEPDFile(this.getClass().getResourceAsStream("/BT2450.epd"), 2 * 60 * 1000);
         double timeSeconds = time/1000;
         double elo = 2450- timeSeconds /30;
@@ -42,8 +43,8 @@ public class EloTest extends TestCase {
 
     @Test
     public void testBratkoKopec(){
-        search = new PVSHard();
-        b= new Bitboard();
+        b= new Board();
+        search = new PVSHard(b);
         long time = processEPDFile(this.getClass().getResourceAsStream("/bratko-kopec.epd"), 15 * 60 * 1000);
         double timeSeconds = time/1000;
         double elo = 2450- timeSeconds /30;
@@ -114,7 +115,7 @@ public class EloTest extends TestCase {
     private int testPosition(String fen, String moveString, int timeLimit) {
         System.out.println("hello test called");
         int time=0;
-        b=new Bitboard();
+        b=new Board();
         if(b.initializeFromFEN(fen)){
             String moveStringArray[] = moveString.split(" ");
             int moves[] = new int[moveStringArray.length];
@@ -123,10 +124,10 @@ public class EloTest extends TestCase {
                 moves[i] = b.getMoveFromString(moveStringArray[i], true);
             }
             boolean found = false;
-            int moveFound;
+            int moveFound=1;
             for(int move: moves){
-                moveFound=search.findBestMove(b,0,0,0, timeLimit);
-                System.out.println("best move: " +move + " Found move: " + moveFound);
+                //moveFound=search.fgo);
+                //System.out.println("best move: " +move + " Found move: " + moveFound);
                 if(move==moveFound){
                     time+=search.getBestMoveTime();
                     found = true;

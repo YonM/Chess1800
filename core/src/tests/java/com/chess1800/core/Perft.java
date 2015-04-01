@@ -1,6 +1,6 @@
 package com.chess1800.core;
 
-import com.chess1800.chess.board.Bitboard;
+import com.chess1800.chess.board.Board;
 import org.junit.Test;
 
 /**
@@ -9,7 +9,7 @@ import org.junit.Test;
  * Test strings and expected results provided by Sharper @ http://www.albert.nu/programs/sharper/perft
  */
 public class Perft {
-    Bitboard b;
+    Board b;
 
     /*
     * This test starts from the initial position. The theoretical results should be:
@@ -34,14 +34,14 @@ public class Perft {
 
     @Test
     public void perft() {
-        b = new Bitboard();
-        boolean loaded = b.initializeFromFEN(test1);
+        b = new Board();
+        boolean loaded = b.initializeFromFEN(test2);
         System.out.println(b);
         long i;
         if (loaded) {
             //System.out.println("true");
             long start = System.currentTimeMillis();
-            i = perft(b, 0, 1);
+            i = perft(b, 0, 3);
             long stop = System.currentTimeMillis();
             System.out.println("Found " + i + " nodes in " + (stop - start) + " ms.");
         } else {
@@ -50,7 +50,7 @@ public class Perft {
 
     }
 
-    private long perft(Bitboard b, int ply, int depth) {
+    private long perft(Board b, int ply, int depth) {
         if (depth == 0) return 1;
 
         int[] moves = new int[b.MAX_MOVES];

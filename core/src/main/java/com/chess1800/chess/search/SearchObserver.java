@@ -7,4 +7,5 @@ public interface SearchObserver {
 
     public void bestMove(int bestMove);
 
+    void info(AbstractSearchInfo info);
 }

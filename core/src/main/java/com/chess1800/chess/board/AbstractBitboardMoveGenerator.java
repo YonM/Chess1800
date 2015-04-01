@@ -204,7 +204,6 @@ public abstract class AbstractBitboardMoveGenerator extends AbstractBitboardMagi
         return num_non_captures;
     }
 
-    public abstract boolean makeMove(int move);
 
     protected abstract boolean isOwnKingAttacked();
 
@@ -222,7 +221,7 @@ public abstract class AbstractBitboardMoveGenerator extends AbstractBitboardMagi
     }
 
 
-    public int getEPSquare() {
+    public int getEPIndex() {
         return ePSquare;
     }
 

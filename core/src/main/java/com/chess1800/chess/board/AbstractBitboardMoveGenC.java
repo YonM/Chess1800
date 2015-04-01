@@ -18,9 +18,8 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
     protected boolean whiteToMove;
     protected int castleWhite;
     protected int castleBlack;
-    protected int ePSquare;
-    public static final int CANCASTLEOO = 1;
-    public static final int CANCASTLEOOO = 2;
+    protected int ePIndex;
+
 
     //For SEE & Quiescence Search
     public static final int MINCAPTVAL = 1;
@@ -48,6 +47,7 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
 
         int index = 0;
         long square = 0x1L;
+        long epSquare;
         while (square != 0) {
             if (isWhiteToMove() == ((square & whitePieces) != 0)) {
 
@@ -69,7 +69,8 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
                             if (((square & b2_d) != 0) && (((square << 16) & all) == 0))
                                 addMoves(Move.PAWN, index, index + 16, false, 0);
                         }
-                        generatePawnCapturesFromAttacks(index, whitePawn[index], getEPSquare());
+                        epSquare = ePIndex ==-1? 0 : getSquare[ePIndex];
+                        generatePawnCapturesFromAttacks(index, whitePawn[index], epSquare );
                     } else {
                         if (((square >>> 8) & all) == 0) {
                             addMoves(Move.PAWN, index, index - 8, false, 0);
@@ -77,7 +78,8 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
                             if (((square & b2_u) != 0) && (((square >>> 16) & all) == 0))
                                 addMoves(Move.PAWN, index, index - 16, false, 0);
                         }
-                        generatePawnCapturesFromAttacks(index, blackPawn[index], getEPSquare());
+                        epSquare = ePIndex ==-1? 0 : getSquare[ePIndex];
+                        generatePawnCapturesFromAttacks(index, blackPawn[index], epSquare);
                     }
                 }
             }
@@ -159,8 +161,8 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
         return castleWhite;
     }
 
-    public int getEPSquare() {
-        return ePSquare;
+    public int getEPIndex() {
+        return ePIndex;
     }
 
 
@@ -274,7 +276,7 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
     /**
      * Adds a move
      */
-    private void addMoves(int pieceMoved, int fromIndex, int toIndex, boolean capture, int moveType) {
+    protected void addMoves(int pieceMoved, int fromIndex, int toIndex, boolean capture, int moveType) {
         if (pieceMoved == Move.PAWN && (toIndex < 8 || toIndex >= 56)) {
             moves[moveIndex++] = Move.genMove(fromIndex, toIndex, pieceMoved, capture, Move.TYPE_PROMOTION_QUEEN);
             moves[moveIndex++] = Move.genMove(fromIndex, toIndex, pieceMoved, capture, Move.TYPE_PROMOTION_KNIGHT);
@@ -284,4 +286,6 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
             moves[moveIndex++] = Move.genMove(fromIndex, toIndex, pieceMoved, capture, moveType);
         }
     }
+
+
 }

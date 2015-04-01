@@ -1,6 +1,6 @@
 package com.chess1800.chess.application.gui;
 
-import com.chess1800.chess.board.Bitboard;
+import com.chess1800.chess.board.Board;
 import com.chess1800.chess.board.Chessboard;
 
 import javax.swing.JFrame;
@@ -57,7 +57,7 @@ public class Chess1800 extends JFrame implements ActionListener{
         setSize(WIDTH * 8 + SIDE_BUFFER, WIDTH * 8 + LOWER_BUFFER);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        Bitboard b = new Bitboard();
+        Board b = new Board();
         b.initializeFromFEN(Chessboard.START_FEN);
         view = new BoardView();
         model = new BoardModel(b, view);
