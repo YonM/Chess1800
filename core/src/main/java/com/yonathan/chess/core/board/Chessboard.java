@@ -20,6 +20,8 @@ public interface Chessboard extends Evaluator {
     public String index2Algebraic(int index);
 
     public int getLastMove();
+    public int sEE(int move);
+
 
     //Position related
     public boolean initializeFromFEN(String fen);

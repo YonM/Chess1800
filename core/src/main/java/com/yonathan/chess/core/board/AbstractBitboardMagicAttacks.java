@@ -6,16 +6,16 @@ package com.yonathan.chess.core.board;
  */
 public abstract class AbstractBitboardMagicAttacks {
 
-    public long[] rook;
-    public long[] rookMask;
-    public long[][] rookMagic;
-    public long[] bishop;
-    public long[] bishopMask;
-    public long[][] bishopMagic;
-    public long[] knight;
-    public long[] king;
-    public long[] blackPawn;
-    public long[] whitePawn;
+    protected static long[] rook;
+    protected static long[] rookMask;
+    protected static long[][] rookMagic;
+    protected static long[] bishop;
+    protected static long[] bishopMask;
+    protected static long[][] bishopMagic;
+    protected static long[] knight;
+    protected static long[] king;
+    protected static long[] blackPawn;
+    protected static long[] whitePawn;
 
     protected long whitePawns;
     protected long whiteKnights;

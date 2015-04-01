@@ -148,7 +148,6 @@ public abstract class AbstractBitboardMoveGenerator extends AbstractBitboardMagi
         int[] captureValues = new int[MAX_MOVES];
         int num_captures = getAllCaptures(captures);
         int val;
-        int insertIndex;
         for (int i = 0; i < num_captures; i++) {
             val = sEE(captures[i]);
             captureValues[i] = val;
@@ -159,7 +158,6 @@ public abstract class AbstractBitboardMoveGenerator extends AbstractBitboardMagi
                 i--;
                 continue;
             }
-            insertIndex = i;
 
         }
         sortCaptures(captureValues, captures, num_captures);
