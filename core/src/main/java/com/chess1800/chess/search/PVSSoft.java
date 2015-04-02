@@ -149,6 +149,7 @@ public class PVSSoft extends PVS {
         //Check if we are in check.
         if (board.isCheck()) return PVS(nodeType, ply, 1, alpha, beta);
 
+
         //Standing pat
         int bestScore;
         bestScore = board.eval();

@@ -1,6 +1,7 @@
 package com.chess1800.chess.board;
 
 import com.chess1800.chess.move.Move;
+import com.chess1800.chess.search.Search;
 
 /**
  * Created by Yonathan on 01/04/2015.
@@ -27,9 +28,9 @@ public class MoveSorter extends AbstractBitboardMagicAttacks {
     private int phase;
     //private static final int[] VICTIM_PIECE_VALUES = {0, 100, 325, 330, 500, 975, 10000};
     //private static final int[] AGGRESSOR_PIECE_VALUES = {0, 10, 32, 33, 50, 97, 99};
-    //private static final int SCORE_PROMOTION_QUEEN = 975;
-    //private static final int SCORE_UNDERPROMOTION = Integer.MIN_VALUE + 1;
-    //private static final int SCORE_LOWEST = Integer.MIN_VALUE;
+    private static final int SCORE_PROMOTION_QUEEN = 875;
+    private static final int SCORE_UNDERPROMOTION = Integer.MIN_VALUE + 1;
+    private static final int SCORE_LOWEST = Integer.MIN_VALUE;
 
     public final static int SEE_NOT_CALCULATED = Short.MAX_VALUE;
 
@@ -37,6 +38,7 @@ public class MoveSorter extends AbstractBitboardMagicAttacks {
     private int[] goodCapturesSee = new int[Bitboard.MAX_MOVES];
     private int[] goodCapturesScores = new int[Bitboard.MAX_MOVES];
     private int[] badCaptures = new int[Bitboard.MAX_MOVES]; // Stores captures and queen promotions
+    private int[] badCapturesSee = new int[Bitboard.MAX_MOVES];
     private int[] badCapturesScores = new int[Bitboard.MAX_MOVES];
     private int[] equalCaptures = new int[Bitboard.MAX_MOVES]; // Stores captures and queen promotions
     private int[] equalCapturesSee = new int[Bitboard.MAX_MOVES];
@@ -44,6 +46,8 @@ public class MoveSorter extends AbstractBitboardMagicAttacks {
     private int[] nonCaptures = new int[Bitboard.MAX_MOVES]; // Stores non captures and underpromotions
     private int[] nonCapturesSee = new int[Bitboard.MAX_MOVES];
     private int[] nonCapturesScores = new int[Bitboard.MAX_MOVES];
+
+
     private Bitboard board;
 
     private int lastMoveSEE;
@@ -63,7 +67,7 @@ public class MoveSorter extends AbstractBitboardMagicAttacks {
     //castling
     private int castleWhite;
     private int castleBlack;
-    
+
     //Attack Information
     
     //King Indexes
@@ -83,18 +87,26 @@ public class MoveSorter extends AbstractBitboardMagicAttacks {
     private long attackedSquares[] = {0, 0}; //indexed by color; white =0, black =1;
     private int ePIndex;
     private int ePSquare;
+    private Search search;
 
 
-    public void genMoves(int ttMove) {
-        genMoves(ttMove, GENERATE_ALL);
+    public void genMoves(int ttMove, Search search) {
+        this.search = search;
+        this.board = (Bitboard) search.getBoard();
+        genMoves(ttMove, GENERATE_ALL, search);
     }
-    public void genMoves(int ttMove, int movesToGenerate) {
+    public void genMoves(int ttMove, int movesToGenerate, Search search) {
+        if(movesToGenerate != GENERATE_ALL){
+            this.search = search;
+            this.board = (Bitboard) search.getBoard();
+        }
         this.ttMove = ttMove;
         this.movesToGenerate = movesToGenerate;
         phase = PHASE_TT;
     }
 
     private void initMoveGen() {
+
         initializeAttackInfo();
 
         goodCaptureIndex = 0;
@@ -121,13 +133,13 @@ public class MoveSorter extends AbstractBitboardMagicAttacks {
         otherKingIndex = square2Index(kings & opponentPieces);
 
 
-        bishopAttacksMyKing = getBishopAttacks(myKingIndex, allPieces);
+        /*bishopAttacksMyKing = getBishopAttacks(myKingIndex, allPieces);
         rookAttacksMyKing = getRookAttacks(myKingIndex, allPieces);
 
         bishopAttacksOtherKing = getBishopAttacks(otherKingIndex, allPieces);
         
         rookAttacksOtherKing = getRookAttacks(otherKingIndex, allPieces);
-        /*long pieceAttacks;
+        long pieceAttacks;
         long square = H1;
         for (int index = 0; index < 64; index++) {
             if ((square & allPieces) != 0) {
@@ -185,7 +197,7 @@ public class MoveSorter extends AbstractBitboardMagicAttacks {
             case PHASE_TT:
                 phase++;
                 if(ttMove != Move.EMPTY){
-                    lastMoveSEE = Move.isCapture(ttMove) || Move.isPromotion(ttMove) ? board.sEE(ttMove) : 0;
+                    lastMoveSEE = Move.isCapture(ttMove) || Move.getMoveType(ttMove)==Move.TYPE_PROMOTION_QUEEN ? board.sEE(ttMove) : 0;
                     if(movesToGenerate == GENERATE_ALL || Move.isPromotion(ttMove) || (movesToGenerate == GENERATE_CAPTURES_PROMOS && Move.isCapture(ttMove) && lastMoveSEE >= 0))
                         return ttMove;
                 }
@@ -194,7 +206,35 @@ public class MoveSorter extends AbstractBitboardMagicAttacks {
                 generateCaptures();
                 phase++;
             case PHASE_GOOD_CAPTURES_AND_PROMOS:
-                move = selectMove(goodCaptureIndex, goodCaptures, goodCapturesScores, goodCapturesSee);
+                move = selectMove(goodCaptureIndex, goodCaptures, goodCapturesScores);
+                if(move!= Move.EMPTY) return move;
+
+                phase++;
+
+            case PHASE_EQUAL_CAPTURES:
+                move = selectMove(equalCaptureIndex, equalCaptures, equalCapturesScores);
+                if(move!= Move.EMPTY) return move;
+
+                phase++;
+            case PHASE_GEN_NON_CAPTURES:
+                if (movesToGenerate == GENERATE_CAPTURES_PROMOS) {
+                    phase = PHASE_END;
+                    return Move.EMPTY;
+                }
+                generateNonCaptures();
+                phase++;
+
+            case PHASE_NON_CAPTURES:
+                move = selectMove(nonCaptureIndex, nonCaptures, nonCapturesScores);
+                if (move != Move.EMPTY) return move;
+
+                phase++;
+            case PHASE_BAD_CAPTURES:
+                move = selectMove(badCaptureIndex, badCaptures, badCapturesScores);
+                if (move != Move.EMPTY) return move;
+
+                phase = PHASE_END;
+                return Move.EMPTY;
         }
         return Move.EMPTY;
     }
@@ -329,15 +369,76 @@ public class MoveSorter extends AbstractBitboardMagicAttacks {
     }
 
 
-    private int selectMove(int arrayLength, int[] arrayMoves, int[] arrayScores, int[] arraySee) {
-        return 0;
+    private int selectMove(int arrayLength, int[] arrayMoves, int[] arrayScores) {
+        if(arrayLength == 0) return Move.EMPTY;
+        int bestScore = SCORE_LOWEST;
+        int bestIndex = -1;
+        for (int i =0 ;i< arrayLength ; i++){
+            if(arrayScores[i] > bestScore){
+                bestScore = arrayScores[i];
+                bestIndex =i;
+            }
+        }
+        if (bestIndex != -1) {
+            int move = arrayMoves[bestIndex];
+            arrayScores[bestIndex] = SCORE_LOWEST;
+            return move;
+        } else {
+            return Move.EMPTY;
+        }
     }
 
     private void addMove(int pieceMoved, int fromIndex, long to, boolean capture, int moveType){
         int pieceCaptured = board.getPieceCaptured(move);
         int see = SEE_NOT_CALCULATED;
-        if (capture) see = board.sEE(fromIndex, square2Index(to), pieceMoved, pieceCaptured);
+        int toIndex= square2Index(to);
+        if (capture || moveType == Move.TYPE_PROMOTION_QUEEN) see = board.sEE(fromIndex, toIndex, pieceMoved, pieceCaptured);
 
+
+        int tempMove = Move.genMove(fromIndex, toIndex, pieceMoved, capture, moveType);
+
+        if (tempMove==ttMove) return;
+        if (movesToGenerate != GENERATE_ALL && see<0) return;
+
+
+
+        if(capture && see < 0){
+            badCaptures[badCaptureIndex] = tempMove;
+            badCapturesScores[badCaptureIndex++] = see;
+            return;
+        }
+        boolean underPromotion = moveType == Move.TYPE_PROMOTION_KNIGHT || moveType == Move.TYPE_PROMOTION_ROOK || moveType == Move.TYPE_PROMOTION_BISHOP;
+        if((capture || moveType == Move.TYPE_PROMOTION_QUEEN) && !underPromotion){
+
+            if(see>0) {
+                goodCaptures[goodCaptureIndex] = tempMove;
+                goodCapturesScores[goodCaptureIndex++] = see;
+            }else{
+                equalCaptures[equalCaptureIndex] = tempMove;
+                equalCapturesScores[equalCaptureIndex++] = see;
+            }
+
+        }
+        else{
+            nonCaptures[nonCaptureIndex] = tempMove;
+            nonCapturesScores[nonCaptureIndex++] = see==SEE_NOT_CALCULATED? search.getMoveScore(move) : SCORE_UNDERPROMOTION;
+        }
+
+    }
+
+    private void sortCaptures(int[] captureValues,int[] captures,int num_captures) {
+        //Insertion sort of captures.
+        for(int i=1;i<num_captures;i++){
+            int tempVal = captureValues[i];
+            int tempCapture = captures[i];
+            int j;
+            for(j = i-1; j>=0 && tempVal > captureValues[j];j--){
+                captureValues[j+1] = captureValues[j];
+                captures[j+1] = captures [j];
+            }
+            captureValues[j+1] = tempVal;
+            captures[j+1] = tempCapture;
+        }
     }
 
     private void generateMovesFromAttacks(int pieceMoved, int fromIndex, long from, long attacks, boolean capture) {

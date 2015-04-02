@@ -3,6 +3,7 @@ package com.chess1800.chess.search;
 import com.chess1800.chess.board.Chessboard;
 import com.chess1800.chess.board.Evaluator;
 import com.chess1800.chess.board.MoveGenerator;
+import com.chess1800.chess.board.MoveSorter;
 import com.chess1800.chess.move.Move;
 import com.chess1800.chess.transposition_table.TranspositionTable;
 
@@ -55,11 +56,9 @@ public class PVSHard extends PVS {
         if(alpha>=beta) return alpha;*/
 
         //Check Transposition Table
-        int hashMove;
-        int hashScore;
-        boolean foundTT;
-        if(transpositionTable.entryExists(board.getKey())){
-            foundTT = true;
+        int hashMove=Move.EMPTY;
+        boolean foundTT= transpositionTable.entryExists(board.getKey());
+        if(foundTT){
             if(transpositionTable.getDepth()>=depth)
                 if (nodeType != NODE_ROOT)
                     if (transpositionTable.getFlag() == TranspositionTable.HASH_EXACT)
@@ -72,8 +71,9 @@ public class PVSHard extends PVS {
 
         }
 
-        int score= -Evaluator.CHECKMATE;
+        int bestScore= -Evaluator.CHECKMATE;
         int bestMove =Move.EMPTY;
+        int score = 0;
         // Try Null move
         if (nullAllowed()) {
             null_allowed = false;
@@ -82,7 +82,7 @@ public class PVSHard extends PVS {
             board.unmakeMove();
             null_allowed = true;
             if (score >= beta) {
-                return beta; //Fail Hard
+                return score; //Fail Hard
             }
         }
 
@@ -91,115 +91,175 @@ public class PVSHard extends PVS {
         int pvMovesFound = 0;
         int[] moves = new int[MoveGenerator.MAX_MOVES];
         int num_moves = board.getAllMoves(moves);
-
-        //try the first legal move with an open window.
-        int j, pvIndex = 0;
-        for (int i = 0; i < num_moves; i++) {
-            selectBestMoveFirst(moves, num_moves, ply, depth, i);
-            if (board.makeMove(moves[i])) {
-                pvIndex = i;
+        int move = Move.EMPTY;
+        MoveSorter moveSorter = moveSorters[distanceToInitialPly];
+        moveSorter.genMoves(hashMove, this);
+        while((move= moveSorter.next())!=Move.EMPTY){
+            if (board.makeMove(move)) {
                 movesFound++;
-                score = -PVS(NODE_PV, ply + 1, depth - 1, -beta, -alpha);
-                board.unmakeMove();
-                if (score > alpha) {
-                    if (score >= beta) { //beta cutoff
-                        transpositionTable.record(board.getKey(), depth, alpha, beta, score, bestMove );
-                        if (!Move.isCapture(moves[i])) //Non Capture save to History Array
-                            if (board.isWhiteToMove())
-                                whiteHeuristics[Move.getFromIndex(moves[i])][Move.getToIndex(moves[i])] += depth * depth;
-                            else
-                                blackHeuristics[Move.getFromIndex(moves[i])][Move.getToIndex(moves[i])] += depth * depth;
-                        return beta; //fail hard
+                int lowBound = (alpha > bestScore ? alpha : bestScore);
+                if(movesFound==1 && (nodeType == NODE_PV || nodeType == NODE_ROOT)) score = -PVS(NODE_PV, ply + 1, depth - 1, -beta, -lowBound); //PV move search
+                else{
+                    if (movesFound > LATEMOVE_THRESHOLD && depth > LATEMOVE_DEPTH_THRESHOLD && !board.isCheck() && !Move.isCapture(move) && !Move.isPromotion(move)) score = -PVS(NODE_NULL, ply + 1, depth - 2, -lowBound - 1, -lowBound); //LMR
+                    else score = -PVS(NODE_NULL, ply + 1, depth - 1, -lowBound - 1, -lowBound); // Null Window Search}
+
+                    if ((score > alpha) && (score < beta)) {
+                        score = -PVS(NODE_PV, ply + 1, depth - 1, -beta, -alpha); //Better move found, normal alpha-beta.
                     }
-                    bestMove=moves[i];
-                    pvMovesFound++;
-                    triangularArray[ply][ply] = moves[i];    //save the move
-                    for (j = ply + 1; j < triangularLength[ply + 1]; j++)
-                        triangularArray[ply][j] = triangularArray[ply + 1][j];  //appends latest best PV from deeper plies
+                    board.unmakeMove();
 
-                    triangularLength[ply] = triangularLength[ply + 1];
-                    if (ply == 0) rememberPV();
-                    alpha = score;  // alpha improved
+                    if(score >bestScore){
+                        bestMove = move;
+                        bestScore = score;
+                        if(nodeType == NODE_ROOT){
+                            globalBestMove = move;
+                            //globalBestScore = score;
+                            globalBestMoveTime = System.currentTimeMillis() - startTime;
+                            moveFound = true;
+                        }
+                    }
+
+                    // alpha/beta cut (fail high)
+                    if (score >= beta) {
+                        break;
+                    }
                 }
-                break; //First legal move only.
-            }
-        }
-        for (int i = pvIndex; i < num_moves; i++) {
-            selectBestMoveFirst(moves, num_moves, ply, depth, i);
-
-            if (board.makeMove(moves[i])) {
-                movesFound++;
-                //Late Move Reduction
-                if (movesFound > LATEMOVE_THRESHOLD && depth > LATEMOVE_DEPTH_THRESHOLD && !board.isCheck() && !Move.isCapture(moves[i]) && !Move.isPromotion(moves[i])) {
-                    score = -PVS(NODE_NULL, ply + 1, depth - 2, -alpha - 1, -alpha);
-                } else {
-                    score = -PVS(NODE_PV, ply + 1, depth - 1, -alpha - 1, -alpha); // PVS Search
-                }
-                if ((score > alpha) && (score < beta)) {
-                    score = -PVS(NODE_PV, ply + 1, depth - 1, -beta, -alpha); //Better move found, normal alpha-beta.
-                }
-
-                board.unmakeMove();
-
-                if (score >= beta) {
-                    if (!Move.isCapture(moves[i]))
-                        if (board.isWhiteToMove())
-                            whiteHeuristics[Move.getFromIndex(moves[i])][Move.getToIndex(moves[i])] += depth * depth;
-                        else
-                            blackHeuristics[Move.getFromIndex(moves[i])][Move.getToIndex(moves[i])] += depth * depth;
-                    return beta;
-                }
-                if (score > alpha) {
-                    bestMove = moves[i];
-                    alpha = score;
-                    pvMovesFound++;
-                    triangularArray[ply][ply] = moves[i];    //save the move
-                    for (j = ply + 1; j < triangularLength[ply + 1]; j++)
-                        triangularArray[ply][j] = triangularArray[ply + 1][j];  //appends latest best PV from deeper plies
-
-                    triangularLength[ply] = triangularLength[ply + 1];
-                    if (ply == 0) rememberPV();
-                }
-
 
             }
         }
-        if (pvMovesFound != 0) {
-            if (board.isWhiteToMove())
-                whiteHeuristics[Move.getFromIndex(triangularArray[ply][ply])][Move.getToIndex(triangularArray[ply][ply])] += depth * depth;
-            else
-                blackHeuristics[Move.getFromIndex(triangularArray[ply][ply])][Move.getToIndex(triangularArray[ply][ply])] += depth * depth;
-        }
+        //try the first legal move with an open window.
+//        int j, pvIndex = 0;
+//        for (int i = 0; i < num_moves; i++) {
+//            selectBestMoveFirst(moves, num_moves, ply, depth, i);
+//            if (board.makeMove(moves[i])) {
+//                pvIndex = i;
+//                movesFound++;
+//                score = -PVS(NODE_PV, ply + 1, depth - 1, -beta, -alpha);
+//                board.unmakeMove();
+//                if (score > alpha) {
+//                    if (score >= beta) { //beta cutoff
+//                        transpositionTable.record(board.getKey(), depth, alpha, beta, score, bestMove );
+//                        if (!Move.isCapture(moves[i])) //Non Capture save to History Array
+//                            if (board.isWhiteToMove())
+//                                whiteHeuristics[Move.getFromIndex(moves[i])][Move.getToIndex(moves[i])] += depth * depth;
+//                            else
+//                                blackHeuristics[Move.getFromIndex(moves[i])][Move.getToIndex(moves[i])] += depth * depth;
+//                        return beta; //fail hard
+//                    }
+//                    bestMove=moves[i];
+//                    pvMovesFound++;
+//                    triangularArray[ply][ply] = moves[i];    //save the move
+//                    for (j = ply + 1; j < triangularLength[ply + 1]; j++)
+//                        triangularArray[ply][j] = triangularArray[ply + 1][j];  //appends latest best PV from deeper plies
+//
+//                    triangularLength[ply] = triangularLength[ply + 1];
+//                    if (ply == 0) rememberPV();
+//                    alpha = score;  // alpha improved
+//                }
+//                break; //First legal move only.
+//            }
+//        }
+//        for (int i = pvIndex; i < num_moves; i++) {
+//            selectBestMoveFirst(moves, num_moves, ply, depth, i);
+//
+//            if (board.makeMove(moves[i])) {
+//                movesFound++;
+//                //Late Move Reduction
+//                if (movesFound > LATEMOVE_THRESHOLD && depth > LATEMOVE_DEPTH_THRESHOLD && !board.isCheck() && !Move.isCapture(moves[i]) && !Move.isPromotion(moves[i])) {
+//                    score = -PVS(NODE_NULL, ply + 1, depth - 2, -alpha - 1, -alpha);
+//                } else {
+//                    score = -PVS(NODE_PV, ply + 1, depth - 1, -alpha - 1, -alpha); // PVS Search
+//                }
+//                if ((score > alpha) && (score < beta)) {
+//                    score = -PVS(NODE_PV, ply + 1, depth - 1, -beta, -alpha); //Better move found, normal alpha-beta.
+//                }
+//
+//                board.unmakeMove();
+//
+//                if (score >= beta) {
+//                    if (!Move.isCapture(moves[i]))
+//                        if (board.isWhiteToMove())
+//                            whiteHeuristics[Move.getFromIndex(moves[i])][Move.getToIndex(moves[i])] += depth * depth;
+//                        else
+//                            blackHeuristics[Move.getFromIndex(moves[i])][Move.getToIndex(moves[i])] += depth * depth;
+//                    return beta;
+//                }
+//                if (score > alpha) {
+//                    bestMove = moves[i];
+//                    alpha = score;
+//                    pvMovesFound++;
+//                    triangularArray[ply][ply] = moves[i];    //save the move
+//                    for (j = ply + 1; j < triangularLength[ply + 1]; j++)
+//                        triangularArray[ply][j] = triangularArray[ply + 1][j];  //appends latest best PV from deeper plies
+//
+//                    triangularLength[ply] = triangularLength[ply + 1];
+//                    if (ply == 0) rememberPV();
+//                }
+//
+//
+//            }
+//        }
+//        if (pvMovesFound != 0) {
+//            if (board.isWhiteToMove())
+//                whiteHeuristics[Move.getFromIndex(triangularArray[ply][ply])][Move.getToIndex(triangularArray[ply][ply])] += depth * depth;
+//            else
+//                blackHeuristics[Move.getFromIndex(triangularArray[ply][ply])][Move.getToIndex(triangularArray[ply][ply])] += depth * depth;
+//        }
 
-        if (board.getFiftyMove() >= 100) return Evaluator.DRAWSCORE;                 //Fifty-move rule
-
+        if (board.getFiftyMove() >= 100) bestScore = Evaluator.DRAWSCORE;                 //Fifty-move rule
         if (movesFound == 0){
-            if(board.isCheck()) return -Evaluator.CHECKMATE +ply-1;
-            score = Evaluator.DRAWSCORE;
+            if(board.isCheck()) bestScore =-Evaluator.CHECKMATE +ply-1;
+            else bestScore = Evaluator.DRAWSCORE;
         }
 
         if(bestMove!=Move.EMPTY)
-            transpositionTable.record(board.getKey(), depth, alpha, beta, score, bestMove );
-        return alpha; //Fail Hard
+            transpositionTable.record(board.getKey(), depth, alpha, beta, bestScore, bestMove );
+        return bestScore; //Fail Hard
     }
 
     protected int quiescenceSearch(int nodeType, int ply, int alpha, int beta) throws SearchRunException {
         triangularLength[ply] = ply;
-
+        int distanceToInitialPly = board.getMoveNumber() - initialPly;
         //Check if we are in check.
         if (board.isCheck()) return PVS(nodeType, ply, 1, alpha, beta);
 
+        int hashMove=Move.EMPTY;
+        boolean foundTT= transpositionTable.entryExists(board.getKey());
+        if(foundTT && !(beta - alpha > 1)){ //not pv node
+            if(transpositionTable.getDepth()>=depth)
+                if (nodeType != NODE_ROOT)
+                    if (transpositionTable.getFlag() == TranspositionTable.HASH_EXACT)
+                        return transpositionTable.getScore();
+                    else if (transpositionTable.getFlag() == TranspositionTable.HASH_ALPHA && transpositionTable.getScore() <= alpha)
+                        return transpositionTable.getScore();
+                    else if (transpositionTable.getFlag() == TranspositionTable.HASH_BETA && transpositionTable.getScore() >= beta)
+                        return transpositionTable.getScore();
+            hashMove = transpositionTable.getMove();
+
+        }
         //Standing pat
         int score;
         score = board.eval();
         if (score >= beta) {
-            return beta;
+            return score;
         }
         if (score > alpha) alpha = score;
+        MoveSorter moveSorter = moveSorters[distanceToInitialPly];
+        moveSorter.genMoves(hashMove, MoveSorter.GENERATE_CAPTURES_PROMOS, this);
+        int move;
+        while((move= moveSorter.next())!=Move.EMPTY){
+            if (board.makeMove(move)) {
+                score = -quiescenceSearch(nodeType, ply + 1, -beta, -alpha);
+                board.unmakeMove();
+
+            }
+
+
+        }
 
         // generate captures & promotions:
         // genCaptures returns a sorted move list
-        int[] captures = new int[MoveGenerator.MAX_MOVES];
+        /*int[] captures = new int[MoveGenerator.MAX_MOVES];
         int num_captures = board.genCaptures(captures);
 
         for (int i = 0; i < num_captures; i++) {
@@ -207,7 +267,7 @@ public class PVSHard extends PVS {
                 score = -quiescenceSearch(nodeType, ply + 1, -beta, -alpha);
                 board.unmakeMove();
                 if (score > alpha) {
-                    if (score >= beta) return beta;
+                    if (score >= beta) return score;
 
 
                     alpha = score;
@@ -221,7 +281,7 @@ public class PVSHard extends PVS {
                 }
 
             }
-        }
+        }*/
         return alpha; //Fail Hard
     }
 }

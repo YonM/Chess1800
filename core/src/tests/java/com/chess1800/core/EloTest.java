@@ -129,7 +129,7 @@ public class EloTest extends TestCase {
                 //moveFound=search.fgo);
                 //System.out.println("best move: " +move + " Found move: " + moveFound);
                 if(move==moveFound){
-                    time+=search.getBestMoveTime();
+                    time+=search.getGlobalBestMoveTime();
                     found = true;
                 }
             }

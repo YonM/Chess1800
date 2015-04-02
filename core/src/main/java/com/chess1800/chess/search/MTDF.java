@@ -60,7 +60,7 @@ public class MTDF extends AbstractSearch implements Search {
 
 
     @Override
-    public long getBestMoveTime() {
+    public long getGlobalBestMoveTime() {
         return bestMoveTime;
     }
 
