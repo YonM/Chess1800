@@ -41,7 +41,7 @@ public abstract class AbstractBitboardEvaluator extends AbstractBitboardMoveGenC
     private final int[] QUEEN_DISTANCE = {0, 10, 8, 5, 4, 0, 0, 0};
     private final int[][] DISTANCE;
 
-    public final int[] MIRROR = {
+    /*public final int[] MIRROR = {
             56, 57, 58, 59, 60, 61, 62, 63,
             48, 49, 50, 51, 52, 53, 54, 55,
             40, 41, 42, 43, 44, 45, 46, 47,
@@ -50,6 +50,16 @@ public abstract class AbstractBitboardEvaluator extends AbstractBitboardMoveGenC
             16, 17, 18, 19, 20, 21, 22, 23,
             8, 9, 10, 11, 12, 13, 14, 15,
             0, 1, 2, 3, 4, 5, 6, 7
+    };*/
+    public final int[] MIRROR = {
+            63, 62, 61, 60, 59, 58, 57, 56,
+            55, 54, 53, 52, 51, 50, 49, 48,
+            47, 46, 45, 44, 43, 42, 41, 40,
+            39, 33, 34, 35, 36, 37, 38, 32,
+            31, 25, 26, 27, 28, 29, 30, 24,
+            23, 17, 18, 19, 20, 21, 22, 16,
+            15, 9, 10, 11, 12, 13, 14, 8,
+            7, 1, 2, 3, 4, 5, 1, 0
     };
 
     //PIECE SQUARE TABLES provided by Stef Luijten
@@ -116,7 +126,7 @@ public abstract class AbstractBitboardEvaluator extends AbstractBitboardMoveGenC
             -10, -10, -20, -10, -10, -20, -10, -10
     };
 
-    private final int[] KING_POS_B = {
+   /* private final int[] KING_POS_B = {
             -40, -40, -40, -40, -40, -40, -40, -40,
             -40, -40, -40, -40, -40, -40, -40, -40,
             -40, -40, -40, -40, -40, -40, -40, -40,
@@ -126,6 +136,18 @@ public abstract class AbstractBitboardEvaluator extends AbstractBitboardMoveGenC
             -20, -20, -20, -20, -20, -20, -20, -20,
             0, 20, 40, -20, 0, -20, 40, 20
     };
+*/
+    private final int[] KING_POS_B = {
+            -40, -40, -40, -40, -40, -40, -40, -40,
+            -40, -40, -40, -40, -40, -40, -40, -40,
+            -40, -40, -40, -40, -40, -40, -40, -40,
+            -40, -40, -40, -40, -40, -40, -40, -40,
+            -40, -40, -40, -40, -40, -40, -40, -40,
+            -40, -40, -40, -40, -40, -40, -40, -40,
+            -20, -20, -20, -20, -20, -20, -20, -20,
+             20, 40, -20, 0, -20, 40, 20, 0
+    };
+
 
     private final int[] KING_POS_ENDGAME_B = {
             0, 10, 20, 30, 30, 20, 10, 0,
@@ -274,7 +296,7 @@ public abstract class AbstractBitboardEvaluator extends AbstractBitboardMoveGenC
 
 
     public static int getIndexFromBoard(long board) {
-        return (Long.numberOfTrailingZeros(Long.lowestOneBit(board)));
+        return (square2Index(Long.lowestOneBit(board)));
     }
 
     public static int getLastIndexFromBoard(long board) {
@@ -285,8 +307,8 @@ public abstract class AbstractBitboardEvaluator extends AbstractBitboardMoveGenC
         if(isCheckMate()) return -CHECKMATE;
         if(isDraw()!= NOT_ENDED)return DRAWSCORE;
         score = 0;
-        whiteKingSquare = Long.numberOfTrailingZeros(whiteKing);
-        blackKingSquare = Long.numberOfTrailingZeros(blackKing);
+        whiteKingSquare = square2Index(whiteKing);
+        blackKingSquare = square2Index(blackKing);
 
         whitePawnCount = Long.bitCount(whitePawns);
         whiteKnightCount = Long.bitCount(whiteKnights);

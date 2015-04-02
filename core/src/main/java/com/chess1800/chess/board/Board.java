@@ -317,6 +317,8 @@ public class Board extends AbstractBitboardEvaluator implements Bitboard {
         //key ^= Zobrist.getKeyPieceIndex(from, PIECENAMES[piece]) ^ Zobrist.getKeyPieceIndex(to, PIECENAMES[piece]);
         if (move != 0) {
             if ((fromBoard & getMyPieces()) == 0) {
+                System.out.println("Not my move: " + move);
+                System.out.println("not my piece");
                 return false;
             }
             if (capture) {
@@ -327,6 +329,10 @@ public class Board extends AbstractBitboardEvaluator implements Bitboard {
                 if (moveType == Move.TYPE_EN_PASSANT) { //Shift piece and index to remove if the move type is an en-passant.
                     pieceToRemove = (whiteToMove) ? (toBoard >>> 8) : (toBoard << 8);
                     pieceToRemoveIndex = (whiteToMove) ? (to - 8) : (to + 8);
+                }
+                if(pieceToRemoveIndex<0) {
+                    System.out.println("bad move (negative):" + move);
+                    System.out.println("moveType: " + Move.getMoveType(move));
                 }
                 char pieceRemoved = getPieceAt(pieceToRemoveIndex);
                 if (whiteToMove) { // captured a black piece
@@ -987,10 +993,8 @@ public class Board extends AbstractBitboardEvaluator implements Bitboard {
     }*/
 
     public  int algebraic2Index(String name) {
-        System.out.println("square checked: " +name);
         for (int i = 0; i < 64; i++) {
             if (name.equals(squareNames[i])) {
-                System.out.println("index returned: " +i);
                 return i;
             }
         }
@@ -1079,7 +1083,6 @@ public class Board extends AbstractBitboardEvaluator implements Bitboard {
         // Fills from with a mask of possible from values... may need to disambiguate, if it's not a pawn move.
         switch (move.charAt(0)) {
             case 'N':
-                System.out.println("knights: " + (whiteKnights | blackKnights));
                 fromBoard = (whiteKnights | blackKnights) & getMyPieces() & knight[toIndex];
                 break;
             case 'K':
@@ -1098,18 +1101,13 @@ public class Board extends AbstractBitboardEvaluator implements Bitboard {
         }
 
         if (fromBoard != 0) { // remove the piece char
-            System.out.println("remove the piece char");
             move = move.substring(1);
-            System.out.println("move now: " +move);
         }else{
             //Pawn moves
-            System.out.println("pawn piece moved");
             if (move.length() == 2) {
-                System.out.println("pawn non-capture");
                 if (isWhiteToMove()) {
                     fromBoard = (whitePawns | blackPawns) & getMyPieces() & ((toBoard >>> 8) | (((toBoard >>> 8) & allPieces) == 0 ? (toBoard >>> 16) : 0));
                 } else {
-                    System.out.println("pawn capture");
                     fromBoard = (whitePawns | blackPawns) & getMyPieces() & ((toBoard << 8) | (((toBoard << 8) & allPieces) == 0 ? (toBoard << 16) : 0));
                 }
             }
@@ -1119,7 +1117,6 @@ public class Board extends AbstractBitboardEvaluator implements Bitboard {
         }
 
         if (move.length() == 3) { // now disambiguate
-            System.out.println("disambiguate");
             char disambiguate = move.charAt(0);
             int i = "abcdefgh".indexOf(disambiguate);
             if (i >= 0)
@@ -1130,12 +1127,10 @@ public class Board extends AbstractBitboardEvaluator implements Bitboard {
         }
 
         if (move.length() == 4) { //UCI move
-            System.out.println("UCI move");
             fromBoard = algebraic2Square(move.substring(0, 2));
         }
 
         if(fromBoard == 0){
-            System.out.println("from board empty");
             return -1;
         }
 
@@ -1143,7 +1138,7 @@ public class Board extends AbstractBitboardEvaluator implements Bitboard {
         while (fromBoard != 0) {
             long myFrom = Long.lowestOneBit(fromBoard);
             fromBoard ^= myFrom;
-            fromIndex = Long.numberOfTrailingZeros(myFrom);
+            fromIndex = square2Index(myFrom);
 
             boolean capture = false;
             if((myFrom & (whitePawns | blackPawns)) != 0){
@@ -1188,14 +1183,14 @@ public class Board extends AbstractBitboardEvaluator implements Bitboard {
             if ((toBoard & (whitePieces | blackPieces)) != 0) {
                 capture = true;
             }
-            int moveInt= Move.genMove(fromIndex, toIndex, pieceMoved, capture, moveType);
+            int genMove= Move.genMove(fromIndex, toIndex, pieceMoved, capture, moveType);
             if(legalityCheck){
-                if(makeMove(moveInt)){
+                if(makeMove(genMove)){
                     unmakeMove();
-                    return moveInt;
+                    return genMove;
                 }
             }else{
-                return moveInt;
+                return genMove;
             }
 
         }
@@ -1279,7 +1274,7 @@ public class Board extends AbstractBitboardEvaluator implements Bitboard {
         int j = 8;
         long i = A8;
         while (i != 0) {
-            sb.append(getPieceAt(Long.numberOfTrailingZeros(i)));
+            sb.append(getPieceAt(square2Index(i)));
             sb.append(" ");
             if ((i & b_r) != 0) {
                 sb.append(j--);

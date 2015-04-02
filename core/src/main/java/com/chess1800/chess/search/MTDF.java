@@ -70,6 +70,11 @@ public class MTDF extends AbstractSearch implements Search {
     }
 
     @Override
+    public int getMoveScore(int move) {
+        return 0;
+    }
+
+    @Override
     protected void setupRun() {
 
     }
@@ -105,7 +110,7 @@ public class MTDF extends AbstractSearch implements Search {
             if (VERBOSE)
                 System.out.println("(" + currentDepth + ") "
                         + ((System.currentTimeMillis() - start) / 1000.0) + "s ("
-                        + Move.moveToString(lastPV[0]) + ") -- " + evals
+                        + Move.moveToString(lastPV[0], board) + ") -- " + evals
                         + " nodes evaluated.");
             if (useFixedDepth) {
                 if (currentDepth == depth || firstGuess == -(Chessboard.CHECKMATE + 6)) break;

@@ -132,6 +132,11 @@ public abstract class AbstractBitboardMagicAttacks{
         return out;
     }
 
+    public static final long[] getSquare;
+    static {
+        getSquare = new long[64];
+        for (int i = 0; i < getSquare.length; i++) getSquare[i] = H1 << i;
+    }
 
     protected final void generateAttacks() {
         rook = new long [64];

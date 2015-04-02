@@ -75,7 +75,7 @@ public class PVSHard extends PVS {
         int bestMove =Move.EMPTY;
         int score = 0;
         // Try Null move
-        if (nullAllowed()) {
+        if (nullAllowed(nodeType)) {
             null_allowed = false;
             board.makeNullMove();
             score = -PVS(NODE_NULL, ply, depth - NULLMOVE_REDUCTION, -beta, -beta + 1);
@@ -99,13 +99,15 @@ public class PVSHard extends PVS {
                 movesFound++;
                 int lowBound = (alpha > bestScore ? alpha : bestScore);
                 if(movesFound==1 && (nodeType == NODE_PV || nodeType == NODE_ROOT)) score = -PVS(NODE_PV, ply + 1, depth - 1, -beta, -lowBound); //PV move search
-                else{
-                    if (movesFound > LATEMOVE_THRESHOLD && depth > LATEMOVE_DEPTH_THRESHOLD && !board.isCheck() && !Move.isCapture(move) && !Move.isPromotion(move)) score = -PVS(NODE_NULL, ply + 1, depth - 2, -lowBound - 1, -lowBound); //LMR
+                else {
+                    if (movesFound > LATEMOVE_THRESHOLD && depth > LATEMOVE_DEPTH_THRESHOLD && !board.isCheck() && !Move.isCapture(move) && !Move.isPromotion(move))
+                        score = -PVS(NODE_NULL, ply + 1, depth - 2, -lowBound - 1, -lowBound); //LMR
                     else score = -PVS(NODE_NULL, ply + 1, depth - 1, -lowBound - 1, -lowBound); // Null Window Search}
 
                     if ((score > alpha) && (score < beta)) {
                         score = -PVS(NODE_PV, ply + 1, depth - 1, -beta, -alpha); //Better move found, normal alpha-beta.
                     }
+                }
                     board.unmakeMove();
 
                     if(score >bestScore){
@@ -126,7 +128,7 @@ public class PVSHard extends PVS {
                 }
 
             }
-        }
+
         //try the first legal move with an open window.
 //        int j, pvIndex = 0;
 //        for (int i = 0; i < num_moves; i++) {
@@ -226,8 +228,6 @@ public class PVSHard extends PVS {
         int hashMove=Move.EMPTY;
         boolean foundTT= transpositionTable.entryExists(board.getKey());
         if(foundTT && !(beta - alpha > 1)){ //not pv node
-            if(transpositionTable.getDepth()>=depth)
-                if (nodeType != NODE_ROOT)
                     if (transpositionTable.getFlag() == TranspositionTable.HASH_EXACT)
                         return transpositionTable.getScore();
                     else if (transpositionTable.getFlag() == TranspositionTable.HASH_ALPHA && transpositionTable.getScore() <= alpha)
@@ -238,24 +238,37 @@ public class PVSHard extends PVS {
 
         }
         //Standing pat
-        int score;
-        score = board.eval();
-        if (score >= beta) {
-            return score;
+        int bestScore;
+        bestScore = board.eval();
+        if (bestScore >= beta) {
+            if(!foundTT) transpositionTable.record(board.getKey(), 0, alpha, beta, bestScore, Move.EMPTY);
+            return bestScore;
         }
-        if (score > alpha) alpha = score;
+        bestScore = alpha;
+        int score;
         MoveSorter moveSorter = moveSorters[distanceToInitialPly];
         moveSorter.genMoves(hashMove, MoveSorter.GENERATE_CAPTURES_PROMOS, this);
-        int move;
+        int move=Move.EMPTY;
+        int bestMove=Move.EMPTY;
         while((move= moveSorter.next())!=Move.EMPTY){
             if (board.makeMove(move)) {
                 score = -quiescenceSearch(nodeType, ply + 1, -beta, -alpha);
                 board.unmakeMove();
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestMove = move;
+                }
+                    if (score >= beta) {
+                        //Fail Soft
+                        break;
+                    }
+
 
             }
 
 
         }
+        transpositionTable.record(board.getKey(), 0, alpha, beta, bestScore, bestMove);
 
         // generate captures & promotions:
         // genCaptures returns a sorted move list
@@ -282,6 +295,6 @@ public class PVSHard extends PVS {
 
             }
         }*/
-        return alpha; //Fail Hard
+        return bestScore; //Fail Soft
     }
 }

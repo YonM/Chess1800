@@ -26,11 +26,7 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
 
     protected int initMoveNumber;
 
-    public static final long[] getSquare;
-    static {
-        getSquare = new long[64];
-        for (int i = 0; i < getSquare.length; i++) getSquare[i] = 1L << i;
-    }
+
 
     public static final long[] COLUMN = {b_l, b_r << 6, b_r << 5, b_r << 4, b_r << 3, b_r << 2, b_r << 1, b_r};
 

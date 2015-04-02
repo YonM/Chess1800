@@ -13,6 +13,7 @@ public class MoveSorter extends AbstractBitboardMagicAttacks {
     private int nonCaptureIndex;
     public final static int GENERATE_ALL = 0;
     public final static int GENERATE_CAPTURES_PROMOS = 1;
+
     private int ttMove;
     private int movesToGenerate;
     // Move generation phases
@@ -34,19 +35,23 @@ public class MoveSorter extends AbstractBitboardMagicAttacks {
 
     public final static int SEE_NOT_CALCULATED = Short.MAX_VALUE;
 
-    private int[] goodCaptures = new int[Bitboard.MAX_MOVES]; // Stores captures and queen promotions
-    private int[] goodCapturesSee = new int[Bitboard.MAX_MOVES];
-    private int[] goodCapturesScores = new int[Bitboard.MAX_MOVES];
-    private int[] badCaptures = new int[Bitboard.MAX_MOVES]; // Stores captures and queen promotions
-    private int[] badCapturesSee = new int[Bitboard.MAX_MOVES];
-    private int[] badCapturesScores = new int[Bitboard.MAX_MOVES];
-    private int[] equalCaptures = new int[Bitboard.MAX_MOVES]; // Stores captures and queen promotions
-    private int[] equalCapturesSee = new int[Bitboard.MAX_MOVES];
-    private int[] equalCapturesScores = new int[Bitboard.MAX_MOVES];
-    private int[] nonCaptures = new int[Bitboard.MAX_MOVES]; // Stores non captures and underpromotions
-    private int[] nonCapturesSee = new int[Bitboard.MAX_MOVES];
-    private int[] nonCapturesScores = new int[Bitboard.MAX_MOVES];
+    private int[] goodCaptures = new int[Bitboard.MAX_MOVES*2]; // Stores captures and queen promotions
+    private int[] goodCapturesSee = new int[Bitboard.MAX_MOVES*2];
+    private int[] goodCapturesScores = new int[Bitboard.MAX_MOVES*2];
+    private int[] badCaptures = new int[Bitboard.MAX_MOVES*2]; // Stores captures and queen promotions
+    private int[] badCapturesSee = new int[Bitboard.MAX_MOVES*2];
+    private int[] badCapturesScores = new int[Bitboard.MAX_MOVES*2];
+    private int[] equalCaptures = new int[Bitboard.MAX_MOVES*2]; // Stores captures and queen promotions
+    private int[] equalCapturesSee = new int[Bitboard.MAX_MOVES*2];
+    private int[] equalCapturesScores = new int[Bitboard.MAX_MOVES*2];
+    private int[] nonCaptures = new int[Bitboard.MAX_MOVES*2]; // Stores non captures and underpromotions
+    private int[] nonCapturesSee = new int[Bitboard.MAX_MOVES*2];
+    private int[] nonCapturesScores = new int[Bitboard.MAX_MOVES*2];
 
+
+    public void setBoard(Bitboard board) {
+        this.board = board;
+    }
 
     private Bitboard board;
 
@@ -86,7 +91,7 @@ public class MoveSorter extends AbstractBitboardMagicAttacks {
     private long attacksFromSquare[] = new long[64];
     private long attackedSquares[] = {0, 0}; //indexed by color; white =0, black =1;
     private int ePIndex;
-    private int ePSquare;
+    private long ePSquare;
     private Search search;
 
 
@@ -94,6 +99,15 @@ public class MoveSorter extends AbstractBitboardMagicAttacks {
         this.search = search;
         this.board = (Bitboard) search.getBoard();
         genMoves(ttMove, GENERATE_ALL, search);
+    }
+    public void genMoves(int ttMove){
+        genMoves(ttMove, GENERATE_ALL);
+    }
+    public void genMoves(int ttMove, int movesToGenerate){
+        this.ttMove = ttMove;
+        this.movesToGenerate = movesToGenerate;
+        phase = PHASE_TT;
+        lastMoveSEE = 0;
     }
     public void genMoves(int ttMove, int movesToGenerate, Search search) {
         if(movesToGenerate != GENERATE_ALL){
@@ -103,6 +117,7 @@ public class MoveSorter extends AbstractBitboardMagicAttacks {
         this.ttMove = ttMove;
         this.movesToGenerate = movesToGenerate;
         phase = PHASE_TT;
+        lastMoveSEE = 0;
     }
 
     private void initMoveGen() {
@@ -128,9 +143,9 @@ public class MoveSorter extends AbstractBitboardMagicAttacks {
         castleWhite = board.getCastleWhite();
         castleBlack = board.getCastleBlack();
         ePIndex = board.getEPIndex();
-        ePSquare = ePIndex ==-1? 0 : getColumn(ePIndex);
-        myKingIndex = square2Index(kings & myPieces);
-        otherKingIndex = square2Index(kings & opponentPieces);
+        ePSquare = ePIndex ==-1? 0 : getSquare[ePIndex];
+        //myKingIndex = square2Index(kings & myPieces);
+        //otherKingIndex = square2Index(kings & opponentPieces);
 
 
         /*bishopAttacksMyKing = getBishopAttacks(myKingIndex, allPieces);
@@ -381,6 +396,7 @@ public class MoveSorter extends AbstractBitboardMagicAttacks {
         }
         if (bestIndex != -1) {
             int move = arrayMoves[bestIndex];
+            lastMoveSEE = arrayScores[bestIndex];
             arrayScores[bestIndex] = SCORE_LOWEST;
             return move;
         } else {
@@ -421,7 +437,8 @@ public class MoveSorter extends AbstractBitboardMagicAttacks {
         }
         else{
             nonCaptures[nonCaptureIndex] = tempMove;
-            nonCapturesScores[nonCaptureIndex++] = see==SEE_NOT_CALCULATED? search.getMoveScore(move) : SCORE_UNDERPROMOTION;
+            nonCapturesScores[nonCaptureIndex++] = see==SEE_NOT_CALCULATED? SEE_NOT_CALCULATED : SCORE_UNDERPROMOTION;
+            //search.getMoveScore(move)
         }
 
     }

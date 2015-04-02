@@ -55,7 +55,7 @@ public abstract class PVS extends AbstractSearch {
 
     protected PVS(Chessboard b, String type) {
         super(b);
-        moveSorters = new MoveSorter[MAX_DEPTH+2];
+        moveSorters = new MoveSorter[MAX_DEPTH*2];
         for (int i=0; i< moveSorters.length; i++){
             moveSorters[i] = new MoveSorter();
         }
@@ -66,6 +66,13 @@ public abstract class PVS extends AbstractSearch {
 
     protected final boolean nullAllowed() {
         if (!follow_pv && null_allowed)
+            if (board.movingSideMaterial() > NULLMOVE_THRESHOLD) //TO prevent null in zugzwang situations.
+                if (!board.isCheck()) return true; //Don't allow null move when under check.
+        return false;
+    }
+
+    protected final boolean nullAllowed(int nodeType) {
+        if (nodeType == NODE_NULL && null_allowed)
             if (board.movingSideMaterial() > NULLMOVE_THRESHOLD) //TO prevent null in zugzwang situations.
                 if (!board.isCheck()) return true; //Don't allow null move when under check.
         return false;
