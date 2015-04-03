@@ -354,10 +354,6 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
     public abstract boolean isCheck();
 
 
-
-
-    public abstract int isDraw();
-
     protected void evaluateWhiteMaterial() {
         evaluateWhitePawns();
         evaluateWhiteKnights();

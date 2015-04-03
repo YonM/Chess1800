@@ -104,7 +104,7 @@ public abstract class PVS extends AbstractSearch {
                     notifyMoveFound(globalBestMove, globalBestScore);
             // stop searching if the current depth leads to a forced mate:
             if ((rootScore > (Chessboard.CHECKMATE - currentDepth)) || (rootScore < -(Chessboard.CHECKMATE - currentDepth))) {
-                if (VERBOSE) System.out.println("cut search");
+                if (VERBOSE) System.out.println("cut search, mate inbound");
                 currentDepth = MAX_DEPTH;
             }
             if (moveFound) {
@@ -231,7 +231,7 @@ public abstract class PVS extends AbstractSearch {
         searching = false;
         //if(globalBestMove!= lastPV[0]) System.out.println("best move discrepancy");
         if (observer != null) {
-            System.out.println("got here");
+            System.out.println("best move sent");
             observer.bestMove(globalBestMove);
         }
         if (VERBOSE) displaySearchStats();

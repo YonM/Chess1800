@@ -53,7 +53,6 @@ public class PVSHard extends PVS {
         // Draw check, evaluate the board if so to check if it's a draw.
         int endGameCheck = board.isDraw();
         if (endGameCheck != Chessboard.NOT_ENDED) {
-            if(endGameCheck == Chessboard.DRAW_BY_REP)
             return Evaluator.DRAWSCORE;
         }
 
@@ -302,7 +301,7 @@ public class PVSHard extends PVS {
             }
         }
 
-        if(bestMove!=Move.EMPTY)
+        if(bestMove!=Move.EMPTY || nodeType == NODE_ROOT)
             transpositionTable.record(board.getKey(), depth, alpha, beta, bestScore, bestMove );
         return bestScore; //Fail Hard
     }

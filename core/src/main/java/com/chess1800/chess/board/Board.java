@@ -649,7 +649,7 @@ public class Board extends AbstractBitboardEvaluator implements Bitboard {
         // threefold repetition.
 
         // Stalemate
-        if (!legalMovesAvailable() && !isOwnKingAttacked()) return DRAW_BY_STALEMATE;
+        //if (!legalMovesAvailable() && !isOwnKingAttacked()) return DRAW_BY_STALEMATE;
 
         // Evaluate for draw due to insufficient material
         int whitePawnsTotal, whiteKnightsTotal, whiteBishopsTotal, whiteRooksTotal, whiteQueensTotal, whiteTotalMat;
