@@ -67,8 +67,8 @@ public class Zobrist{
             key ^= blackKingSideCastling;
         if ((b.getCastleBlack() & Board.CANCASTLEOOO) != 0)
             key ^= blackQueenSideCastling;
-        if (b.getEPIndex() != -1)
-            key ^= passantColumn[b.getEPIndex() % 8];
+        if (b.getEPSquare() != -1)
+            key ^= passantColumn[b.getColumn(b.getEPSquare())];
         if (b.isWhiteToMove())
             key ^= whiteMove;
         return key;

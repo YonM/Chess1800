@@ -13,9 +13,8 @@ public abstract class AbstractSearch extends AbstractSearchInfo implements Searc
     protected boolean searching;
     protected boolean initialized;
     protected Thread thread;
-    protected int depth;
     protected static Chessboard board;
-    protected int currentDepth;
+
 
 
     protected boolean stopSearch;

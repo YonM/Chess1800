@@ -5,6 +5,7 @@ package com.chess1800.chess.board;
  */
 public abstract class AbstractBitboardMagicAttacks{
 
+    //For magic attacks / pre-generated lookup tables for move making
     public static long[] rook;
     public static long[] rookMask;
     public static long[][] rookMagic;
@@ -14,8 +15,9 @@ public abstract class AbstractBitboardMagicAttacks{
     public static long[] knight;
     public static long[] king;
     public static long[] blackPawn;
-    public static long[] whitePawn;
+    public static long[] whitePawn; //
 
+    //pieces
     protected long whitePawns;
     protected long whiteKnights;
     protected long whiteBishops;
@@ -281,6 +283,10 @@ public abstract class AbstractBitboardMagicAttacks{
         return bitTable[(fold * 0x783a9b23) >>> 26];
     }
 
+    public static String square2Algebraic(long square) {
+        return squareNames[square2Index(square)];
+    }
+
 
     protected boolean isIndexAttacked(byte i, boolean white) {
         if (i < 0 || i > 63)
@@ -325,7 +331,7 @@ public abstract class AbstractBitboardMagicAttacks{
         return (int) ((b * magic) >>> (64 - bits));
     }
 
-    protected long getRookAttacks(int index, long all) {
+    protected long  getRookAttacks(int index, long all) {
         int i = magicTransform(all & rookMask[index], magicNumberRook[index],
                 magicNumberShiftsRook[index]);
         return rookMagic[index][i];
@@ -396,13 +402,6 @@ public abstract class AbstractBitboardMagicAttacks{
                 | (getBishopAttacks(index, all) & ((whiteBishops & blackBishops) | (whiteQueens | blackQueens)));
     }
 
-    protected final static int getColumn(long square) {
-        for (int column = 0; column < 8; column++) {
-            if ((COLUMN[column] & square) != 0) {
-                return column;
-            }
-        }
-        return 0;
-    }
+
 
 }

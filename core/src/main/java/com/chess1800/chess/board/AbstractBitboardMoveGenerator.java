@@ -221,7 +221,7 @@ public abstract class AbstractBitboardMoveGenerator extends AbstractBitboardMagi
     }
 
 
-    public int getEPIndex() {
+    public long getEPSquare() {
         return ePSquare;
     }
 
@@ -764,6 +764,15 @@ public abstract class AbstractBitboardMoveGenerator extends AbstractBitboardMagi
             queens &= ~fromBoard;
         }
         return num_moves_generated;
+    }
+
+    public final int getColumn(long square) {
+        for (int column = 0; column < 8; column++) {
+            if ((COLUMN[column] & square) != 0) {
+                return column;
+            }
+        }
+        return 0;
     }
 
 }

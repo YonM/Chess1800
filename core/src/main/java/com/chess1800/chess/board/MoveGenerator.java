@@ -12,6 +12,8 @@ public interface MoveGenerator {
     public boolean legalMovesAvailable();
 
     public int genCaptures(int[] captures);
+    public int generateCaptures(int[] moves,int startIndex, int ttMove);
+    public int generateNonCaptures(int[] moves, int startIndex, int ttMove);
 
     public boolean makeMove(int move);
     public void makeNullMove();
@@ -27,12 +29,11 @@ public interface MoveGenerator {
     public boolean isWhiteToMove();
 
     //Pieces
-    public long getMyPieces();
-    public long getOpponentPieces();
-    public long getAllPieces();
-    public int getEPIndex();
-    public long getWhitePieces();
-    public long getBlackPieces();
+    public long getEPSquare();
+    public int getPieceCaptured(int move);
+
+    //Location
+    public int getColumn(long square);
 
     //castling
     public int getCastleWhite();

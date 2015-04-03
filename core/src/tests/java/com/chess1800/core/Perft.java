@@ -1,15 +1,10 @@
 package com.chess1800.core;
 
-import com.chess1800.chess.board.Bitboard;
 import com.chess1800.chess.board.Board;
-import com.chess1800.chess.board.MoveSorter;
+import com.chess1800.chess.board.MoveGenerator;
+import com.chess1800.chess.board.MoveStagedGenerator;
 import com.chess1800.chess.move.Move;
-import com.chess1800.chess.search.PVS;
-import com.chess1800.chess.search.PVSHard;
-import com.chess1800.chess.search.Search;
 import org.junit.Test;
-
-import java.util.ArrayList;
 
 /**
  * Created by Yonathan on 21/12/2014.
@@ -18,7 +13,7 @@ import java.util.ArrayList;
  */
 public class Perft {
     Board b;
-    private final int DEPTH =5;
+    private final int DEPTH =6;
     long moveCount[];
     long captures[];
     long passantCaptures[];
@@ -68,7 +63,7 @@ public class Perft {
         if (loaded) {
             //System.out.println("true");
             long start = System.currentTimeMillis();
-            i = perft(b, 0, 4);
+            i = perft(b, 0, 5);
             long stop = System.currentTimeMillis();
             System.out.println("Found " + i + " nodes in " + (stop - start) + " ms.");
         } else {
@@ -105,7 +100,7 @@ public class Perft {
         long nodes;
         if (loaded) {
             long start = System.currentTimeMillis();
-            nodes = recursive(b, 0, 4);
+            nodes = recursive(b, 0, DEPTH-1);
             long stop = System.currentTimeMillis();
             for (int i = 1; i < DEPTH; i++) {
                 System.out.println("Moves: " + moveCount[i] + " Pawn Moves: "+ pawnMoves[i] +
@@ -151,52 +146,72 @@ public class Perft {
 //        for (int i = 0; i < num_moves; i++) {
 //            moveList.add(moves[i]);
 //        }
-        MoveSorter moveSorter = new MoveSorter();
-        moveSorter.setBoard(b);
 
-        moveSorter.genMoves(0);
+        b.genMoves(Move.EMPTY);
         Integer move;
-        long count=0;
-        while ((move = moveSorter.next()) != 0) {
-                if(b.makeMove(move)) {
+        long count = 0;
+        int moves[] = new int[MoveGenerator.MAX_MOVES*4];
+        int currentMovesCount = 0;
+        int captureCount = 0;
+        int nonCaptureCount = 0;
+        /*Staged Move Generation.
+    *  Order:
+    *  1. TT move
+    *  2. Good Captures (Ordered by SEE)
+    *  3. Equal Captures
+    *  4. Non-Captures (Ordered by History Heuristic)
+    *  5. Bad Captures
+     */
+        //int phase = MoveStagedGenerator.PHASE_HASH;
+        int ttMove = Move.EMPTY;
+        //int movesToGenerate = MoveStagedGenerator.GENERATE_ALL;
+        captureCount= b.generateCaptures(moves,0,ttMove);
+        nonCaptureCount = b.generateNonCaptures(moves, captureCount, ttMove);
+
+        for(int i = 0; i<(captureCount +nonCaptureCount);i++){
+                if(b.makeMove(moves[i])) {
                     if (depth > 0) {
                         moveCount[depth]++;
-                        if (Move.isCapture(move)) captures[depth]++;
-                        if (Move.getMoveType(move) == Move.TYPE_EN_PASSANT) passantCaptures[depth]++;
-                        if (Move.getMoveType(move) == Move.TYPE_KINGSIDE_CASTLING
-                                || Move.getMoveType(move) == Move.TYPE_QUEENSIDE_CASTLING) castles[depth]++;
-                        if (Move.isPromotion(move)) promotions[depth]++;
+                        if (Move.isCapture(moves[i])) captures[depth]++;
+                        if (Move.getMoveType(moves[i]) == Move.TYPE_EN_PASSANT) passantCaptures[depth]++;
+                        if (Move.getMoveType(moves[i]) == Move.TYPE_KINGSIDE_CASTLING
+                                || Move.getMoveType(moves[i]) == Move.TYPE_QUEENSIDE_CASTLING) castles[depth]++;
+                        if (Move.isPromotion(moves[i])) promotions[depth]++;
                         if (b.isCheck()) {
                             checks[depth]++;
                         }
                         if (b.isCheckMate()) {
                             checkMates[depth]++;
                         }
-                        switch (Move.getPieceMoved(move)) {
+                        switch (Move.getPieceMoved(moves[i])) {
                             case Move.PAWN:
                                 pawnMoves[depth]++;
-                                if (Move.isCapture(move)) pawnCaptures[depth]++;
+                                if (Move.isCapture(moves[i])) pawnCaptures[depth]++;
                                 break;
                             case Move.KNIGHT:
                                 knightMoves[depth]++;
-                                if (Move.isCapture(move)) knightCaptures[depth]++;
+                                if (Move.isCapture(moves[i])) knightCaptures[depth]++;
                                 break;
                             case Move.BISHOP:
                                 bishopMoves[depth]++;
-                                if (Move.isCapture(move)) bishopCaptures[depth]++;
+                                if (Move.isCapture(moves[i])) bishopCaptures[depth]++;
                                 break;
                             case Move.ROOK:
                                 rookMoves[depth]++;
-                                if (Move.isCapture(move)) rookCaptures[depth]++;
+                                if (Move.isCapture(moves[i])) rookCaptures[depth]++;
                                 break;
                             case Move.QUEEN:
                                 queenMoves[depth]++;
-                                if (Move.isCapture(move)) queenCaptures[depth]++;
+                                if (Move.isCapture(moves[i])) queenCaptures[depth]++;
                                 break;
                             case Move.KING:
                                 kingMoves[depth]++;
-                                if (Move.isCapture(move)) kingCaptures[depth]++;
+                                if (Move.isCapture(moves[i])) kingCaptures[depth]++;
                                 break;
+                            default:
+                                System.out.println("no piece moved" + moves[i]);
+                                if(Move.isCapture(moves[i])) System.out.println("capture error");
+                                else System.out.println("non capture error");
                         }
                     }
                     count += recursive(b, ply + 1, depth - 1);
@@ -208,6 +223,8 @@ public class Perft {
         }
         return count;
     }
+
+
 
 
 }

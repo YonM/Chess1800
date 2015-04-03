@@ -103,6 +103,10 @@ public class Move {
         return Move.getMoveType(move) >= TYPE_PROMOTION_QUEEN;
     }
 
+    public static final boolean isUnderPromotion(int move) {
+        return  Move.getMoveType(move) > TYPE_PROMOTION_QUEEN;
+    }
+
     public static final String getPromotionPiece(int move){
         switch (getMoveType(move)) {
             case TYPE_PROMOTION_QUEEN:

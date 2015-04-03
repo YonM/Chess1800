@@ -241,5 +241,7 @@ public class Chess1800Controller implements SearchObserver, ActionListener, Mous
     }
     @Override
     public void info(AbstractSearchInfo info) {
+        System.out.print("info");
+        System.out.println(info.toString());
     }
 }

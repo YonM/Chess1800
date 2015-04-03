@@ -2,10 +2,8 @@ package com.chess1800.chess.search;
 
 import com.chess1800.chess.board.Chessboard;
 import com.chess1800.chess.board.Evaluator;
-import com.chess1800.chess.board.MoveSorter;
 import com.chess1800.chess.move.Move;
 import com.chess1800.chess.transposition_table.TranspositionTable;
-
 /**
  * Created by Yonathan on 21/12/2014.
  * Main search class, uses alpha-beta algorithm with Principal Variation Search, Iterative Deepening, Quiescence Search, Null Move Pruning and LMR.
@@ -18,7 +16,18 @@ public abstract class PVS extends AbstractSearch {
     public static final int NODE_PV = 1;
     public static final int NODE_NULL = 2;
 
-    protected final String type;
+    protected static final int SCORE_LOWEST = Integer.MIN_VALUE;
+    protected static final int SCORE_UNDERPROMOTION = Integer.MIN_VALUE + 1;
+
+    public final static int PHASE_HASH = 0;
+    //public final static int PHASE_GEN_CAPTURES = 1;
+    public final static int PHASE_GOOD_CAPTURES_AND_PROMOS = 1;
+    //public final static int PHASE_EQUAL_CAPTURES = 3;
+    //public final static int PHASE_GEN_NON_CAPTURES = 2;
+    public final static int PHASE_NON_CAPTURES = 2;
+    public final static int PHASE_BAD_CAPTURES = 3;
+    public final static int PHASE_END = 4;
+
     protected int initialPly;
 
     protected int rootScore;
@@ -30,7 +39,7 @@ public abstract class PVS extends AbstractSearch {
     protected int[][] triangularArray;
     protected int[] triangularLength;
     protected final int MAX_DEPTH = 16;
-    protected int nodes;
+
 
     protected SearchObserver observer;
     protected int[][] whiteHeuristics; //history heuristics for white and black pieces indexed by from and to of a move.
@@ -40,27 +49,16 @@ public abstract class PVS extends AbstractSearch {
     protected boolean null_allowed;
     protected static final boolean VERBOSE = true;
 
-    protected long globalBestMoveTime;
-    protected int globalBestMove;
 
-    protected MoveSorter[] moveSorters;
     protected TranspositionTable transpositionTable;
 
-    // Transposition Table
-    private static long ttProbe = 0;
-    private static long ttPvHit = 0;
-    private static long ttLBHit = 0;
-    private static long ttUBHit = 0;
 
 
-    protected PVS(Chessboard b, String type) {
+
+    protected PVS(Chessboard b) {
         super(b);
-        moveSorters = new MoveSorter[MAX_DEPTH*2];
-        for (int i=0; i< moveSorters.length; i++){
-            moveSorters[i] = new MoveSorter();
-        }
 
-        this.type = type;
+
         transpositionTable = new TranspositionTable(64);
     }
 
@@ -79,11 +77,12 @@ public abstract class PVS extends AbstractSearch {
     }
 
     public final void findBestMove() throws SearchRunException {
+        selDepth =0;
         if (board.isEndOfGame() != Evaluator.NOT_ENDED) {
             System.out.println("finish before started..");
             finishRun();
         }
-        System.out.println(type + "\n" + "last move: " + board.getLastMove());
+        System.out.println("last move: " + board.getLastMove());
         for (currentDepth = 1; currentDepth <= MAX_DEPTH; currentDepth++) {
             triangularArray = new int[MAX_GAME_LENGTH][MAX_GAME_LENGTH];
             triangularLength = new int[MAX_GAME_LENGTH];
@@ -97,11 +96,12 @@ public abstract class PVS extends AbstractSearch {
             }
 
 
-            if (VERBOSE)
-                System.out.println("(" + currentDepth + ") "
-                        + ((System.currentTimeMillis() - startTime) / 1000.0) + "s ("
-                        + Move.toString(lastPV[0], board) + ") -- " + nodes
-                        + " nodes evaluated.");
+            if (currentDepth<=6)
+//                System.out.println("(" + currentDepth + ") "
+//                        + ((System.currentTimeMillis() - startTime) / 1000.0) + "s ("
+//                        + Move.toString(lastPV[0], board) + ") -- " + nodes
+//                        + " nodes evaluated.");
+                    notifyMoveFound(globalBestMove, globalBestScore);
             // stop searching if the current depth leads to a forced mate:
             if ((rootScore > (Chessboard.CHECKMATE - currentDepth)) || (rootScore < -(Chessboard.CHECKMATE - currentDepth))) {
                 if (VERBOSE) System.out.println("cut search");
@@ -229,8 +229,9 @@ public abstract class PVS extends AbstractSearch {
     protected void finishRun() throws SearchRunException {
         board.unmakeMove(initialPly);
         searching = false;
-        if(globalBestMove!= lastPV[0]) System.out.println("best move discrepancy");
+        //if(globalBestMove!= lastPV[0]) System.out.println("best move discrepancy");
         if (observer != null) {
+            System.out.println("got here");
             observer.bestMove(globalBestMove);
         }
         if (VERBOSE) displaySearchStats();
@@ -255,14 +256,10 @@ public abstract class PVS extends AbstractSearch {
         return Evaluator.CHECKMATE - distanceToInitialPly;
     }
 
-    protected void notifyMoveFound(int bestMove, int bestScore, int alpha, int beta) {
+    abstract protected void notifyMoveFound(int bestMove, int bestScore);
 
-        AbstractSearchInfo info = new AbstractSearchInfo();
-        if (observer != null) {
-            observer.info(info);
-        }
+    abstract  protected void setPV(int firstMove);
 
-    }
 
     protected void clear() {
 

@@ -61,6 +61,7 @@ public class TranspositionTable {
     public void record(long zobrist, int depth, int lowerBound, int upperBound, int score, int move) {
         // Always replace scheme
         int flag;
+        if(!entryExists(zobrist))entriesOccupied++;
         if (score <= lowerBound) flag = HASH_ALPHA;
         else if (score >= upperBound) flag = HASH_BETA;
         else flag = HASH_EXACT;
@@ -125,5 +126,9 @@ public class TranspositionTable {
     public int getDepth() {
         return (int) (info >>>(HASH_SHIFT + Move.MOVE_SHIFT) & DEPTH_MASK );
     } // END getDepth
+
+    public int getHashFull() {
+        return (int) (1000L * entriesOccupied / size);
+    }
 
 }

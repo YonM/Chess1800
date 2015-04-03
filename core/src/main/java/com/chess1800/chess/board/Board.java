@@ -46,7 +46,7 @@ public class Board extends AbstractBitboardEvaluator implements Bitboard {
     protected long[] all_pieces_history;
     protected boolean[] whiteToMove_history;
     protected int[] fiftyMoveRule_history;
-    protected int[] enPassant_history;
+    protected long[] enPassant_history;
     protected int[] move_history;
     protected int[] white_castle_history;
     protected int[] black_castle_history;
@@ -80,7 +80,7 @@ public class Board extends AbstractBitboardEvaluator implements Bitboard {
         all_pieces_history = new long[MAX_GAME_LENGTH];
         whiteToMove_history = new boolean[MAX_GAME_LENGTH];
         fiftyMoveRule_history = new int[MAX_GAME_LENGTH];
-        enPassant_history = new int[MAX_GAME_LENGTH];
+        enPassant_history = new long[MAX_GAME_LENGTH];
         move_history = new int[MAX_GAME_LENGTH];
         white_castle_history = new int[MAX_GAME_LENGTH];
         black_castle_history = new int[MAX_GAME_LENGTH];
@@ -166,7 +166,7 @@ public class Board extends AbstractBitboardEvaluator implements Bitboard {
             if(arr.get(9).contains("k")) castleBlack |= CANCASTLEOO;
             if(arr.get(9).contains("q")) castleBlack |= CANCASTLEOOO;
             // en passant
-            ePIndex = algebraic2Index(arr.get(10));
+            ePSquare = algebraic2Square(arr.get(10));
             // 50mr
             if(arr.size() >12) {
                 fiftyMove = Integer.parseInt(arr.get(11));
@@ -188,7 +188,7 @@ public class Board extends AbstractBitboardEvaluator implements Bitboard {
             System.out.println("White castling: " + castleWhite);
             System.out.println("Black castling: " + castleBlack);
             System.out.println("ePIndex: " + ePIndex);*/
-            System.out.println(Long.toBinaryString(whiteQueens));
+//            System.out.println(Long.toBinaryString(whiteQueens));
             return true;
         }// END if
 
@@ -241,7 +241,7 @@ public class Board extends AbstractBitboardEvaluator implements Bitboard {
         }
         if(!castleAvailable)sb.append("-");
         sb.append(" ");
-        sb.append((ePIndex != -1 ? index2Algebraic(ePIndex) : "-"));
+        sb.append((ePSquare != 0 ? square2Algebraic(ePSquare) : "-"));
         sb.append(" ");
         sb.append(fiftyMove);
         sb.append(" ");
@@ -330,10 +330,6 @@ public class Board extends AbstractBitboardEvaluator implements Bitboard {
                     pieceToRemove = (whiteToMove) ? (toBoard >>> 8) : (toBoard << 8);
                     pieceToRemoveIndex = (whiteToMove) ? (to - 8) : (to + 8);
                 }
-                if(pieceToRemoveIndex<0) {
-                    System.out.println("bad move (negative):" + move);
-                    System.out.println("moveType: " + Move.getMoveType(move));
-                }
                 char pieceRemoved = getPieceAt(pieceToRemoveIndex);
                 if (whiteToMove) { // captured a black piece
                     blackPawns &= ~pieceToRemove;
@@ -353,21 +349,21 @@ public class Board extends AbstractBitboardEvaluator implements Bitboard {
                 key ^= Zobrist.getKeyPieceIndex(pieceToRemoveIndex, pieceRemoved);
             }
             //remove en passant from Zobrist, if it already exists.
-            if (ePIndex != -1)
-                key ^= Zobrist.passantColumn[ getColumn(ePIndex)];
+            if (ePSquare != 0)
+                key ^= Zobrist.passantColumn[ getColumn(ePSquare) ];
 
             //reset en passant location
-            ePIndex = -1;
+            ePSquare = 0;
 
             switch (piece) {
                 case Move.PAWN:
                     fiftyMove = 0;
                     //Check if we need to update en passant square.
-                    if (whiteToMove && (fromBoard << 16 & toBoard) != 0) ePIndex = square2Index(fromBoard << 8);
-                    if (!whiteToMove && (fromBoard >>> 16 & toBoard) != 0) ePIndex = square2Index(fromBoard >>> 8);
+                    if (whiteToMove && (fromBoard << 16 & toBoard) != 0) ePSquare = (fromBoard << 8);
+                    if (!whiteToMove && (fromBoard >>> 16 & toBoard) != 0) ePSquare = (fromBoard >>> 8);
                     //add en passant column to key, if en passant is set.
-                    if (ePIndex != -1)
-                        key ^= Zobrist.passantColumn[getColumn(ePIndex)];
+                    if (ePSquare != 0)
+                        key ^= Zobrist.passantColumn[getColumn(ePSquare)];
                     //if promotion
                     if (Move.isPromotion(move)) {
                         if (whiteToMove) {
@@ -561,8 +557,8 @@ public class Board extends AbstractBitboardEvaluator implements Bitboard {
     public void makeNullMove() {
         saveHistory(moveNumber);
         moveNumber++;
-        if (ePIndex != -1) key ^= Zobrist.passantColumn[getColumn(ePIndex)];
-        ePIndex = -1;
+        if (ePSquare != 0) key ^= Zobrist.passantColumn[getColumn(ePSquare)];
+        ePSquare = 0;
         whiteToMove = !whiteToMove;
         key ^= Zobrist.whiteMove;
     }
@@ -592,7 +588,7 @@ public class Board extends AbstractBitboardEvaluator implements Bitboard {
         allPieces = all_pieces_history[moveNumber];
         whiteToMove = whiteToMove_history[moveNumber];
         fiftyMove = fiftyMoveRule_history[moveNumber];
-        ePIndex = enPassant_history[moveNumber];
+        ePSquare = enPassant_history[moveNumber];
         castleWhite = white_castle_history[moveNumber];
         castleBlack = black_castle_history[moveNumber];
         key = key_history[moveNumber];
@@ -617,7 +613,7 @@ public class Board extends AbstractBitboardEvaluator implements Bitboard {
         all_pieces_history[moveNumber] = allPieces;
         whiteToMove_history[moveNumber] = whiteToMove;
         fiftyMoveRule_history[moveNumber] = fiftyMove;
-        enPassant_history[moveNumber] = ePIndex;
+        enPassant_history[moveNumber] = ePSquare;
         move_history[moveNumber] = move;
         white_castle_history[moveNumber] = castleWhite;
         black_castle_history[moveNumber] = castleBlack;
@@ -625,7 +621,7 @@ public class Board extends AbstractBitboardEvaluator implements Bitboard {
 
     }
 
-    private boolean isOtherKingAttacked() {
+    protected boolean isOtherKingAttacked() {
         return isSquareAttacked((blackKing | whiteKing) & getOpponentPieces(), !whiteToMove);
     }
     protected boolean isOwnKingAttacked() {
@@ -634,7 +630,7 @@ public class Board extends AbstractBitboardEvaluator implements Bitboard {
     }
 
     public int isEndOfGame() {
-        int endGame= NOT_ENDED;
+        int endGame;
         if(!legalMovesAvailable())
             if(isCheck()){
                 endGame= whiteToMove? BLACK_WIN : WHITE_WIN;
@@ -721,16 +717,6 @@ public class Board extends AbstractBitboardEvaluator implements Bitboard {
 
     public boolean isCheck() {
         return isSquareAttacked((whiteKing | blackKing)& getMyPieces(), whiteToMove? true : false);
-    }
-
-    @Override
-    public long getWhitePieces() {
-        return whitePieces;
-    }
-
-    @Override
-    public long getBlackPieces() {
-        return blackPieces;
     }
 
     public int movingSideMaterial() {

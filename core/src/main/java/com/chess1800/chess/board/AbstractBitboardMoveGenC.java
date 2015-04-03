@@ -18,7 +18,7 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
     protected boolean whiteToMove;
     protected int castleWhite;
     protected int castleBlack;
-    protected int ePIndex;
+    protected int ePSquare;
 
 
     //For SEE & Quiescence Search
@@ -43,7 +43,6 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
 
         int index = 0;
         long square = 0x1L;
-        long epSquare;
         while (square != 0) {
             if (isWhiteToMove() == ((square & whitePieces) != 0)) {
 
@@ -65,8 +64,7 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
                             if (((square & b2_d) != 0) && (((square << 16) & all) == 0))
                                 addMoves(Move.PAWN, index, index + 16, false, 0);
                         }
-                        epSquare = ePIndex ==-1? 0 : getSquare[ePIndex];
-                        generatePawnCapturesFromAttacks(index, whitePawn[index], epSquare );
+                        generatePawnCapturesFromAttacks(index, whitePawn[index], ePSquare );
                     } else {
                         if (((square >>> 8) & all) == 0) {
                             addMoves(Move.PAWN, index, index - 8, false, 0);
@@ -74,20 +72,20 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
                             if (((square & b2_u) != 0) && (((square >>> 16) & all) == 0))
                                 addMoves(Move.PAWN, index, index - 16, false, 0);
                         }
-                        epSquare = ePIndex ==-1? 0 : getSquare[ePIndex];
-                        generatePawnCapturesFromAttacks(index, blackPawn[index], epSquare);
+                        generatePawnCapturesFromAttacks(index, blackPawn[index], ePSquare);
                     }
                 }
             }
             square <<= 1;
+
             index++;
         }
 
         square = (whiteKing|blackKing) & mines; // my king
         int myKingIndex = -1;
         // Castling: disabled when in check or squares attacked
-        if ((((all & (isWhiteToMove() ? 0x06L : 0x0600000000000000L)) == 0 &&
-                (isWhiteToMove() ? ((castleWhite & CANCASTLEOO)!=0) : ((castleBlack & CANCASTLEOO)!=0))
+        if ((((all & (whiteToMove ? 0x06L : 0x0600000000000000L)) == 0 &&
+                (whiteToMove ? ((castleWhite & CANCASTLEOO)!=0) : ((castleBlack & CANCASTLEOO)!=0))
         ))) {
             myKingIndex = square2Index(square);
             if (!isCheck() &&
@@ -95,8 +93,8 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
                     && !isIndexAttacked((byte) (myKingIndex - 2), isWhiteToMove()))
                 addMoves(Move.KING, myKingIndex, myKingIndex - 2, false, Move.TYPE_KINGSIDE_CASTLING);
         }
-        if ((((all & (isWhiteToMove() ? 0x70L : 0x7000000000000000L)) == 0 &&
-                (isWhiteToMove() ? ((castleWhite & CANCASTLEOOO)!=0) : ((castleBlack & CANCASTLEOOO)!=0))
+        if ((((all & (whiteToMove ? 0x70L : 0x7000000000000000L)) == 0 &&
+                (whiteToMove? ((castleWhite & CANCASTLEOOO)!=0) : ((castleBlack & CANCASTLEOOO)!=0))
         ))) {
             if (myKingIndex == -1) {
                 myKingIndex = square2Index(square);
@@ -157,8 +155,8 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
         return castleWhite;
     }
 
-    public int getEPIndex() {
-        return ePIndex;
+    public long getEPSquare() {
+        return ePSquare;
     }
 
 

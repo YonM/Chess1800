@@ -12,7 +12,7 @@ import com.chess1800.chess.move.Move;
 public class PVSSoft extends PVS {
 
     public PVSSoft(Chessboard b) {
-        super(b, "SOFT");
+        super(b);
     }
 
     //Fail Soft implementation
@@ -187,5 +187,15 @@ public class PVSSoft extends PVS {
             }
         }
         return bestScore;  //Fail Soft
+    }
+
+    @Override
+    protected void notifyMoveFound(int bestMove, int bestScore) {
+
+    }
+
+    @Override
+    protected void setPV(int firstMove) {
+
     }
 }
