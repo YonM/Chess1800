@@ -64,6 +64,7 @@ public class PVSSoft extends PVS {
         int bestScore = 0;
 
 
+        boolean checkEvasion=board.isCheck();
         //try the first legal move with an open window.
         int j, pvIndex = 0;
         for (int i = 0; i < num_moves; i++) {
@@ -99,7 +100,7 @@ public class PVSSoft extends PVS {
             if (board.makeMove(moves[i])) {
                 movesFound++;
                 //Late Move Reduction
-                if (movesFound > LATEMOVE_THRESHOLD && depth > LATEMOVE_DEPTH_THRESHOLD && !board.isCheck() && !Move.isCapture(moves[i])) {
+                if (movesFound > LATEMOVE_THRESHOLD && depth > LATEMOVE_DEPTH_THRESHOLD && !checkEvasion && !board.isCheck() && !Move.isCapture(moves[i])) {
                     score = -PVS(NODE_NULL, ply + 1, depth - 2, -alpha - 1, -alpha);
                 } else {
                     score = -PVS(NODE_NULL, ply + 1, depth - 1, -alpha - 1, -alpha); // PVS Search

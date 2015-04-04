@@ -63,13 +63,13 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
     };
 
     //PIECE SQUARE TABLES provided by Stef Luijten
-    private final int[] PAWN_POS_W;
-    private final int[] KNIGHT_POS_W;
-    private final int[] BISHOP_POS_W;
-    private final int[] ROOK_POS_W;
-    private final int[] QUEEN_POS_W;
-    private final int[] KING_POS_W;
-    private final int[] KING_POS_ENDGAME_W;
+//    private final int[] PAWN_POS_W;
+//    private final int[] KNIGHT_POS_W;
+//    private final int[] BISHOP_POS_W;
+//    private final int[] ROOK_POS_W;
+//    private final int[] QUEEN_POS_W;
+//    private final int[] KING_POS_W;
+//    private final int[] KING_POS_ENDGAME_W;
 
     private final int[] PAWN_POS_B = {
             0, 0, 0, 0, 0, 0, 0, 0,
@@ -177,34 +177,35 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
 
     public AbstractBitboardEvaluator(){
         //White Piece Square Tables
-        PAWN_POS_W = new int[64];
-        KNIGHT_POS_W = new int[64];
-        BISHOP_POS_W = new int[64];
-        ROOK_POS_W = new int[64];
-        QUEEN_POS_W = new int[64];
-        KING_POS_W = new int[64];
-        KING_POS_ENDGAME_W = new int[64];
-        int i;
-        for (i = 0; i < 64; i++) {
-            PAWN_POS_W[i] = PAWN_POS_B[MIRROR[i]];
-            KNIGHT_POS_W[i] = KNIGHT_POS_B[MIRROR[i]];
-            BISHOP_POS_W[i] = BISHOP_POS_B[MIRROR[i]];
-            ROOK_POS_W[i] = ROOK_POS_B[MIRROR[i]];
-            QUEEN_POS_W[i] = QUEEN_POS_B[MIRROR[i]];
-            KING_POS_W[i] = KING_POS_B[MIRROR[i]];
-            KING_POS_ENDGAME_W[i] = KING_POS_ENDGAME_B[MIRROR[i]];
-        }
+//        PAWN_POS_W = new int[64];
+//        KNIGHT_POS_W = new int[64];
+//        BISHOP_POS_W = new int[64];
+//        ROOK_POS_W = new int[64];
+//        QUEEN_POS_W = new int[64];
+//        KING_POS_W = new int[64];
+//        KING_POS_ENDGAME_W = new int[64];
+//        int i;
+//        for (i = 0; i < 64; i++) {
+//            PAWN_POS_W[i] = PAWN_POS_B[MIRROR[i]];
+//            KNIGHT_POS_W[i] = KNIGHT_POS_B[MIRROR[i]];
+//            BISHOP_POS_W[i] = BISHOP_POS_B[MIRROR[i]];
+//            ROOK_POS_W[i] = ROOK_POS_B[MIRROR[i]];
+//            QUEEN_POS_W[i] = QUEEN_POS_B[MIRROR[i]];
+//            KING_POS_W[i] = KING_POS_B[MIRROR[i]];
+//            KING_POS_ENDGAME_W[i] = KING_POS_ENDGAME_B[MIRROR[i]];
+//        }
 
         //DISTANCE -distance is measured as max of (rank,file)-difference
         DISTANCE = new int[64][64];
         int square;
+        int i;
         for (i = 0; i < 64; i++) {
             for (square = 0; square < 64; square++) {
-                if (Math.abs(i / 8 - square / 8) >
-                        Math.abs(i % 8 - square % 8))
-                    DISTANCE[i][square] = Math.abs(i / 8 - square / 8);
+                if (Math.abs(getRankOfIndex(i) - getRankOfIndex(square)) >
+                        Math.abs(getColumnOfIndex(i) - getColumnOfIndex(square)))
+                    DISTANCE[i][square] = Math.abs(getRankOfIndex(i) - getRankOfIndex(square));
                 else
-                    DISTANCE[i][square] = Math.abs(i % 8 - square % 8);
+                    DISTANCE[i][square] = Math.abs(getColumnOfIndex(i) - getColumnOfIndex(square));
             }
         }
 
@@ -216,45 +217,45 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
         WEAK_SAFE_WHITE = new long[64];
 
         int rank, file;
-        for (i = 0; i < 64; i++) {
+        for (i = 0; i < 64; i++) { //TODO
             //Passed white pawns
-            for (rank = i / 8 + 1; rank < 7; rank++) {
-                file = i % 8;
+            for (rank = getRankOfIndex(i) + 1; rank < 7; rank++) {
+                file = getColumnOfIndex(i);
                 if (file > 0)
-                    PASSED_WHITE[i] ^= getSquare[rank * 8 + (file - 1)];
-                PASSED_WHITE[i] ^= getSquare[rank * 8 + file];
+                    PASSED_WHITE[i] ^= getSquare[(rank * 8 + (file - 1))^7];
+                PASSED_WHITE[i] ^= getSquare[(rank * 8 + file)^7];
                 if (file < 7)
-                    PASSED_WHITE[i] ^= getSquare[rank * 8 + (file + 1)];
+                    PASSED_WHITE[i] ^= getSquare[(rank * 8 + (file + 1))^7];
             }
             //Isolated white pawns
             for (rank = 1; rank < 7; rank++) {
-                file = i % 8;
-                if (file > 0) ISOLATED_WHITE[i] ^= getSquare[rank * 8 + (file - 1)];
-                if (file < 7) ISOLATED_WHITE[i] ^= getSquare[rank * 8 + (file + 1)];
+                file = getColumnOfIndex(i);
+                if (file > 0) ISOLATED_WHITE[i] ^= getSquare[(rank * 8 + (file - 1))^7];
+                if (file < 7) ISOLATED_WHITE[i] ^= getSquare[(rank * 8 + (file + 1))^7];
             }
 
             //Backward white pawns
             for (rank = 1; rank < 7; rank++) {
-                file = i % 8;
-                if (file > 0) BACKWARD_WHITE[i] ^= getSquare[rank * 8 + (file - 1)];
-                if (file > 7) BACKWARD_WHITE[i] ^= getSquare[rank * 8 + (file + 1)];
+                file = getColumnOfIndex(i);
+                if (file > 0) BACKWARD_WHITE[i] ^= getSquare[(rank * 8 + (file - 1))^7];
+                if (file < 7) BACKWARD_WHITE[i] ^= getSquare[(rank * 8 + (file + 1))^7];
             }
 
         }
 
         //Strong/Weak squares for white pawns, used for king safety. Only if the king is on the first 3 ranks.
         for (i = 0; i < 24; i++) {
-            STRONG_SAFE_WHITE[i] ^= getSquare[i + 8];
-            file = i % 8;
+            STRONG_SAFE_WHITE[i] ^= getSquare[i + 8]; //TODO
+            file = getColumnOfIndex(i);
             if (file > 0) {
-                STRONG_SAFE_WHITE[i] ^= getSquare[i + 7];
-            } else {
-                STRONG_SAFE_WHITE[i] ^= getSquare[i + 10];
-            }
-            if (file < 7) {
                 STRONG_SAFE_WHITE[i] ^= getSquare[i + 9];
             } else {
                 STRONG_SAFE_WHITE[i] ^= getSquare[i + 6];
+            }
+            if (file < 7) {
+                STRONG_SAFE_WHITE[i] ^= getSquare[i + 7];
+            } else {
+                STRONG_SAFE_WHITE[i] ^= getSquare[i + 10];
             }
             WEAK_SAFE_WHITE[i] = STRONG_SAFE_WHITE[i] << 8;
         }
@@ -267,26 +268,26 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
         for (i = 0; i < 64; i++) {
             for (square = 0; square < 64; square++) {
                 if ((PASSED_WHITE[i] & getSquare[square]) != 0)
-                    PASSED_BLACK[MIRROR[i]] |= getSquare[MIRROR[square]];
+                    PASSED_BLACK[63-i] |= getSquare[63-square];
 
                 if ((ISOLATED_WHITE[i] & getSquare[square]) != 0)
-                    ISOLATED_BLACK[MIRROR[i]] |= getSquare[MIRROR[square]];
+                    ISOLATED_BLACK[63-i] |= getSquare[63-square];
 
                 if ((BACKWARD_WHITE[i] & getSquare[square]) != 0)
-                    BACKWARD_BLACK[MIRROR[i]] |= getSquare[MIRROR[square]];
+                    BACKWARD_BLACK[63-i] |= getSquare[63-square];
 
                 if ((STRONG_SAFE_WHITE[i] & getSquare[square]) != 0)
-                    STRONG_SAFE_BLACK[MIRROR[i]] |= getSquare[MIRROR[square]];
+                    STRONG_SAFE_BLACK[63-i] |= getSquare[63-square];
 
                 if ((WEAK_SAFE_WHITE[i] & getSquare[square]) != 0)
-                    WEAK_SAFE_BLACK[MIRROR[i]] |= getSquare[MIRROR[square]];
+                    WEAK_SAFE_BLACK[63-i] |= getSquare[63-square];
 
             }
         }
 
     }
 
-    private int score, square;
+    private int score, squareIndex;
     private int whitePawnCount, whiteKnightCount, whiteBishopCount, whiteRookCount, whiteQueenCount;
     private int blackPawnCount, blackKnightCount, blackBishopCount, blackRookCount, blackQueenCount;
     private int whiteKingSquare, blackKingSquare;
@@ -377,25 +378,25 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
         whitePassedPawns = 0;
         temp = whitePawns;
         while (temp != 0) {
-            square = getIndexFromBoard(temp);
+            squareIndex = getIndexFromBoard(temp);
             score += PAWN_VALUE;
-            score += PAWN_POS_W[square];
-            score += PAWN_OPPONENT_DISTANCE[DISTANCE[square][blackKingSquare]];
+            score += PAWN_POS_B[63- squareIndex];
+            score += PAWN_OPPONENT_DISTANCE[DISTANCE[squareIndex][blackKingSquare]];
             if (endGame)
-                score += PAWN_OWN_DISTANCE[DISTANCE[square][whiteKingSquare]];
+                score += PAWN_OWN_DISTANCE[DISTANCE[squareIndex][whiteKingSquare]];
 
             //Passed pawn bonus
-            if ((PASSED_WHITE[square] & blackPawns) == 0) {
+            if ((PASSED_WHITE[squareIndex] & blackPawns) == 0) {
                 score += BONUS_PASSED_PAWN;
-                whitePassedPawns ^= getSquare[square];
+                whitePassedPawns ^= getSquare[squareIndex];
             }
 
             //Doubled pawn penalty
-            if (((whitePawns ^ getSquare[square]) & COLUMN[square % 8]) != 0)
+            if (((whitePawns ^ getSquare[squareIndex]) & COLUMN[getColumnOfIndex(squareIndex)]) != 0)
                 score -= PENALTY_DOUBLED_PAWN;
 
             //Isolated pawn penalty
-            if ((ISOLATED_WHITE[square] & whitePawns) == 0) {
+            if ((ISOLATED_WHITE[squareIndex] & whitePawns) == 0) {
                 score -= PENALTY_ISOLATED_PAWN;
             } else {
                 /*  Not isolated but maybe backwards if the following are both true:
@@ -403,22 +404,22 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
                  *  2. No pawns left that can defend the pawn.
                 */
 
-                if ((whitePawn[square + 8] & blackPawns) != 0)
-                    if ((BACKWARD_WHITE[square] & whitePawns) == 0)
+                if ((whitePawn[squareIndex + 8] & blackPawns) != 0)
+                    if ((BACKWARD_WHITE[squareIndex] & whitePawns) == 0)
                         score -= PENALTY_BACKWARD_PAWN;
             }
-            temp ^= getSquare[square];
+            temp ^= getSquare[squareIndex];
         }
     }
 
     private void evaluateWhiteKnights() {
         temp = whiteKnights;
         while (temp != 0) {
-            square = getIndexFromBoard(temp);
+            squareIndex = getIndexFromBoard(temp);
             score += KNIGHT_VALUE;
-            score += KNIGHT_POS_W[square];
-            score += KNIGHT_DISTANCE[DISTANCE[square][blackKingSquare]];
-            temp ^= getSquare[square];
+            score += KNIGHT_POS_B[63- squareIndex];
+            score += KNIGHT_DISTANCE[DISTANCE[squareIndex][blackKingSquare]];
+            temp ^= getSquare[squareIndex];
         }
     }
 
@@ -427,11 +428,11 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
                 score += BONUS_BISHOP_PAIR;
         temp = whiteBishops;
         while (temp != 0) {
-            square = getIndexFromBoard(temp);
+            squareIndex = getIndexFromBoard(temp);
             score += BISHOP_VALUE;
-            score += BISHOP_POS_W[square];
-            score += BISHOP_DISTANCE[DISTANCE[square][blackKingSquare]];
-            temp ^= getSquare[square];
+            score += BISHOP_POS_B[63- squareIndex];
+            score += BISHOP_DISTANCE[DISTANCE[squareIndex][blackKingSquare]];
+            temp ^= getSquare[squareIndex];
         }
     }
 
@@ -439,20 +440,20 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
     private void evaluateWhiteRooks() {
         temp = whiteRooks;
         while (temp != 0) {
-            square = getIndexFromBoard(temp);
+            squareIndex = getIndexFromBoard(temp);
             score += ROOK_VALUE;
-            score += ROOK_POS_W[square];
-            score += ROOK_DISTANCE[DISTANCE[square][blackKingSquare]];
-            if ((COLUMN[square % 8] & whitePassedPawns) != 0)
-                if (square < getLastIndexFromBoard((COLUMN[square % 8] & whitePassedPawns)))
+            score += ROOK_POS_B[63- squareIndex];
+            score += ROOK_DISTANCE[DISTANCE[squareIndex][blackKingSquare]];
+            if ((COLUMN[getColumnOfIndex(squareIndex)] & whitePassedPawns) != 0)
+                if (squareIndex < getLastIndexFromBoard((COLUMN[getColumnOfIndex(squareIndex)] & whitePassedPawns)))
                     score += BONUS_ROOK_BEHIND_PASSED_PAWN;
 
-            if ((COLUMN[square % 8] & blackPawns) == 0) {
+            if ((COLUMN[getColumnOfIndex(squareIndex)] & blackPawns) == 0) {
                 score += BONUS_ROOK_ON_OPEN_FILE;
-                if ((COLUMN[square % 8] & (whiteRooks & ~Long.lowestOneBit(temp))) != 0)
+                if ((COLUMN[getColumnOfIndex(squareIndex)] & (whiteRooks & ~Long.lowestOneBit(temp))) != 0)
                     score+=BONUS_TWO_ROOKS_ON_OPEN_FILE;
             }
-            temp ^= getSquare[square];
+            temp ^= getSquare[squareIndex];
         }
     }
 
@@ -460,20 +461,20 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
     private void evaluateWhiteQueens() {
         temp = whiteQueens;
         while (temp != 0) {
-            square = getIndexFromBoard(temp);
+            squareIndex = getIndexFromBoard(temp);
             score += QUEEN_VALUE;
-            score += QUEEN_POS_W[square];
-            score += QUEEN_DISTANCE[DISTANCE[square][blackKingSquare]];
-            temp ^= getSquare[square];
+            score += QUEEN_POS_B[63- squareIndex];
+            score += QUEEN_DISTANCE[DISTANCE[squareIndex][blackKingSquare]];
+            temp ^= getSquare[squareIndex];
         }
     }
 
 
     private void evaluateWhiteKing() {
         if (endGame) {
-            score += KING_POS_ENDGAME_W[whiteKingSquare];
+            score += KING_POS_ENDGAME_B[63-whiteKingSquare];
         } else {
-            score += KING_POS_W[whiteKingSquare];
+            score += KING_POS_B[63-whiteKingSquare];
             //Not end-game so add pawn shield bonus
             //Strong pawn shield bonus if pawns are close to the king
             score += BONUS_PAWN_SHIELD_STRONG * Long.bitCount((STRONG_SAFE_WHITE[whiteKingSquare] & whitePawns));
@@ -487,25 +488,25 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
         blackPassedPawns = 0;
         temp = blackPawns;
         while (temp != 0) {
-            square = getIndexFromBoard(temp);
+            squareIndex = getIndexFromBoard(temp);
             score -= PAWN_VALUE;
-            score -= PAWN_POS_B[square];
-            score -= PAWN_OPPONENT_DISTANCE[DISTANCE[square][whiteKingSquare]];
+            score -= PAWN_POS_B[squareIndex];
+            score -= PAWN_OPPONENT_DISTANCE[DISTANCE[squareIndex][whiteKingSquare]];
             if (endGame)
-                score -= PAWN_OWN_DISTANCE[DISTANCE[square][blackKingSquare]];
+                score -= PAWN_OWN_DISTANCE[DISTANCE[squareIndex][blackKingSquare]];
 
             //Passed pawn bonus
-            if ((PASSED_BLACK[square] & whitePawns) == 0) {
+            if ((PASSED_BLACK[squareIndex] & whitePawns) == 0) {
                 score -= BONUS_PASSED_PAWN;
-                blackPassedPawns ^= getSquare[square];
+                blackPassedPawns ^= getSquare[squareIndex];
             }
 
             //Doubled pawn penalty
-            if (((blackPawns ^ getSquare[square]) & COLUMN[square % 8]) != 0)
+            if (((blackPawns ^ getSquare[squareIndex]) & COLUMN[getColumnOfIndex(squareIndex)]) != 0)
                 score += PENALTY_DOUBLED_PAWN;
 
             //Isolated pawn penalty
-            if ((ISOLATED_BLACK[square] & blackPawns) == 0) {
+            if ((ISOLATED_BLACK[squareIndex] & blackPawns) == 0) {
                 score += PENALTY_ISOLATED_PAWN;
             } else {
                 /*  Not isolated but maybe backwards if the following are both true:
@@ -513,22 +514,22 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
                  *  2. No pawns left that can defend the pawn.
                 */
 
-                if ((blackPawn[square + 8] & whitePawns) != 0)
-                    if ((BACKWARD_BLACK[square] & blackPawns) == 0)
+                if ((blackPawn[squareIndex - 8] & whitePawns) != 0)
+                    if ((BACKWARD_BLACK[squareIndex] & blackPawns) == 0)
                         score += PENALTY_BACKWARD_PAWN;
             }
-            temp ^= getSquare[square];
+            temp ^= getSquare[squareIndex];
         }
     }
 
     private void evaluateBlackKnights() {
         temp = blackKnights;
         while (temp != 0) {
-            square = getIndexFromBoard(temp);
+            squareIndex = getIndexFromBoard(temp);
             score -= KNIGHT_VALUE;
-            score -= KNIGHT_POS_B[square];
-            score -= KNIGHT_DISTANCE[DISTANCE[square][whiteKingSquare]];
-            temp ^= getSquare[square];
+            score -= KNIGHT_POS_B[squareIndex];
+            score -= KNIGHT_DISTANCE[DISTANCE[squareIndex][whiteKingSquare]];
+            temp ^= getSquare[squareIndex];
         }
     }
 
@@ -537,41 +538,41 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
                 score -= BONUS_BISHOP_PAIR;
         temp = blackBishops;
         while (temp != 0) {
-            square = getIndexFromBoard(temp);
+            squareIndex = getIndexFromBoard(temp);
             score -= BISHOP_VALUE;
-            score -= BISHOP_POS_B[square];
-            score -= BISHOP_DISTANCE[DISTANCE[square][whiteKingSquare]];
-            temp ^= getSquare[square];
+            score -= BISHOP_POS_B[squareIndex];
+            score -= BISHOP_DISTANCE[DISTANCE[squareIndex][whiteKingSquare]];
+            temp ^= getSquare[squareIndex];
         }
     }
 
     private void evaluateBlackRooks() {
         temp = blackRooks;
         while (temp != 0) {
-            square = getIndexFromBoard(temp);
+            squareIndex = getIndexFromBoard(temp);
             score -= ROOK_VALUE;
-            score -= ROOK_POS_B[square];
-            score -= ROOK_DISTANCE[DISTANCE[square][whiteKingSquare]];
-            if ((COLUMN[square % 8] & blackPassedPawns) != 0)
-                if (square < getLastIndexFromBoard((COLUMN[square % 8] & blackPassedPawns)))
+            score -= ROOK_POS_B[squareIndex];
+            score -= ROOK_DISTANCE[DISTANCE[squareIndex][whiteKingSquare]];
+            if ((COLUMN[getColumnOfIndex(squareIndex)] & blackPassedPawns) != 0)
+                if (squareIndex < getLastIndexFromBoard((getColumn(squareIndex) & blackPassedPawns)))
                     score -= BONUS_ROOK_BEHIND_PASSED_PAWN;
-            if ((COLUMN[square % 8] & whitePawns) == 0) {
+            if ((COLUMN[getColumnOfIndex(squareIndex)] & whitePawns) == 0) {
                 score -= BONUS_ROOK_ON_OPEN_FILE;
-                if ((COLUMN[square % 8] & (blackRooks & ~Long.lowestOneBit(temp))) != 0)
+                if ((COLUMN[getColumnOfIndex(squareIndex)] & (blackRooks & ~Long.lowestOneBit(temp))) != 0)
                     score -= BONUS_TWO_ROOKS_ON_OPEN_FILE;
             }
-            temp ^= getSquare[square];
+            temp ^= getSquare[squareIndex];
         }
     }
 
     private void evaluateBlackQueens() {
         temp = blackQueens;
         while (temp != 0) {
-            square = getIndexFromBoard(temp);
+            squareIndex = getIndexFromBoard(temp);
             score -= QUEEN_VALUE;
-            score -= QUEEN_POS_B[square];
-            score -= QUEEN_DISTANCE[DISTANCE[square][whiteKingSquare]];
-            temp ^= getSquare[square];
+            score -= QUEEN_POS_B[squareIndex];
+            score -= QUEEN_DISTANCE[DISTANCE[squareIndex][whiteKingSquare]];
+            temp ^= getSquare[squareIndex];
         }
     }
 
@@ -585,7 +586,7 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
             score -= BONUS_PAWN_SHIELD_STRONG * Long.bitCount((STRONG_SAFE_BLACK[blackKingSquare] & blackPawns));
 
             //Weak pawn shield bonus if pawns are not very close to the king
-            score -= BONUS_PAWN_SHIELD_WEAK * Long.bitCount((WEAK_SAFE_WHITE[blackKingSquare] & blackPawns));
+            score -= BONUS_PAWN_SHIELD_WEAK * Long.bitCount((WEAK_SAFE_BLACK[blackKingSquare] & blackPawns));
         }
     }
 

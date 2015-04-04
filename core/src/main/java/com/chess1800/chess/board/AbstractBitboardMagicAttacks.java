@@ -402,6 +402,15 @@ public abstract class AbstractBitboardMagicAttacks{
                 | (getBishopAttacks(index, all) & ((whiteBishops & blackBishops) | (whiteQueens | blackQueens)));
     }
 
+    protected final int getColumnOfIndex(int index) {
+        return 7 - index & 7;
+    }
+
+    protected final int getRankOfIndex(int index) {
+        return index >> 3;
+    }
+
+
 
 
 }
