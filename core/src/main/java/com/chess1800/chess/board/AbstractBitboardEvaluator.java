@@ -217,7 +217,7 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
         WEAK_SAFE_WHITE = new long[64];
 
         int rank, file;
-        for (i = 0; i < 64; i++) { //TODO
+        for (i = 0; i < 64; i++) {
             //Passed white pawns
             for (rank = getRankOfIndex(i) + 1; rank < 7; rank++) {
                 file = getColumnOfIndex(i);
@@ -245,7 +245,7 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
 
         //Strong/Weak squares for white pawns, used for king safety. Only if the king is on the first 3 ranks.
         for (i = 0; i < 24; i++) {
-            STRONG_SAFE_WHITE[i] ^= getSquare[i + 8]; //TODO
+            STRONG_SAFE_WHITE[i] ^= getSquare[i + 8];
             file = getColumnOfIndex(i);
             if (file > 0) {
                 STRONG_SAFE_WHITE[i] ^= getSquare[i + 9];
@@ -349,10 +349,7 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
     
     public abstract int blackPieceMaterial();
 
-    public abstract boolean isCheckMate();
 
-
-    public abstract boolean isCheck();
 
 
     protected void evaluateWhiteMaterial() {
