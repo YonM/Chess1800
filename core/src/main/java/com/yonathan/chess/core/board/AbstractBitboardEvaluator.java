@@ -228,7 +228,7 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
         return (square2Index(Long.lowestOneBit(board)));
     }
     public static int getLastIndexFromBoard(long board) {
-        return (Long.numberOfTrailingZeros(Long.highestOneBit(board)));
+        return (square2Index(Long.highestOneBit(board)));
     }
     public int eval() {
         if(isCheckMate()) return -CHECKMATE;

@@ -711,7 +711,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
     }
 
     public boolean isCheck() {
-        return isSquareAttacked((whiteKing | blackKing)& getMyPieces(), whiteToMove? true : false);
+        return isOwnKingAttacked();
     }
 
     public int movingSideMaterial() {
