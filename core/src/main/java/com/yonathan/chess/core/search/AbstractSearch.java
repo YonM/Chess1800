@@ -9,9 +9,8 @@ public abstract class AbstractSearch extends AbstractSearchInfo implements Searc
     protected boolean searching;
     protected boolean initialized;
     protected Thread thread;
-    protected int depth;
     protected static Chessboard board;
-    protected int currentDepth;
+
 
 
     protected boolean stopSearch;
@@ -20,6 +19,7 @@ public abstract class AbstractSearch extends AbstractSearchInfo implements Searc
         initialized = false;
         if (AbstractSearch.board == null) {
             AbstractSearch.board = board;
+            System.out.println("initialized");
             AbstractSearch.board.initialize();
         }
         initialized = true;

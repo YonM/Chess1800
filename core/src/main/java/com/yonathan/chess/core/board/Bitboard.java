@@ -14,10 +14,8 @@ import java.util.StringTokenizer;
  * and Alberto Alonso Ruibal's Carballo @ https://github.com/albertoruibal/carballo
  */
 public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
-    protected int material;
-
-    //Counted in plies.
     protected int moveNumber;
+
     protected int fiftyMove;
 
     protected long[] key_history;
@@ -47,7 +45,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
     protected long[] all_pieces_history;
     protected boolean[] whiteToMove_history;
     protected int[] fiftyMoveRule_history;
-    protected int[] enPassant_history;
+    protected long[] enPassant_history;
     protected int[] move_history;
     protected int[] white_castle_history;
     protected int[] black_castle_history;
@@ -77,7 +75,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         all_pieces_history = new long[MAX_GAME_LENGTH];
         whiteToMove_history = new boolean[MAX_GAME_LENGTH];
         fiftyMoveRule_history = new int[MAX_GAME_LENGTH];
-        enPassant_history = new int[MAX_GAME_LENGTH];
+        enPassant_history = new long[MAX_GAME_LENGTH];
         move_history = new int[MAX_GAME_LENGTH];
         white_castle_history = new int[MAX_GAME_LENGTH];
         black_castle_history = new int[MAX_GAME_LENGTH];
@@ -107,8 +105,9 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
                         for (int j = 0; j < Character.digit(c, 10); j++) {
                             out++;
                         }
-                    } else {
-                        long square = getSquare[up * 8 + out];
+                    }
+                    else {
+                        long square = getSquare[(up * 8 + out)^7];
                         switch (c) {
                             case 'p':
                                 blackPawns |= square;
@@ -157,20 +156,18 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
             // turn
             whiteToMove = arr.get(8).equals("w");
             // castling
-            if (arr.get(9).contains("K")) castleWhite |= CANCASTLEOO;
-            if (arr.get(9).contains("Q")) castleWhite |= CANCASTLEOOO;
-            if (arr.get(9).contains("k")) castleBlack |= CANCASTLEOO;
-            if (arr.get(9).contains("q")) castleBlack |= CANCASTLEOOO;
+            if(arr.get(9).contains("K")) castleWhite |= CANCASTLEOO;
+            if(arr.get(9).contains("Q")) castleWhite |= CANCASTLEOOO;
+            if(arr.get(9).contains("k")) castleBlack |= CANCASTLEOO;
+            if(arr.get(9).contains("q")) castleBlack |= CANCASTLEOOO;
             // en passant
-            ePSquare = algebraicLocToInt(arr.get(10));
+            ePSquare = algebraic2Square(arr.get(10));
             // 50mr
-            if (arr.size() > 12) {
+            if(arr.size() >12) {
                 fiftyMove = Integer.parseInt(arr.get(11));
-                fiftyMove = ((fiftyMove > 0 ? fiftyMove - 1 : fiftyMove) << 1) + (whiteToMove ? 0 : 1); //Convert from Moves to Ply.
                 // move number
                 moveNumber = Integer.parseInt(arr.get(12));
-                moveNumber = ((moveNumber > 0 ? moveNumber - 1 : moveNumber) << 1 + (whiteToMove ? 0 : 1));//Convert from Moves to Ply. (Left Shifted by 1 means double the value. +1 if black to move.)
-            } else {
+            }else{
                 fiftyMove = 0;
                 moveNumber = 1;
             }
@@ -178,12 +175,15 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
 
             key = Zobrist.getKeyFromBoard(this);
 
-            material = Long.bitCount(whitePawns) * PAWN_VALUE + Long.bitCount(whiteKnights) * KNIGHT_VALUE
-                    + Long.bitCount(whiteBishops) * BISHOP_VALUE + Long.bitCount(whiteRooks) * ROOK_VALUE
-                    + Long.bitCount(whiteQueens) * QUEEN_VALUE;
-            material -= (Long.bitCount(blackPawns) * PAWN_VALUE + Long.bitCount(blackKnights) * KNIGHT_VALUE
-                    + Long.bitCount(blackBishops) * BISHOP_VALUE + Long.bitCount(blackRooks) * ROOK_VALUE
-                    + Long.bitCount(blackQueens) * QUEEN_VALUE);
+//            System.out.println(this);
+//            for(int s: fenSquares)
+//            System.out.println(s);
+            /*System.out.println("Turn: "+ whiteToMove);
+            System.out.println("50-Move: "+ fiftyMove);
+            System.out.println("White castling: " + castleWhite);
+            System.out.println("Black castling: " + castleBlack);
+            System.out.println("ePIndex: " + ePIndex);*/
+//            System.out.println(Long.toBinaryString(whiteQueens));
             return true;
         }// END if
 
@@ -198,7 +198,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         long i = A8;
         int j = 0;
         while (i != 0) {
-            char p = getPieceAt(Long.numberOfTrailingZeros(i) ^ 7);
+            char p = getPieceAt(Long.numberOfTrailingZeros(i));
             if (p == ' ') {
                 j++;
             }
@@ -215,30 +215,30 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
             i >>>= 1;
         }
         sb.append(" ");
-        sb.append(isWhiteToMove() ? "w" : "b");
+        sb.append(isWhiteToMove()? "w" : "b");
         sb.append(" ");
-        boolean castleAvailable = false;
-        if ((castleWhite & CANCASTLEOO) != 0) {
+        boolean castleAvailable=false;
+        if ((castleWhite & CANCASTLEOO)!=0) {
             sb.append("K");
-            castleAvailable = true;
+            castleAvailable=true;
         }
-        if ((castleWhite & CANCASTLEOOO) != 0) {
+        if ((castleWhite & CANCASTLEOOO)!=0) {
             sb.append("Q");
-            castleAvailable = true;
+            castleAvailable= true;
         }
-        if ((castleBlack & CANCASTLEOO) != 0) {
+        if ((castleBlack & CANCASTLEOO)!=0) {
             sb.append("k");
             castleAvailable = true;
         }
-        if ((castleBlack & CANCASTLEOO) != 0) {
+        if ((castleBlack & CANCASTLEOO)!=0) {
             sb.append("q");
             castleAvailable = true;
         }
-        if (!castleAvailable) sb.append("-");
+        if(!castleAvailable)sb.append("-");
         sb.append(" ");
-        sb.append((ePSquare != -1 ? index2Algebraic(ePSquare) : "-"));
+        sb.append((ePSquare != 0 ? square2Algebraic(ePSquare) : "-"));
         sb.append(" ");
-        sb.append((fiftyMove >> 1) + 1);
+        sb.append(fiftyMove);
         sb.append(" ");
         sb.append((moveNumber >> 1) + 1); // 0,1->1.. 2,3->2
         return sb.toString();
@@ -249,7 +249,6 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         return fiftyMove;
     }
 
-    @Override
     public int getMoveNumber() {
         return moveNumber;
     }
@@ -278,7 +277,6 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         blackPieces = 0;
         allPieces = 0;
     }
-
     public long getKey() {
         return key;
     }
@@ -312,8 +310,10 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         fiftyMove++;
         moveNumber++;
         //key ^= Zobrist.getKeyPieceIndex(from, PIECENAMES[piece]) ^ Zobrist.getKeyPieceIndex(to, PIECENAMES[piece]);
-        if(move!=0) {
+        if (move != 0) {
             if ((fromBoard & getMyPieces()) == 0) {
+                System.out.println("Not my move: " + move);
+                System.out.println("not my piece");
                 return false;
             }
             if (capture) {
@@ -344,23 +344,21 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
                 key ^= Zobrist.getKeyPieceIndex(pieceToRemoveIndex, pieceRemoved);
             }
             //remove en passant from Zobrist, if it already exists.
-            if (ePSquare != -1)
-                key ^= Zobrist.passantColumn[ePSquare % 8];
+            if (ePSquare != 0)
+                key ^= Zobrist.passantColumn[ getColumn(ePSquare) ];
 
             //reset en passant location
-            ePSquare = -1;
+            ePSquare = 0;
 
             switch (piece) {
                 case Move.PAWN:
                     fiftyMove = 0;
                     //Check if we need to update en passant square.
-                    if (whiteToMove && (fromBoard << 16 & toBoard) != 0)
-                        ePSquare = Long.numberOfTrailingZeros(fromBoard << 8);
-                    if (!whiteToMove && (fromBoard >>> 16 & toBoard) != 0)
-                        ePSquare = Long.numberOfTrailingZeros(fromBoard >>> 8);
+                    if (whiteToMove && (fromBoard << 16 & toBoard) != 0) ePSquare = (fromBoard << 8);
+                    if (!whiteToMove && (fromBoard >>> 16 & toBoard) != 0) ePSquare = (fromBoard >>> 8);
                     //add en passant column to key, if en passant is set.
-                    if (ePSquare != -1)
-                        key ^= Zobrist.passantColumn[ePSquare % 8];
+                    if (ePSquare != 0)
+                        key ^= Zobrist.passantColumn[getColumn(ePSquare)];
                     //if promotion
                     if (Move.isPromotion(move)) {
                         if (whiteToMove) {
@@ -410,8 +408,6 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
                                 break;
                         }
                     } else {
-                        //No promotion
-                        //System.out.println("no promo");
                         if (whiteToMove) {
                             whitePawns ^= fromToBoard;
                             key ^= Zobrist.getKeyForMove(from, to, 'P');
@@ -466,30 +462,30 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
                     if (moveType == Move.TYPE_KINGSIDE_CASTLING) {
                         if (whiteToMove) {
                             castleWhite &= ~CANCASTLEOO;
-                            rookMask = 0xa0L;
-                            rookFromIndex = 7;
-                            rookToIndex = 5;
+                            rookMask = 0x5L;
+                            rookFromIndex = 0;
+                            rookToIndex = 2;
                             key ^= Zobrist.whiteKingSideCastling;
                         } else {
                             castleBlack &= ~CANCASTLEOO;
-                            rookMask = 0xa000000000000000L;
-                            rookFromIndex = 63;
-                            rookToIndex = 61;
+                            rookMask = 0x500000000000000L;
+                            rookFromIndex = 56;
+                            rookToIndex = 58;
                             key ^= Zobrist.blackKingSideCastling;
                         }
                     }
                     if (moveType == Move.TYPE_QUEENSIDE_CASTLING) {
                         if (whiteToMove) {
                             castleWhite &= ~CANCASTLEOOO;
-                            rookMask = 0x9L;
-                            rookFromIndex = 0;
-                            rookToIndex = 3;
+                            rookMask = 0x90L;
+                            rookFromIndex = 7;
+                            rookToIndex = 4;
                             key ^= Zobrist.whiteQueenSideCastling;
                         } else {
                             castleBlack &= ~CANCASTLEOOO;
-                            rookMask = 0x900000000000000L;
-                            rookFromIndex = 56;
-                            rookToIndex = 59;
+                            rookMask = 0x9000000000000000L;
+                            rookFromIndex = 63;
+                            rookToIndex = 60;
                             key ^= Zobrist.blackQueenSideCastling;
                         }
                     }
@@ -510,27 +506,29 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
                         key ^= Zobrist.getKeyForMove(from, to, 'k');
                     }
                     break;
+                default:
+                    return false; //never get here
             }
             updateAggregateBitboards();
             if (whiteToMove) {
-                if ((fromToBoard & 0x90L) != 0) { // 0x90 is e1 | h1 -- the king or
+                if ((fromToBoard & 0x9L) != 0) { // 0x9L is e1 | h1 -- the king or
                     // king's rook has moved
                     castleWhite &= ~CANCASTLEOO;
                     key ^= Zobrist.whiteKingSideCastling;
                 }
-                if ((fromToBoard & 0x11L) != 0) { // 0x11 is e1 | a1 -- the king or
+                if ((fromToBoard & 0x88L) != 0) { // 0x88L is e1 | a1 -- the king or
                     // queen's rook has moved
                     castleWhite &= ~CANCASTLEOOO;
                     key ^= Zobrist.whiteQueenSideCastling;
                 }
             } else {
-                if ((fromToBoard & 0x9000000000000000L) != 0) { // 0x90... is 0x90
+                if ((fromToBoard & 0x900000000000000L) != 0) { // 0x90... is 0x90
                     // <<'d to
                     // black's side
                     castleBlack &= ~CANCASTLEOO;
                     key ^= Zobrist.blackKingSideCastling;
                 }
-                if ((fromToBoard & 0x1100000000000000L) != 0) { // 0x11... is 0x11
+                if ((fromToBoard & 0x8800000000000000L) != 0) { // 0x11... is 0x11
                     // <<'d to
                     // black's side
                     castleBlack &= ~CANCASTLEOOO;
@@ -551,14 +549,11 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         return true;
     }
 
-
-
     public void makeNullMove() {
-        saveHistory(0);
-        fiftyMove++;
+        saveHistory(moveNumber);
         moveNumber++;
-        if (ePSquare != -1) key ^= Zobrist.passantColumn[ePSquare % 8];
-        ePSquare = -1;
+        if (ePSquare != 0) key ^= Zobrist.passantColumn[getColumn(ePSquare)];
+        ePSquare = 0;
         whiteToMove = !whiteToMove;
         key ^= Zobrist.whiteMove;
     }
@@ -569,9 +564,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
 
 
     public void unmakeMove(int moveNumber) {
-        if (moveNumber < 0 || moveNumber < initMoveNumber){
-            return;
-        }
+        if (moveNumber < 0 || moveNumber < initMoveNumber) return;
 
         whitePawns = white_pawn_history[moveNumber];
         whiteKnights = white_knight_history[moveNumber];
@@ -597,7 +590,6 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         this.moveNumber = moveNumber;
 
     }
-
     private void saveHistory(int move) {
         white_pawn_history[moveNumber] = whitePawns;
         white_knight_history[moveNumber] = whiteKnights;
@@ -624,31 +616,31 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
 
     }
 
-    private boolean isOtherKingAttacked() {
+    protected boolean isOtherKingAttacked() {
         return isSquareAttacked((blackKing | whiteKing) & getOpponentPieces(), !whiteToMove);
     }
-    private boolean isOwnKingAttacked() {
+    protected boolean isOwnKingAttacked() {
         if (whiteToMove) return isSquareAttacked(whiteKing, whiteToMove);
         return isSquareAttacked(blackKing, whiteToMove);
     }
 
     public int isEndOfGame() {
         int endGame;
-        if (!legalMovesAvailable())
-            if (isCheck()) {
-                endGame = whiteToMove ? BLACK_WIN : WHITE_WIN;
-            } else {
-                endGame = isDraw();
+        if(!legalMovesAvailable())
+            if(isCheck()){
+                endGame= whiteToMove? BLACK_WIN : WHITE_WIN;
+            }else{
+                endGame=isDraw();
             }
-        else endGame = isDraw();
+        else endGame=isDraw();
 
         return endGame;
     }
 
-    public int isDraw() {
+    public int isDraw(){
 
         // Checks if the current position is a draw due to:
-        // insufficient material, 50-move rule or
+        // stalemate, insufficient material, 50-move rule or
         // threefold repetition.
 
         // Stalemate
@@ -703,7 +695,6 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
 
         return NOT_ENDED;
     }
-
     public int repetitionCount() {
         int i, lastI, rep = 1; // current position is at least 1 repetition
         lastI = moveNumber - fiftyMove;          // we don't need to go back all the way
@@ -715,8 +706,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         }
         return rep;
     }
-
-    public boolean isCheckMate() {
+    public boolean isCheckMate(){
         return isCheck() && !legalMovesAvailable();
     }
 
@@ -741,6 +731,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
 
     //Static Exchange Evaluator based on https://chessprogramming.wikispaces.com/SEE+-+The+Swap+Algorithm
 
+    @Override
     public int sEE(int move) {
         int capturedPiece = 0;
         long toBoard = Move.getToSquare(move);
@@ -770,7 +761,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
 
 
             seeGain[d] = SEE_PIECE_VALUES[pieceMoved] - seeGain[d - 1];// speculative score if defended.
-            if (Math.max(-seeGain[d - 1], seeGain[d]) < 0) break; //prune
+            if (Math.max(-seeGain[d-1], seeGain[d]) <0) break; //prune
             attacks ^= fromSquare; // reset bit in set to traverse
             all ^= fromSquare;  // reset bit in temporary occupancy (for x-Rays)
 
@@ -815,7 +806,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         String san;
         if (Move.getMoveType(move) == Move.TYPE_KINGSIDE_CASTLING) {
             san = "O-O";
-            if (makeMove(move)) {
+            if(makeMove(move)) {
                 if (isCheckMate())
                     san += "#";
                 else if (isCheck())
@@ -826,7 +817,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         }
         if (Move.getMoveType(move) == Move.TYPE_QUEENSIDE_CASTLING) {
             san = "O-O-O";
-            if (makeMove(move)) {
+            if(makeMove(move)) {
                 if (isCheckMate())
                     san += "#";
                 else if (isCheck())
@@ -908,7 +899,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
             }
         }
 
-        if (makeMove(move)) {
+        if(makeMove(move)) {
             if (isCheckMate())
                 san += "#";
             else if (isCheck())
@@ -939,11 +930,12 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
      * Converts an integer location in [0, 64) to a string in ['a', 'h']
      * representing its column (aka file).
      *
-     * @param loc an int in [0, 64) representing a location.
+     * @param loc
+     *            an int in [0, 64) representing a location.
      * @return the string representing the file of the location.
      */
     private static String intColToString(int loc) {
-        return (char) (((loc % 8) + 'a')) + "";
+        return (char) ( ( (loc % 8) + 'a')) + "";
     }
 
 
@@ -951,7 +943,8 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
      * Converts an integer location in [0, 64) to a string in
      * "algebraic notation" (ie. of the form 'a7', 'c5).
      *
-     * @param loc an int in [0, 64) representing a location
+     * @param loc
+     *            an int in [0, 64) representing a location
      * @return the "algebraic notation" of the location
      */
     public static String intToAlgebraicLoc(int loc) {
@@ -968,37 +961,52 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
      * Converts an integer location in [0, 64) to a string in ['a', 'h']
      * representing its rank (aka row).
      *
-     * @param loc an int in [0, 64) representing a location.
+     * @param loc
+     *            an int in [0, 64) representing a location.
      * @return the string representing the rank of the location.
      */
     private static String intRowToString(int loc) {
-        return (char) (((loc / 8) + '1')) + "";
+        return (char) ( ( (loc / 8) + '1')) + "";
     }
     /*public boolean isOtherKingAttacked() {
         if (whiteToMove) return BitboardMagicAttacksAC.isSquareAttacked(this, blackKing, !whiteToMove);
         return BitboardMagicAttacksAC.isSquareAttacked(this, whiteKing, !whiteToMove);
     }*/
 
-    public int algebraic2Index(String name) {
-        if (name.equals("-"))
-            return -1;
-        int out = name.charAt(0) - 'a';
-        int up = Integer.parseInt(name.charAt(1) + "") - 1;
-        return up * 8 + out;
+    public  int algebraic2Index(String name) {
+        for (int i = 0; i < 64; i++) {
+            if (name.equals(squareNames[i])) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     public String index2Algebraic(int index) {
-        if (index == -1)
-            return "-";
-        int out = index % 8;
-        int up = index / 8;
-        char outc = (char) (out + 'a');
-        char upc = (char) (up + '1');
-        return outc + "" + upc;
+        return squareNames[index];
+    }
+
+    public int getPieceCaptured(int move) {
+        if (Move.getMoveType(move) == Move.TYPE_EN_PASSANT) {
+            return Move.PAWN;
+        }
+        long toSquare = Move.getToSquare(move);
+        if ((toSquare & (whitePawns | blackPawns)) != 0) {
+            return Move.PAWN;
+        } else if ((toSquare & (whiteKnights | blackKnights)) != 0) {
+            return Move.KNIGHT;
+        } else if ((toSquare & (whiteBishops | blackBishops)) != 0) {
+            return Move.BISHOP;
+        } else if ((toSquare & (whiteRooks| blackRooks)) != 0) {
+            return Move.ROOK;
+        } else if ((toSquare & (whiteQueens | blackQueens)) != 0) {
+            return Move.QUEEN;
+        }
+        return 0;
     }
 
     public boolean validateHashMove(int move) {
-        if (!makeMove(move)) return false;
+        if(!makeMove(move)) return false;
         unmakeMove(move);
         return true;
     }
@@ -1013,6 +1021,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         move = move.replace("+", "").replace("x", "").replace("-", "").replace("=", "").replace("#", "").replaceAll(" ", "").replaceAll("0", "o")
                 .replaceAll("O", "o");
 
+        System.out.println("Side to move: "+ (isWhiteToMove() ? "white": "black"));
 
         //castling move check
         if ("ooo".equalsIgnoreCase(move)) {
@@ -1040,8 +1049,9 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
                 break;
         }
         // If promotion, remove the last char
-        if (moveType != 0) {
+        if (moveType != 0){
             move = move.substring(0, move.length() - 1);
+            System.out.println("promotion piece removed");
         }
 
 
@@ -1072,7 +1082,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
 
         if (fromBoard != 0) { // remove the piece char
             move = move.substring(1);
-        } else {
+        }else{
             //Pawn moves
             if (move.length() == 2) {
                 if (isWhiteToMove()) {
@@ -1100,7 +1110,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
             fromBoard = algebraic2Square(move.substring(0, 2));
         }
 
-        if (fromBoard == 0) {
+        if(fromBoard == 0){
             return -1;
         }
 
@@ -1108,17 +1118,17 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         while (fromBoard != 0) {
             long myFrom = Long.lowestOneBit(fromBoard);
             fromBoard ^= myFrom;
-            fromIndex = Long.numberOfTrailingZeros(myFrom);
+            fromIndex = square2Index(myFrom);
 
             boolean capture = false;
-            if ((myFrom & (whitePawns | blackPawns)) != 0) {
+            if((myFrom & (whitePawns | blackPawns)) != 0){
                 pieceMoved = Move.PAWN;
 
                 //passant capture check
-                if ((toIndex != (fromIndex - 8)) && (toIndex != (fromIndex + 8)) &&
-                        (toIndex != (fromIndex - 16)) && (toIndex != (fromIndex + 16))) {
+                if((toIndex != (fromIndex -8)) && (toIndex != (fromIndex +8)) &&
+                        (toIndex != (fromIndex -16)) && (toIndex != (fromIndex +16))){
 
-                    if ((toBoard & allPieces) == 0) {
+                    if((toBoard & allPieces) == 0){
                         moveType = Move.TYPE_EN_PASSANT;
                         capture = true;
                     }
@@ -1143,9 +1153,9 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
                 pieceMoved = Move.KING;
                 if (fromIndex == 4 || fromIndex == 4 + (8 * 7)) {
                     if (toIndex == (fromIndex + 2))
-                        moveType = Move.TYPE_KINGSIDE_CASTLING;
-                    if (toIndex == (fromIndex - 2))
                         moveType = Move.TYPE_QUEENSIDE_CASTLING;
+                    if (toIndex == (fromIndex - 2))
+                        moveType = Move.TYPE_KINGSIDE_CASTLING;
                 }
             }
 
@@ -1153,14 +1163,14 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
             if ((toBoard & (whitePieces | blackPieces)) != 0) {
                 capture = true;
             }
-            int moveInt = Move.genMove(fromIndex, toIndex, pieceMoved, capture, moveType);
-            if (legalityCheck) {
-                if (makeMove(moveInt)) {
+            int genMove= Move.genMove(fromIndex, toIndex, pieceMoved, capture, moveType);
+            if(legalityCheck){
+                if(makeMove(genMove)){
                     unmakeMove();
-                    return moveInt;
+                    return genMove;
                 }
-            } else {
-                return moveInt;
+            }else{
+                return genMove;
             }
 
         }
@@ -1171,20 +1181,20 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
 
     @Override
     public boolean isMoveLegal(int move) {
-        moves = new int[MAX_MOVES];
-        int legalMovesCount = getAllLegalMoves(moves);
-        for (int i = 0; i < legalMovesCount; i++)
-            if (move == moves[i]) return true;
+        moves= new int[MAX_MOVES];
+        int legalMovesCount=getAllLegalMoves(moves);
+        for(int i=0; i<legalMovesCount; i++)
+            if(move == moves[i]) return true;
 
         return false;
     }
 
     private long algebraic2Square(String name) {
         long aux = H1;
-        for (int i = 0; i < 64; i++) {
-            if (name.equals(squareNames[i]))
+        for (int i = 0; i< 64; i++){
+            if(name.equals(squareNames[i]))
                 return aux;
-            aux <<= 1;
+            aux <<=1;
         }
         return 0;
     }
@@ -1192,12 +1202,13 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
     /**
      * Converts a location in "algebraic notation" (ie. of the form 'a7', 'c5',
      * etc.) into its integer representation.
-     * <p/>
+     *
      * <b>Note:</b> this method may throw a <code>NumberFormatException</code>
      * if the passed string is malformed-- no error checking occurs in this
      * method.
      *
-     * @param loc a string representing a location
+     * @param loc
+     *            a string representing a location
      * @return the integer representation of the string
      */
     private static int algebraicLocToInt(String loc) {
@@ -1209,10 +1220,12 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
     }
 
 
+
+
+
     /*    public String toString() {
             String s = "     a   b   c   d   e   f   g   h\n";
             s += "   +---+---+---+---+---+---+---+---+\n 8 | ";
-
             for (int up = 7; up >= 0; up--) {
                 for (int out = 0; out < 8; out++) {
                     s += getPieceAt(up * 8 + out) + " | ";
@@ -1221,26 +1234,24 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
                 if (up != 0)
                     s += "\n " + up + " | ";
             }
-
             s += "\n     a   b   c   d   e   f   g   h\n\n";
-
             s += "White to move: " + whiteToMove + "\n";
             s += "White: O-O: " + castleWhite + " -- O-O-O: " + castleWhite + "\n";
             s += "Black: O-O: " + castleBlack + " -- O-O-O: " + castleBlack + "\n";
             s +=
-                    "En Passant: " + ePSquare + " ("
-                            + intToAlgebraicLoc(ePSquare) + ")\n";
+                    "En Passant: " + ePIndex + " ("
+                            + intToAlgebraicLoc(ePIndex) + ")\n";
             s += "50 move rule: " + fiftyMove + "\n";
             s += "Move number: " + moveNumber + "\n";
             return s;
         }*/
     @Override
-    public String toString() {
+    public String toString(){
         StringBuilder sb = new StringBuilder();
         int j = 8;
         long i = A8;
         while (i != 0) {
-            sb.append(getPieceAt(Long.numberOfTrailingZeros(i) ^ 7));
+            sb.append(getPieceAt(square2Index(i)));
             sb.append(" ");
             if ((i & b_r) != 0) {
                 sb.append(j--);
@@ -1252,4 +1263,5 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         sb.append((whiteToMove ? "white move\n" : "blacks move\n"));
         return sb.toString();
     }
+
 }

@@ -17,10 +17,21 @@ public abstract class PVS extends AbstractSearch {
     public static final int NODE_PV = 1;
     public static final int NODE_NULL = 2;
 
-    protected final String type;
+    protected static final int SCORE_LOWEST = Integer.MIN_VALUE;
+    protected static final int SCORE_UNDERPROMOTION = Integer.MIN_VALUE + 1;
+
+    public final static int PHASE_HASH = 0;
+    //public final static int PHASE_GEN_CAPTURES = 1;
+    public final static int PHASE_GOOD_CAPTURES_AND_PROMOS = 1;
+    //public final static int PHASE_EQUAL_CAPTURES = 3;
+    //public final static int PHASE_GEN_NON_CAPTURES = 2;
+    public final static int PHASE_NON_CAPTURES = 2;
+    public final static int PHASE_BAD_CAPTURES = 3;
+    public final static int PHASE_END = 4;
+
     protected int initialPly;
 
-    protected int score;
+    protected int rootScore;
     protected int alpha;
     protected int beta;
 
@@ -29,26 +40,20 @@ public abstract class PVS extends AbstractSearch {
     protected int[][] triangularArray;
     protected int[] triangularLength;
     protected final int MAX_DEPTH = 16;
-    protected int nodes;
+
 
     protected SearchObserver observer;
-    protected int[][] whiteHeuristics;
+    protected int[][] whiteHeuristics; //history heuristics for white and black pieces indexed by from and to of a move.
     protected int[][] blackHeuristics;
     protected int[] lastPV;
     protected boolean follow_pv;
     protected boolean null_allowed;
     protected static final boolean VERBOSE = true;
-
-    private long bestMoveTime;
-    private int globalBestMove;
-
-    protected TranspositionTable transpositionTable;
+    //protected TranspositionTable transpositionTable;
 
 
-    protected PVS(Chessboard b, String type) {
+    protected PVS(Chessboard b) {
         super(b);
-        this.type = type;
-        transpositionTable = new TranspositionTable(64);
     }
 
     protected final boolean nullAllowed() {
@@ -63,13 +68,12 @@ public abstract class PVS extends AbstractSearch {
             System.out.println("finish before started..");
             finishRun();
         }
-        System.out.println(type + "\n" + "last move: " + board.getLastMove());
         for (currentDepth = 1; currentDepth <= MAX_DEPTH; currentDepth++) {
             triangularArray = new int[MAX_GAME_LENGTH][MAX_GAME_LENGTH];
             triangularLength = new int[MAX_GAME_LENGTH];
             follow_pv = true;
             null_allowed = true;
-            score = PVS(NODE_ROOT, 0, currentDepth, alpha, beta);
+            rootScore = PVS(NODE_ROOT, 0, currentDepth, alpha, beta);
 
             if (stopSearch) {
                 if (VERBOSE) System.out.println("Search stopped at depth:" + currentDepth);
@@ -80,10 +84,10 @@ public abstract class PVS extends AbstractSearch {
             if (VERBOSE)
                 System.out.println("(" + currentDepth + ") "
                         + ((System.currentTimeMillis() - startTime) / 1000.0) + "s ("
-                        + Move.moveToString(lastPV[0]) + ") -- " + nodes
+                        + Move.moveToString(lastPV[0], board) + ") -- " + nodes
                         + " nodes evaluated.");
             // stop searching if the current depth leads to a forced mate:
-            if ((score > (Chessboard.CHECKMATE - currentDepth)) || (score < -(Chessboard.CHECKMATE - currentDepth))) {
+            if ((rootScore > (Chessboard.CHECKMATE - currentDepth)) || (rootScore < -(Chessboard.CHECKMATE - currentDepth))) {
                 if (VERBOSE) System.out.println("cut search");
                 currentDepth = MAX_DEPTH;
             }
@@ -108,7 +112,7 @@ public abstract class PVS extends AbstractSearch {
         if (VERBOSE) {
             System.out.println("(" + currentDepth + ") "
                     + ((System.currentTimeMillis() - startTime) / 1000.0) + "s ("
-                    + Move.moveToString(lastPV[0]) + ") -- " + nodes
+                    + Move.moveToString(lastPV[0], board) + ") -- " + nodes
                     + " nodes evaluated.");
             System.out.println(nodes + " positions evaluated. Move returned->" + lastPV[0]);
         }
@@ -174,7 +178,7 @@ public abstract class PVS extends AbstractSearch {
             lastPV[i] = triangularArray[0][i];
         }
         if (globalBestMove != lastPV[0]) {
-            bestMoveTime = System.currentTimeMillis() - startTime;
+            globalBestMoveTime = System.currentTimeMillis() - startTime;
             moveFound = true;
             globalBestMove = lastPV[0];
         }
@@ -185,8 +189,6 @@ public abstract class PVS extends AbstractSearch {
     protected void setupRun() {
         startTime = System.currentTimeMillis();
         engineIsWhite = board.isWhiteToMove();
-        if (engineIsWhite) System.out.println("engine is white");
-        else System.out.println("engine is black");
         initialPly = board.getMoveNumber();
         moveFound = false;
         setSearchParameters();
@@ -231,14 +233,6 @@ public abstract class PVS extends AbstractSearch {
         return Evaluator.CHECKMATE - distanceToInitialPly;
     }
 
-    protected void notifyMoveFound(int bestMove, int bestScore, int alpha, int beta) {
-
-        AbstractSearchInfo info = new AbstractSearchInfo();
-        if (observer != null) {
-            observer.info(info);
-        }
-
-    }
 
     protected void clear() {
 
@@ -258,7 +252,9 @@ public abstract class PVS extends AbstractSearch {
         } catch (SearchRunException ignored) {
         }
     }
+    abstract protected void notifyMoveFound(int bestMove, int bestScore);
 
+    abstract  protected void setPV(int firstMove);
 
     @Override
     public void setObserver(SearchObserver observer) {
@@ -267,8 +263,8 @@ public abstract class PVS extends AbstractSearch {
 
 
     @Override
-    public final long getBestMoveTime() {
-        return bestMoveTime;
+    public final long getGlobalBestMoveTime() {
+        return globalBestMoveTime;
     }
 
 

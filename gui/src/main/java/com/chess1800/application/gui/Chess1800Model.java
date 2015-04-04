@@ -24,7 +24,7 @@ public class Chess1800Model {
 
     }
     public int getMoveFromIndices(int from, int to){
-        String move= b.index2Algebraic(from ^ 7)+b.index2Algebraic(to ^ 7);
+        String move= b.index2Algebraic(from)+b.index2Algebraic(to);
         System.out.println("String User Move: " + move);
         return b.getMoveFromString(move, false);
     }

@@ -4,33 +4,31 @@ package com.yonathan.chess.core.board;
  * Created by Yonathan on 07/12/2014.
  * Based on Alberto Ruibal's Carballo. Source @ https://githucom/albertoruibal/carballo/
  */
-public abstract class AbstractBitboardMagicAttacks {
-
-    protected static long[] rook;
-    protected static long[] rookMask;
-    protected static long[][] rookMagic;
-    protected static long[] bishop;
-    protected static long[] bishopMask;
-    protected static long[][] bishopMagic;
-    protected static long[] knight;
-    protected static long[] king;
-    protected static long[] blackPawn;
-    protected static long[] whitePawn;
-
+public abstract class AbstractBitboardMagicAttacks{
+    //For magic attacks / pre-generated lookup tables for move making
+    public static long[] rook;
+    public static long[] rookMask;
+    public static long[][] rookMagic;
+    public static long[] bishop;
+    public static long[] bishopMask;
+    public static long[][] bishopMagic;
+    public static long[] knight;
+    public static long[] king;
+    public static long[] blackPawn;
+    public static long[] whitePawn; //
+    //pieces
     protected long whitePawns;
     protected long whiteKnights;
     protected long whiteBishops;
     protected long whiteRooks;
     protected long whiteQueens;
     protected long whiteKing;
-
     protected long blackPawns;
     protected long blackKnights;
     protected long blackBishops;
     protected long blackRooks;
     protected long blackQueens;
     protected long blackKing;
-
     protected long whitePieces;//Aggregation bitboards
     protected long blackPieces;
     protected long allPieces;
@@ -49,89 +47,105 @@ public abstract class AbstractBitboardMagicAttacks {
     protected static final long b2_u = 0xffff000000000000L; // up
     protected static final long b2_r = 0x0303030303030303L; // right
     protected static final long b2_l = 0xC0C0C0C0C0C0C0C0L; // left
-
-    protected final String[] squareNames =
-            {"a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1",
-                    "a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2",
-                    "a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3",
-                    "a4", "b4", "c4", "d4", "e4", "f4", "g4", "h4",
-                    "a5", "b5", "c5", "d5", "e5", "f5", "g5", "h5",
-                    "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6",
-                    "a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7",
-                    "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8"};
-
-
-    // 0 is a, 7 is h
-    public static final long[] COLUMN = {b_l, b_r << 6, b_r << 5, b_r << 4, b_r << 3, b_r << 2, b_r << 1, b_r};
-
-    // 0 is 1, 7 is 8
-    public static final long[] RANK = {b_d, b_d << 8, b_d << 16, b_d << 24, b_d << 32, b_d << 40, b_d << 48, b_d << 56};
-
+    protected static final String[] squareNames =changeEndianArray64(new String []
+            {"a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8", //
+                    "a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7", //
+                    "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6", //
+                    "a5", "b5", "c5", "d5", "e5", "f5", "g5", "h5", //
+                    "a4", "b4", "c4", "d4", "e4", "f4", "g4", "h4", //
+                    "a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3", //
+                    "a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2", //
+                    "a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1"});
 
     // Magic numbers provided by Russell Newman & Chris Moreton @ http://www.rivalchess.com/magic-bitboards/
     private final long magicNumberRook[] = {
-            0xa180022080400230L, 0x40100040022000L, 0x80088020001002L, 0x80080280841000L, 0x4200042010460008L, 0x4800a0003040080L, 0x400110082041008L, 0x8000a041000880L, 0x10138001a080c010L, 0x804008200480L, 0x10011012000c0L, 0x22004128102200L, 0x200081201200cL, 0x202a001048460004L, 0x81000100420004L, 0x4000800380004500L, 0x208002904001L, 0x90004040026008L, 0x208808010002001L, 0x2002020020704940L, 0x8048010008110005L, 0x6820808004002200L, 0xa80040008023011L, 0xb1460000811044L, 0x4204400080008ea0L, 0xb002400180200184L, 0x2020200080100380L, 0x10080080100080L, 0x2204080080800400L, 0xa40080360080L, 0x2040604002810b1L, 0x8c218600004104L, 0x8180004000402000L, 0x488c402000401001L, 0x4018a00080801004L, 0x1230002105001008L, 0x8904800800800400L, 0x42000c42003810L, 0x8408110400b012L, 0x18086182000401L, 0x2240088020c28000L, 0x1001201040c004L, 0xa02008010420020L, 0x10003009010060L, 0x4008008008014L, 0x80020004008080L, 0x282020001008080L, 0x50000181204a0004L, 0x102042111804200L, 0x40002010004001c0L, 0x19220045508200L, 0x20030010060a900L, 0x8018028040080L, 0x88240002008080L, 0x10301802830400L, 0x332a4081140200L, 0x8080010a601241L, 0x1008010400021L, 0x4082001007241L, 0x211009001200509L, 0x8015001002441801L, 0x801000804000603L, 0xc0900220024a401L, 0x1000200608243L
+            0x1080108000400020L, 0x40200010004000L, 0x100082000441100L, 0x480041000080080L, 0x100080005000210L,
+            0x100020801000400L, 0x280010000800200L, 0x100008020420100L, 0x400800080400020L, 0x401000402000L, 0x100801000200080L, 0x801000800800L,
+            0x800400080080L, 0x800200800400L, 0x1000200040100L, 0x4840800041000080L, 0x20008080004000L, 0x404010002000L, 0x808010002000L, 0x828010000800L,
+            0x808004000800L, 0x14008002000480L, 0x40002100801L, 0x20001004084L, 0x802080004000L, 0x200080400080L, 0x810001080200080L, 0x10008080080010L,
+            0x4000080080040080L, 0x40080020080L, 0x1000100040200L, 0x80008200004124L, 0x804000800020L, 0x804000802000L, 0x801000802000L, 0x2000801000800804L,
+            0x80080800400L, 0x80040080800200L, 0x800100800200L, 0x8042000104L, 0x208040008008L, 0x10500020004000L, 0x100020008080L, 0x2000100008008080L,
+            0x200040008008080L, 0x8020004008080L, 0x1000200010004L, 0x100040080420001L, 0x80004000200040L, 0x200040100140L, 0x20004800100040L, 0x100080080280L,
+            0x8100800400080080L, 0x8004020080040080L, 0x9001000402000100L, 0x40080410200L, 0x208040110202L, 0x800810022004012L, 0x1000820004011L,
+            0x1002004100009L, 0x41001002480005L, 0x81000208040001L, 0x4000008201100804L, 0x2841008402L
     };
-
     // Magic numbers provided by Russell Newman & Chris Moreton @ http://www.rivalchess.com/magic-bitboards/
     private final long magicNumberBishop[] = {
-            0x2910054208004104L, 0x2100630a7020180L, 0x5822022042000000L, 0x2ca804a100200020L, 0x204042200000900L, 0x2002121024000002L, 0x80404104202000e8L, 0x812a020205010840L, 0x8005181184080048L, 0x1001c20208010101L, 0x1001080204002100L, 0x1810080489021800L, 0x62040420010a00L, 0x5028043004300020L, 0xc0080a4402605002L, 0x8a00a0104220200L, 0x940000410821212L, 0x1808024a280210L, 0x40c0422080a0598L, 0x4228020082004050L, 0x200800400e00100L, 0x20b001230021040L, 0x90a0201900c00L, 0x4940120a0a0108L, 0x20208050a42180L, 0x1004804b280200L, 0x2048020024040010L, 0x102c04004010200L, 0x20408204c002010L, 0x2411100020080c1L, 0x102a008084042100L, 0x941030000a09846L, 0x244100800400200L, 0x4000901010080696L, 0x280404180020L, 0x800042008240100L, 0x220008400088020L, 0x4020182000904c9L, 0x23010400020600L, 0x41040020110302L, 0x412101004020818L, 0x8022080a09404208L, 0x1401210240484800L, 0x22244208010080L, 0x1105040104000210L, 0x2040088800c40081L, 0x8184810252000400L, 0x4004610041002200L, 0x40201a444400810L, 0x4611010802020008L, 0x80000b0401040402L, 0x20004821880a00L, 0x8200002022440100L, 0x9431801010068L, 0x1040c20806108040L, 0x804901403022a40L, 0x2400202602104000L, 0x208520209440204L, 0x40c000022013020L, 0x2000104000420600L, 0x400000260142410L, 0x800633408100500L, 0x2404080a1410L, 0x138200122002900L
+            0x1020041000484080L, 0x20204010a0000L, 0x8020420240000L, 0x404040085006400L, 0x804242000000108L,
+            0x8901008800000L, 0x1010110400080L, 0x402401084004L, 0x1000200810208082L, 0x20802208200L, 0x4200100102082000L, 0x1024081040020L, 0x20210000000L,
+            0x8210400100L, 0x10110022000L, 0x80090088010820L, 0x8001002480800L, 0x8102082008200L, 0x41001000408100L, 0x88000082004000L, 0x204000200940000L,
+            0x410201100100L, 0x2000101012000L, 0x40201008200c200L, 0x10100004204200L, 0x2080020010440L, 0x480004002400L, 0x2008008008202L, 0x1010080104000L,
+            0x1020001004106L, 0x1040200520800L, 0x8410000840101L, 0x1201000200400L, 0x2029000021000L, 0x4002400080840L, 0x5000020080080080L, 0x1080200002200L,
+            0x4008202028800L, 0x2080210010080L, 0x800809200008200L, 0x1082004001000L, 0x1080202411080L, 0x840048010101L, 0x40004010400200L, 0x500811020800400L,
+            0x20200040800040L, 0x1008012800830a00L, 0x1041102001040L, 0x11010120200000L, 0x2020222020c00L, 0x400002402080800L, 0x20880000L, 0x1122020400L,
+            0x11100248084000L, 0x210111000908000L, 0x2048102020080L, 0x1000108208024000L, 0x1004100882000L, 0x41044100L, 0x840400L, 0x4208204L,
+            0x80000200282020cL, 0x8a001240100L, 0x2040104040080L
     };
-
-    private final int magicNumberShiftsRook[] = {
-            12, 11, 11, 11, 11, 11, 11, 12, 11, 10, 10, 10, 10, 10, 10, 11,
-            11, 10, 10, 10, 10, 10, 10, 11, 11, 10, 10, 10, 10, 10, 10, 11,
-            11, 10, 10, 10, 10, 10, 10, 11, 11, 10, 10, 10, 10, 10, 10, 11,
-            11, 10, 10, 10, 10, 10, 10, 11, 12, 11, 11, 11, 11, 11, 11, 12
+    private final byte magicNumberShiftsRook[] = {
+            12, 11, 11, 11, 11, 11, 11, 12,
+            11, 10, 10, 10, 10, 10, 10, 11,
+            11, 10, 10, 10, 10, 10, 10, 11,
+            11, 10, 10, 10, 10, 10, 10, 11,
+            11, 10, 10, 10, 10, 10, 10, 11,
+            11, 10, 10, 10, 10, 10, 10, 11,
+            11, 10, 10, 10, 10, 10, 10, 11,
+            12, 11, 11, 11, 11, 11, 11, 12
     };
-
-    private final int magicNumberShiftsBishop[] = {
-            6, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 5,
-            5, 5, 8, 8, 8, 8, 5, 5, 5, 5, 8, 9, 9, 8, 5, 5,
-            5, 5, 8, 9, 9, 8, 5, 5, 5, 5, 8, 8, 8, 8, 5, 5,
-            5, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 6
+    private final byte magicNumberShiftsBishop[] = {
+            6, 5, 5, 5, 5, 5, 5, 6,
+            5, 5, 5, 5, 5, 5, 5, 5,
+            5, 5, 7, 7, 7, 7, 5, 5,
+            5, 5, 7, 9, 9, 7, 5, 5,
+            5, 5, 7, 9, 9, 7, 5, 5,
+            5, 5, 7, 7, 7, 7, 5, 5,
+            5, 5, 5, 5, 5, 5, 5, 5,
+            6, 5, 5, 5, 5, 5, 5, 6
     };
-
     // To use with square2Index
     private static final byte[] bitTable = {63, 30, 3, 32, 25, 41, 22, 33, 15, 50, 42, 13, 11, 53, 19, 34, 61, 29, 2, 51, 21, 43, 45, 10, 18, 47, 1, 54, 9, 57,
             0, 35, 62, 31, 40, 4, 49, 5, 52, 26, 60, 6, 23, 44, 46, 27, 56, 16, 7, 39, 48, 24, 59, 14, 12, 55, 38, 28, 58, 20, 37, 17, 36, 8};
-
-
+    public static String[] changeEndianArray64(String sArray[]) {
+        String out[] = new String[64];
+        for (int i = 0; i < 64; i++) {
+            out[i] = sArray[63 - i];
+        }
+        return out;
+    }
+    public static final long[] getSquare;
+    static {
+        getSquare = new long[64];
+        for (int i = 0; i < getSquare.length; i++) getSquare[i] = H1 << i;
+    }
     protected final void generateAttacks() {
-        rook = new long[64];
+        rook = new long [64];
         rookMask = new long[64];
         rookMagic = new long[64][];
-        bishop = new long[64];
+        bishop = new long [64];
         bishopMask = new long[64];
         bishopMagic = new long[64][];
         knight = new long[64];
-        king = new long[64];
-        blackPawn = new long[64];
-        whitePawn = new long[64];
+        king = new long [64];
+        blackPawn = new long [64];
+        whitePawn = new long [64];
         long square = 1;
         byte i = 0;
         while (square != 0) {
-
             rook[i] = squareAttackedAuxSlider(square, +8, b_u)
                     | squareAttackedAuxSlider(square, -8, b_d)
                     | squareAttackedAuxSlider(square, -1, b_r)
                     | squareAttackedAuxSlider(square, +1, b_l);
-
             rookMask[i] = squareAttackedAuxSliderMask(square, +8, b_u)
                     | squareAttackedAuxSliderMask(square, -8, b_d)
                     | squareAttackedAuxSliderMask(square, -1, b_r)
                     | squareAttackedAuxSliderMask(square, +1, b_l);
-
             bishop[i] = squareAttackedAuxSlider(square, +9, b_u | b_l)
                     | squareAttackedAuxSlider(square, +7, b_u | b_r)
                     | squareAttackedAuxSlider(square, -7, b_d | b_l)
                     | squareAttackedAuxSlider(square, -9, b_d | b_r);
-
             bishopMask[i] = squareAttackedAuxSliderMask(square, +9, b_u | b_l)
                     | squareAttackedAuxSliderMask(square, +7, b_u | b_r)
                     | squareAttackedAuxSliderMask(square, -7, b_d | b_l)
                     | squareAttackedAuxSliderMask(square, -9, b_d | b_r);
-
             knight[i] = squareAttackedAux(square, +17, b2_u | b_l)
                     | squareAttackedAux(square, +15, b2_u | b_r)
                     | squareAttackedAux(square, -15, b2_d | b_l)
@@ -140,12 +154,10 @@ public abstract class AbstractBitboardMagicAttacks {
                     | squareAttackedAux(square, +6, b_u | b2_r)
                     | squareAttackedAux(square, -6, b_d | b2_l)
                     | squareAttackedAux(square, -10, b_d | b2_r);
-
             whitePawn[i] = squareAttackedAux(square, 7, b_u | b_r)
                     | squareAttackedAux(square, 9, b_u | b_l);
             blackPawn[i] = squareAttackedAux(square, -7, b_d | b_l)
                     | squareAttackedAux(square, -9, b_d | b_r);
-
             king[i] = squareAttackedAux(square, +8, b_u)
                     | squareAttackedAux(square, -8, b_d)
                     | squareAttackedAux(square, -1, b_r)
@@ -154,8 +166,7 @@ public abstract class AbstractBitboardMagicAttacks {
                     | squareAttackedAux(square, +7, b_u | b_r)
                     | squareAttackedAux(square, -7, b_d | b_l)
                     | squareAttackedAux(square, -9, b_d | b_r);
-
-            // And now generate magics
+        // And now generate magics
             int rookPositions = (1 << magicNumberShiftsRook[i]);
             rookMagic[i] = new long[rookPositions];
             for (int j = 0; j < rookPositions; j++) {
@@ -163,7 +174,6 @@ public abstract class AbstractBitboardMagicAttacks {
                 int magicIndex = magicTransform(pieces, magicNumberRook[i], magicNumberShiftsRook[i]);
                 rookMagic[i][magicIndex] = getRookShiftAttacks(square, pieces);
             }
-
             int bishopPositions = (1 << magicNumberShiftsBishop[i]);
             bishopMagic[i] = new long[bishopPositions];
             for (int j = 0; j < bishopPositions; j++) {
@@ -174,9 +184,7 @@ public abstract class AbstractBitboardMagicAttacks {
             square <<= 1;
             i++;
         }
-
     }
-
     //Fills a board according to the mask. Used for magics.
     private long generatePieces(int index, int bits, long mask) {
         int i;
@@ -190,7 +198,6 @@ public abstract class AbstractBitboardMagicAttacks {
         }
         return result;
     }
-
     //For non-slider pieces
     private long squareAttackedAux(long square, int shift, long border) {
         if ((square & border) == 0) {
@@ -202,7 +209,6 @@ public abstract class AbstractBitboardMagicAttacks {
         }
         return 0;
     }
-
     //For slider pieces
     private long squareAttackedAuxSliderMask(long square, int shift, long border) {
         long mask = 0;
@@ -218,19 +224,17 @@ public abstract class AbstractBitboardMagicAttacks {
         }
         return mask;
     }
-
     /**
      * Determines if a square is being attacked by a given side.
      *
      * @param square the target square.
-     * @param white  true if white is supposedly attacking the square, false
-     *               otherwise.
+     * @param white true if white is supposedly attacking the square, false
+     * otherwise.
      * @return true if the square is being attacked, false otherwise.
      */
     public boolean isSquareAttacked(long square, boolean white) {
         return isIndexAttacked(square2Index(square), white);
     }
-
     /**
      * Converts a square to its index 0=H1, 63=A8
      */
@@ -239,12 +243,13 @@ public abstract class AbstractBitboardMagicAttacks {
         int fold = (int) (b ^ (b >>> 32));
         return bitTable[(fold * 0x783a9b23) >>> 26];
     }
-
-
+    public static String square2Algebraic(long square) {
+        return squareNames[square2Index(square)];
+    }
     protected boolean isIndexAttacked(byte i, boolean white) {
         if (i < 0 || i > 63)
             return false;
-        long others = white ? blackPieces : whitePieces;
+        long others = white ? blackPieces: whitePieces;
         long all = allPieces;
         if (((white ? whitePawn[i] : blackPawn[i])
                 & (whitePawns | blackPawns) & others) != 0)
@@ -254,20 +259,19 @@ public abstract class AbstractBitboardMagicAttacks {
         if ((knight[i] & (whiteKnights | blackKnights) & others) != 0)
             return true;
         if ((getRookAttacks(i, all)
-                & ((whiteRooks | blackRooks) | (whiteQueens | blackQueens)) & others) != 0)
+                & ( (whiteRooks | blackRooks) | (whiteQueens | blackQueens) ) & others) != 0)
             return true;
         if ((getBishopAttacks(i, all)
-                & ((whiteBishops | blackBishops) | (whiteQueens | blackQueens)) & others) != 0)
+                & ( (whiteBishops | blackBishops) | (whiteQueens | blackQueens) ) & others) != 0)
             return true;
         return false;
     }
-
     /**
      * Finds all attackers that attack a square through another square.
      *
-     * @param i   the target location
+     * @param i the target location
      * @param all the bitboard representing the places through which we can
-     *            move.
+     * move.
      * @return
      */
     protected long getXrayAttacks(int i, long all) {
@@ -277,40 +281,32 @@ public abstract class AbstractBitboardMagicAttacks {
                 i, all) & ((whiteBishops | blackBishops) | (whiteQueens | blackQueens))))
                 & all;
     }
-
-
-    protected int magicTransform(long b, long magic, int bits) {
+    protected int magicTransform(long b, long magic, byte bits) {
         return (int) ((b * magic) >>> (64 - bits));
     }
-
     protected long getRookAttacks(int index, long all) {
         int i = magicTransform(all & rookMask[index], magicNumberRook[index],
                 magicNumberShiftsRook[index]);
         return rookMagic[index][i];
     }
-
     protected long getBishopAttacks(int index, long all) {
         int i = magicTransform(all & bishopMask[index], magicNumberBishop[index],
                 magicNumberShiftsBishop[index]);
         return bishopMagic[index][i];
     }
-
     protected long getQueenAttacks(int index, long all) {
         return getRookAttacks(index, all) | getBishopAttacks(index, all);
     }
-
     protected long getRookShiftAttacks(long square, long all) {
         return checkSquareAttackedAux(square, all, +8, b_u) | checkSquareAttackedAux(square, all, -8, b_d)
                 | checkSquareAttackedAux(square, all, -1, b_r) | checkSquareAttackedAux(square, all, +1, b_l);
     }
-
     protected long getBishopShiftAttacks(long square, long all) {
         return checkSquareAttackedAux(square, all, +9, b_u | b_l)
                 | checkSquareAttackedAux(square, all, +7, b_u | b_r)
                 | checkSquareAttackedAux(square, all, -7, b_d | b_l)
                 | checkSquareAttackedAux(square, all, -9, b_d | b_r);
     }
-
     /**
      * Attacks for sliding pieces
      */
@@ -322,13 +318,12 @@ public abstract class AbstractBitboardMagicAttacks {
             else
                 square >>>= -shift;
             ret |= square;
-            // If we collide with other piece
+// If we collide with other piece
             if ((square & all) != 0)
                 break;
         }
         return ret;
     }
-
     private long squareAttackedAuxSlider(long square, int shift, long border) {
         long ret = 0;
         while ((square & border) == 0) {
@@ -340,18 +335,20 @@ public abstract class AbstractBitboardMagicAttacks {
         }
         return ret;
     }
-
     //Finds & returns locations of attackers of a square.
     protected long getIndexAttacks(int index) {
         if (index < 0 || index > 63) return 0;
-
         long all = allPieces;
-
-        return ((blackPieces & whitePawn[index] | whitePieces | blackPawn[index]) & (whitePawns | blackPawns))
+        return ((blackPieces & whitePawn[index] | whitePieces & blackPawn[index]) & (whitePawns | blackPawns))
                 | (knight[index] & (whiteKnights | blackKnights))
                 | (king[index] & (whiteKing | blackKing))
-                | (getRookAttacks(index, all) & ((whiteRooks | blackRooks) | (whiteQueens | blackQueens)))
-                | (getBishopAttacks(index, all) & ((whiteBishops | blackBishops) | (whiteQueens | blackQueens)));
+                | (getRookAttacks(index, all) & ((whiteRooks & blackRooks) | (whiteQueens | blackQueens)))
+                | (getBishopAttacks(index, all) & ((whiteBishops & blackBishops) | (whiteQueens | blackQueens)));
     }
-
+    protected final int getColumnOfIndex(int index) {
+        return 7 - index & 7;
+    }
+    protected final int getRankOfIndex(int index) {
+        return index >> 3;
+    }
 }

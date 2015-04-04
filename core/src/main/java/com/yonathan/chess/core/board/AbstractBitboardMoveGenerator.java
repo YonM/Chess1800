@@ -224,7 +224,7 @@ public abstract class AbstractBitboardMoveGenerator extends AbstractBitboardMagi
     }
 
 
-    public int getEPSquare() {
+    public long getEPSquare() {
         return ePSquare;
     }
 

@@ -66,6 +66,7 @@ public class TranspositionTable {
         else if (score >= upperBound) flag = HASH_BETA;
         else flag = HASH_EXACT;
         int index =(int) zobrist>>> (64-sizeBits);
+        if(keys[index]!=zobrist) entriesOccupied++;
         keys[index] = zobrist;
         info = (move & Move.MOVE_MASK) | ((flag & HASH_MASK) << Move.MOVE_SHIFT) | (depth << (HASH_SHIFT + Move.MOVE_SHIFT)) |(long) (score<< (HASH_SHIFT + Move.MOVE_SHIFT + DEPTH_SHIFT));
         infos[index] = info;
@@ -126,5 +127,9 @@ public class TranspositionTable {
     public int getDepth() {
         return (int) (info >>>(HASH_SHIFT + Move.MOVE_SHIFT) & DEPTH_MASK );
     } // END getDepth
+
+    public int getHashFull() {
+        return (int) (1000L * entriesOccupied / size);
+    }
 
 }

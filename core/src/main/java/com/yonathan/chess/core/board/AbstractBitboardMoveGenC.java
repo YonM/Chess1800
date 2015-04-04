@@ -20,7 +20,7 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
     protected boolean whiteToMove;
     protected int castleWhite;
     protected int castleBlack;
-    protected int ePSquare;
+    protected long ePSquare;
     public static final int CANCASTLEOO = 1;
     public static final int CANCASTLEOOO = 2;
 
@@ -45,7 +45,7 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
     public int getAllMoves(int[] moves) {
         this.moves = moves;
         moveIndex = 0;
-        all = getAllPieces();
+        all = allPieces;
         mines = getMyPieces();
         others = getOpponentPieces();
 
@@ -138,19 +138,20 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
         return false;
     }
 
+    @Override
     public boolean isWhiteToMove() {
         return whiteToMove;
     }
 
-    public long getAllPieces() {
+    protected final long getAllPieces() {
         return (whitePieces | blackPieces);
     }
 
-    public long getMyPieces() {
+    protected final long getMyPieces() {
         return whiteToMove ? whitePieces : blackPieces;
     }
 
-    public long getOpponentPieces() {
+    protected final long getOpponentPieces() {
         return whiteToMove ? blackPieces : whitePieces;
     }
 
@@ -163,7 +164,7 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
         return castleWhite;
     }
 
-    public int getEPSquare() {
+    public long getEPSquare() {
         return ePSquare;
     }
 
@@ -198,7 +199,6 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
         return ' ';
     }
 
-    public abstract int sEE(int move);
 
 
     // Pseudo-Legal capture generator.

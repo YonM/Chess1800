@@ -12,34 +12,33 @@ public interface Chessboard extends Evaluator {
     public static final int BLACK_WIN = -100;
 
 
+
     //Move related
     public int getMoveFromString(String move, boolean legalityCheck);
-
     public boolean isMoveLegal(int move);
-
     public String index2Algebraic(int index);
 
+
     public int getLastMove();
-    public int sEE(int move);
 
 
     //Position related
     public boolean initializeFromFEN(String fen);
-
     public void initialize();
-
     public String getFEN();
-
     public long getKey();
+
+
+
 
 
     //Game state related
     public int isEndOfGame();
 
+
+
     public int getFiftyMove();
-
     public int getMoveNumber();
-
     public int movingSideMaterial();
 
 

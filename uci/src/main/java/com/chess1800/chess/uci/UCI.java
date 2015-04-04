@@ -3,7 +3,7 @@ package com.chess1800.chess.uci;
 import com.yonathan.chess.core.board.Bitboard;
 import com.yonathan.chess.core.move.Move;
 import com.yonathan.chess.core.search.AbstractSearchInfo;
-import com.yonathan.chess.core.search.PVSSoft;
+import com.yonathan.chess.core.search.AI1;
 import com.yonathan.chess.core.search.Search;
 import com.yonathan.chess.core.search.SearchObserver;
 
@@ -23,7 +23,7 @@ public class UCI implements SearchObserver {
 
 
     public UCI (){
-        search = new PVSSoft(new Bitboard());
+        search = new AI1(new Bitboard());
         search.setObserver(this);
     }
 

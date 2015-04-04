@@ -11,12 +11,11 @@ package com.yonathan.chess.core.board;
  * -Piece Square Tables including bonus for Rooking being on open file or behind a passed pawn.
  * -King protection by own pawns in the opening and mid-game and away from enemy pieces.
  * -King positional bonus/penalty different in end game, must be central and near his own pawns.
- * <p/>
+ *
  * Scores calculated from white perspective and then returns the score from the perspective
  * of the side to move.
  */
-public abstract class AbstractBitboardEvaluator extends AbstractBitboardMoveGenerator implements Evaluator {
-
+public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator implements Evaluator {
     //Bonus/Penalty constants
     private final int PENALTY_DOUBLED_PAWN = 10;
     private final int PENALTY_ISOLATED_PAWN = 20;
@@ -28,8 +27,6 @@ public abstract class AbstractBitboardEvaluator extends AbstractBitboardMoveGene
     private final int BONUS_TWO_ROOKS_ON_OPEN_FILE = 20;
     private final int BONUS_PAWN_SHIELD_STRONG = 9;
     private final int BONUS_PAWN_SHIELD_WEAK = 4;
-
-
     //King Distance Safety
     private final int[] PAWN_OWN_DISTANCE = {0, 8, 4, 2, 0, 0, 0, 0};
     private final int[] PAWN_OPPONENT_DISTANCE = {0, 2, 1, 0, 0, 0, 0, 0};
@@ -38,27 +35,14 @@ public abstract class AbstractBitboardEvaluator extends AbstractBitboardMoveGene
     private final int[] ROOK_DISTANCE = {0, 7, 5, 4, 3, 0, 0, 0};
     private final int[] QUEEN_DISTANCE = {0, 10, 8, 5, 4, 0, 0, 0};
     private final int[][] DISTANCE;
-
-    public final int[] MIRROR = {
-            56, 57, 58, 59, 60, 61, 62, 63,
-            48, 49, 50, 51, 52, 53, 54, 55,
-            40, 41, 42, 43, 44, 45, 46, 47,
-            32, 33, 34, 35, 36, 37, 38, 39,
-            24, 25, 26, 27, 28, 29, 30, 31,
-            16, 17, 18, 19, 20, 21, 22, 23,
-            8, 9, 10, 11, 12, 13, 14, 15,
-            0, 1, 2, 3, 4, 5, 6, 7
-    };
-
     //PIECE SQUARE TABLES provided by Stef Luijten
-    private final int[] PAWN_POS_W;
-    private final int[] KNIGHT_POS_W;
-    private final int[] BISHOP_POS_W;
-    private final int[] ROOK_POS_W;
-    private final int[] QUEEN_POS_W;
-    private final int[] KING_POS_W;
-    private final int[] KING_POS_ENDGAME_W;
-
+// private final int[] PAWN_POS_W;
+// private final int[] KNIGHT_POS_W;
+// private final int[] BISHOP_POS_W;
+// private final int[] ROOK_POS_W;
+// private final int[] QUEEN_POS_W;
+// private final int[] KING_POS_W;
+// private final int[] KING_POS_ENDGAME_W;
     private final int[] PAWN_POS_B = {
             0, 0, 0, 0, 0, 0, 0, 0,
             5, 10, 15, 20, 20, 15, 10, 5,
@@ -69,7 +53,6 @@ public abstract class AbstractBitboardEvaluator extends AbstractBitboardMoveGene
             0, 0, 0, -40, -40, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0
     };
-
     private final int[] KNIGHT_POS_B = {
             -10, -10, -10, -10, -10, -10, -10, -10,
             -10, 0, 0, 0, 0, 0, 0, -10,
@@ -80,7 +63,6 @@ public abstract class AbstractBitboardEvaluator extends AbstractBitboardMoveGene
             -10, 0, 0, 0, 0, 0, 0, -10,
             -10, -30, -10, -10, -10, -10, -30, -10
     };
-
     private final int[] BISHOP_POS_B = {
             -10, -10, -10, -10, -10, -10, -10, -10,
             -10, 0, 0, 0, 0, 0, 0, -10,
@@ -91,7 +73,6 @@ public abstract class AbstractBitboardEvaluator extends AbstractBitboardMoveGene
             -10, 0, 0, 0, 0, 0, 0, -10,
             -10, -10, -20, -10, -10, -20, -10, -10
     };
-
     private final int[] ROOK_POS_B = {
             0, 0, 0, 0, 0, 0, 0, 0,
             15, 15, 15, 15, 15, 15, 15, 15,
@@ -102,7 +83,6 @@ public abstract class AbstractBitboardEvaluator extends AbstractBitboardMoveGene
             0, 0, 0, 0, 0, 0, 0, 0,
             -10, 0, 0, 10, 10, 0, 0, -10
     };
-
     private final int[] QUEEN_POS_B = {
             -10, -10, -10, -10, -10, -10, -10, -10,
             -10, 0, 0, 0, 0, 0, 0, -10,
@@ -113,7 +93,17 @@ public abstract class AbstractBitboardEvaluator extends AbstractBitboardMoveGene
             -10, 0, 0, 0, 0, 0, 0, -10,
             -10, -10, -20, -10, -10, -20, -10, -10
     };
-
+    /* private final int[] KING_POS_B = {
+    -40, -40, -40, -40, -40, -40, -40, -40,
+    -40, -40, -40, -40, -40, -40, -40, -40,
+    -40, -40, -40, -40, -40, -40, -40, -40,
+    -40, -40, -40, -40, -40, -40, -40, -40,
+    -40, -40, -40, -40, -40, -40, -40, -40,
+    -40, -40, -40, -40, -40, -40, -40, -40,
+    -20, -20, -20, -20, -20, -20, -20, -20,
+    0, 20, 40, -20, 0, -20, 40, 20
+    };
+    */
     private final int[] KING_POS_B = {
             -40, -40, -40, -40, -40, -40, -40, -40,
             -40, -40, -40, -40, -40, -40, -40, -40,
@@ -122,9 +112,8 @@ public abstract class AbstractBitboardEvaluator extends AbstractBitboardMoveGene
             -40, -40, -40, -40, -40, -40, -40, -40,
             -40, -40, -40, -40, -40, -40, -40, -40,
             -20, -20, -20, -20, -20, -20, -20, -20,
-            0, 20, 40, -20, 0, -20, 40, 20
+            20, 40, -20, 0, -20, 40, 20, 0
     };
-
     private final int[] KING_POS_ENDGAME_B = {
             0, 10, 20, 30, 30, 20, 10, 0,
             10, 20, 30, 40, 40, 30, 20, 10,
@@ -135,101 +124,75 @@ public abstract class AbstractBitboardEvaluator extends AbstractBitboardMoveGene
             10, 20, 30, 40, 40, 30, 20, 10,
             0, 10, 20, 30, 30, 20, 10, 0
     };
-
     //Pawn structure tables
     private final long[] PASSED_WHITE;
     private final long[] ISOLATED_WHITE;
     private final long[] BACKWARD_WHITE;
     private final long[] STRONG_SAFE_WHITE;
     private final long[] WEAK_SAFE_WHITE;
-
     private final long[] PASSED_BLACK;
     private final long[] ISOLATED_BLACK;
     private final long[] BACKWARD_BLACK;
     private final long[] STRONG_SAFE_BLACK;
     private final long[] WEAK_SAFE_BLACK;
-
-
-    public AbstractBitboardEvaluator() {
-        //White Piece Square Tables
-        PAWN_POS_W = new int[64];
-        KNIGHT_POS_W = new int[64];
-        BISHOP_POS_W = new int[64];
-        ROOK_POS_W = new int[64];
-        QUEEN_POS_W = new int[64];
-        KING_POS_W = new int[64];
-        KING_POS_ENDGAME_W = new int[64];
-        int i;
-        for (i = 0; i < 64; i++) {
-            PAWN_POS_W[i] = PAWN_POS_B[MIRROR[i]];
-            KNIGHT_POS_W[i] = KNIGHT_POS_B[MIRROR[i]];
-            BISHOP_POS_W[i] = BISHOP_POS_B[MIRROR[i]];
-            ROOK_POS_W[i] = ROOK_POS_B[MIRROR[i]];
-            QUEEN_POS_W[i] = QUEEN_POS_B[MIRROR[i]];
-            KING_POS_W[i] = KING_POS_B[MIRROR[i]];
-            KING_POS_ENDGAME_W[i] = KING_POS_ENDGAME_B[MIRROR[i]];
-        }
+    public AbstractBitboardEvaluator(){
 
         //DISTANCE -distance is measured as max of (rank,file)-difference
         DISTANCE = new int[64][64];
         int square;
+        int i;
         for (i = 0; i < 64; i++) {
             for (square = 0; square < 64; square++) {
-                if (Math.abs(i / 8 - square / 8) >
-                        Math.abs(i % 8 - square % 8))
-                    DISTANCE[i][square] = Math.abs(i / 8 - square / 8);
+                if (Math.abs(getRankOfIndex(i) - getRankOfIndex(square)) >
+                        Math.abs(getColumnOfIndex(i) - getColumnOfIndex(square)))
+                    DISTANCE[i][square] = Math.abs(getRankOfIndex(i) - getRankOfIndex(square));
                 else
-                    DISTANCE[i][square] = Math.abs(i % 8 - square % 8);
+                    DISTANCE[i][square] = Math.abs(getColumnOfIndex(i) - getColumnOfIndex(square));
             }
         }
-
         //Pawn structures
         PASSED_WHITE = new long[64];
         ISOLATED_WHITE = new long[64];
         BACKWARD_WHITE = new long[64];
         STRONG_SAFE_WHITE = new long[64];
         WEAK_SAFE_WHITE = new long[64];
-
         int rank, file;
         for (i = 0; i < 64; i++) {
-            //Passed white pawns
-            for (rank = i / 8 + 1; rank < 7; rank++) {
-                file = i % 8;
+        //Passed white pawns
+            for (rank = getRankOfIndex(i) + 1; rank < 7; rank++) {
+                file = getColumnOfIndex(i);
                 if (file > 0)
-                    PASSED_WHITE[i] ^= getSquare[rank * 8 + (file - 1)];
-                PASSED_WHITE[i] ^= getSquare[rank * 8 + file];
+                    PASSED_WHITE[i] ^= getSquare[(rank * 8 + (file - 1))^7];
+                PASSED_WHITE[i] ^= getSquare[(rank * 8 + file)^7];
                 if (file < 7)
-                    PASSED_WHITE[i] ^= getSquare[rank * 8 + (file + 1)];
+                    PASSED_WHITE[i] ^= getSquare[(rank * 8 + (file + 1))^7];
             }
-            //Isolated white pawns
+        //Isolated white pawns
             for (rank = 1; rank < 7; rank++) {
-                file = i % 8;
-                if (file > 0) ISOLATED_WHITE[i] ^= getSquare[rank * 8 + (file - 1)];
-                if (file < 7) ISOLATED_WHITE[i] ^= getSquare[rank * 8 + (file + 1)];
+                file = getColumnOfIndex(i);
+                if (file > 0) ISOLATED_WHITE[i] ^= getSquare[(rank * 8 + (file - 1))^7];
+                if (file < 7) ISOLATED_WHITE[i] ^= getSquare[(rank * 8 + (file + 1))^7];
             }
-
-            //Backward white pawns
+        //Backward white pawns
             for (rank = 1; rank < 7; rank++) {
-                file = i % 8;
-                if (file > 0) BACKWARD_WHITE[i] ^= getSquare[rank * 8 + (file - 1)];
-                if (file > 7) BACKWARD_WHITE[i] ^= getSquare[rank * 8 + (file + 1)];
+                file = getColumnOfIndex(i);
+                if (file > 0) BACKWARD_WHITE[i] ^= getSquare[(rank * 8 + (file - 1))^7];
+                if (file < 7) BACKWARD_WHITE[i] ^= getSquare[(rank * 8 + (file + 1))^7];
             }
-
         }
-
         //Strong/Weak squares for white pawns, used for king safety. Only if the king is on the first 3 ranks.
         for (i = 0; i < 24; i++) {
             STRONG_SAFE_WHITE[i] ^= getSquare[i + 8];
-            file = i % 8;
+            file = getColumnOfIndex(i);
             if (file > 0) {
-                STRONG_SAFE_WHITE[i] ^= getSquare[i + 7];
-            } else {
-                STRONG_SAFE_WHITE[i] ^= getSquare[i + 10];
-            }
-            if (file < 7) {
                 STRONG_SAFE_WHITE[i] ^= getSquare[i + 9];
             } else {
                 STRONG_SAFE_WHITE[i] ^= getSquare[i + 6];
+            }
+            if (file < 7) {
+                STRONG_SAFE_WHITE[i] ^= getSquare[i + 7];
+            } else {
+                STRONG_SAFE_WHITE[i] ^= getSquare[i + 10];
             }
             WEAK_SAFE_WHITE[i] = STRONG_SAFE_WHITE[i] << 8;
         }
@@ -242,72 +205,55 @@ public abstract class AbstractBitboardEvaluator extends AbstractBitboardMoveGene
         for (i = 0; i < 64; i++) {
             for (square = 0; square < 64; square++) {
                 if ((PASSED_WHITE[i] & getSquare[square]) != 0)
-                    PASSED_BLACK[MIRROR[i]] |= getSquare[MIRROR[square]];
-
+                    PASSED_BLACK[63-i] |= getSquare[63-square];
                 if ((ISOLATED_WHITE[i] & getSquare[square]) != 0)
-                    ISOLATED_BLACK[MIRROR[i]] |= getSquare[MIRROR[square]];
-
+                    ISOLATED_BLACK[63-i] |= getSquare[63-square];
                 if ((BACKWARD_WHITE[i] & getSquare[square]) != 0)
-                    BACKWARD_BLACK[MIRROR[i]] |= getSquare[MIRROR[square]];
-
+                    BACKWARD_BLACK[63-i] |= getSquare[63-square];
                 if ((STRONG_SAFE_WHITE[i] & getSquare[square]) != 0)
-                    STRONG_SAFE_BLACK[MIRROR[i]] |= getSquare[MIRROR[square]];
-
+                    STRONG_SAFE_BLACK[63-i] |= getSquare[63-square];
                 if ((WEAK_SAFE_WHITE[i] & getSquare[square]) != 0)
-                    WEAK_SAFE_BLACK[MIRROR[i]] |= getSquare[MIRROR[square]];
-
+                    WEAK_SAFE_BLACK[63-i] |= getSquare[63-square];
             }
         }
-
     }
-
-    private int score, square;
+    private int score, squareIndex;
     private int whitePawnCount, whiteKnightCount, whiteBishopCount, whiteRookCount, whiteQueenCount;
     private int blackPawnCount, blackKnightCount, blackBishopCount, blackRookCount, blackQueenCount;
     private int whiteKingSquare, blackKingSquare;
     private int whiteTotal, blackTotal;
     private boolean endGame;
     private long temp, whitePassedPawns, blackPassedPawns;
-
-
     public static int getIndexFromBoard(long board) {
-        return (Long.numberOfTrailingZeros(Long.lowestOneBit(board)));
+        return (square2Index(Long.lowestOneBit(board)));
     }
-
     public static int getLastIndexFromBoard(long board) {
         return (Long.numberOfTrailingZeros(Long.highestOneBit(board)));
     }
-
     public int eval() {
-        if (isCheckMate()) return -CHECKMATE;
-        if (isDraw() != NOT_ENDED) return DRAWSCORE;
+        if(isCheckMate()) return -CHECKMATE;
+        if(isDraw()!= NOT_ENDED)return DRAWSCORE;
         score = 0;
-        whiteKingSquare = Long.numberOfTrailingZeros(whiteKing);
-        blackKingSquare = Long.numberOfTrailingZeros(blackKing);
-
+        whiteKingSquare = square2Index(whiteKing);
+        blackKingSquare = square2Index(blackKing);
         whitePawnCount = Long.bitCount(whitePawns);
         whiteKnightCount = Long.bitCount(whiteKnights);
         whiteBishopCount = Long.bitCount(whiteBishops);
         whiteRookCount = Long.bitCount(whiteRooks);
         whiteQueenCount = Long.bitCount(whiteQueens);
         whiteTotal = whitePawnCount + whiteKnightCount + whiteBishopCount + whiteRookCount + whiteQueenCount;
-
         blackPawnCount = Long.bitCount(blackPawns);
         blackKnightCount = Long.bitCount(blackKnights);
         blackBishopCount = Long.bitCount(blackBishops);
         blackRookCount = Long.bitCount(blackRooks);
         blackQueenCount = Long.bitCount(blackQueens);
         blackTotal = blackPawnCount + blackKnightCount + blackBishopCount + blackRookCount + blackQueenCount;
-
-        //Test for end game if white or black total material less than the value of a Rook+ Queen.
+//Test for end game if white or black total material less than the value of a Rook+ Queen.
         endGame = (whitePieceMaterial() < (QUEEN_VALUE + ROOK_VALUE) || blackPieceMaterial() < (QUEEN_VALUE + ROOK_VALUE));
-
-
-        /* Evaluate material. Winning side will prefer to exchange pieces.
-        *  Add 3 centipawns to score for exchange with unequal material
-        *  Losing a piece (from balanced material) becomes more severe in the endgame.
-        */
-
+/* Evaluate material. Winning side will prefer to exchange pieces.
+* Add 3 centipawns to score for exchange with unequal material
+* Losing a piece (from balanced material) becomes more severe in the endgame.
+*/
         if (whitePieceMaterial() + PAWN_VALUE * whitePawnCount > blackPieceMaterial() + PAWN_VALUE * blackPawnCount) {
             score += 45 + 3 * whiteTotal - 6 * blackTotal;
         } else if (whitePieceMaterial() + PAWN_VALUE * whitePawnCount < blackPieceMaterial() + PAWN_VALUE * blackPawnCount) {
@@ -318,19 +264,8 @@ public abstract class AbstractBitboardEvaluator extends AbstractBitboardMoveGene
         if (whiteToMove) return score;
         return -score;
     }
-
     public abstract int whitePieceMaterial();
-
     public abstract int blackPieceMaterial();
-
-    public abstract boolean isCheckMate();
-
-
-    public abstract boolean isCheck();
-
-
-    public abstract int isDraw();
-
     protected void evaluateWhiteMaterial() {
         evaluateWhitePawns();
         evaluateWhiteKnights();
@@ -339,8 +274,6 @@ public abstract class AbstractBitboardEvaluator extends AbstractBitboardMoveGene
         evaluateWhiteQueens();
         evaluateWhiteKing();
     }
-
-
     protected void evaluateBlackMaterial() {
         evaluateBlackPawns();
         evaluateBlackKnights();
@@ -349,221 +282,194 @@ public abstract class AbstractBitboardEvaluator extends AbstractBitboardMoveGene
         evaluateBlackQueens();
         evaluateBlackKing();
     }
-
     private void evaluateWhitePawns() {
         whitePassedPawns = 0;
         temp = whitePawns;
         while (temp != 0) {
-            square = getIndexFromBoard(temp);
+            squareIndex = getIndexFromBoard(temp);
             score += PAWN_VALUE;
-            score += PAWN_POS_W[square];
-            score += PAWN_OPPONENT_DISTANCE[DISTANCE[square][blackKingSquare]];
+            score += PAWN_POS_B[squareIndex^56];
+            score += PAWN_OPPONENT_DISTANCE[DISTANCE[squareIndex][blackKingSquare]];
             if (endGame)
-                score += PAWN_OWN_DISTANCE[DISTANCE[square][whiteKingSquare]];
-
-            //Passed pawn bonus
-            if ((PASSED_WHITE[square] & blackPawns) == 0) {
+                score += PAWN_OWN_DISTANCE[DISTANCE[squareIndex][whiteKingSquare]];
+//Passed pawn bonus
+            if ((PASSED_WHITE[squareIndex] & blackPawns) == 0) {
                 score += BONUS_PASSED_PAWN;
-                whitePassedPawns ^= getSquare[square];
+                whitePassedPawns ^= getSquare[squareIndex];
             }
-
-            //Doubled pawn penalty
-            if (((whitePawns ^ getSquare[square]) & COLUMN[square % 8]) != 0)
+//Doubled pawn penalty
+            if (((whitePawns ^ getSquare[squareIndex]) & COLUMN[getColumnOfIndex(squareIndex)]) != 0)
                 score -= PENALTY_DOUBLED_PAWN;
-
-            //Isolated pawn penalty
-            if ((ISOLATED_WHITE[square] & whitePawns) == 0) {
+//Isolated pawn penalty
+            if ((ISOLATED_WHITE[squareIndex] & whitePawns) == 0) {
                 score -= PENALTY_ISOLATED_PAWN;
             } else {
-                /*  Not isolated but maybe backwards if the following are both true:
-                 *  1. the next square is controlled by an enemy pawn
-                 *  2. No pawns left that can defend the pawn.
-                */
-
-                if ((whitePawn[square + 8] & blackPawns) != 0)
-                    if ((BACKWARD_WHITE[square] & whitePawns) == 0)
+/* Not isolated but maybe backwards if the following are both true:
+* 1. the next square is controlled by an enemy pawn
+* 2. No pawns left that can defend the pawn.
+*/
+                if ((whitePawn[squareIndex + 8] & blackPawns) != 0)
+                    if ((BACKWARD_WHITE[squareIndex] & whitePawns) == 0)
                         score -= PENALTY_BACKWARD_PAWN;
             }
-            temp ^= getSquare[square];
+            temp ^= getSquare[squareIndex];
         }
     }
-
     private void evaluateWhiteKnights() {
         temp = whiteKnights;
         while (temp != 0) {
-            square = getIndexFromBoard(temp);
+            squareIndex = getIndexFromBoard(temp);
             score += KNIGHT_VALUE;
-            score += KNIGHT_POS_W[square];
-            score += KNIGHT_DISTANCE[DISTANCE[square][blackKingSquare]];
-            temp ^= getSquare[square];
+            score += KNIGHT_POS_B[squareIndex^56];
+            score += KNIGHT_DISTANCE[DISTANCE[squareIndex][blackKingSquare]];
+            temp ^= getSquare[squareIndex];
         }
     }
-
     private void evaluateWhiteBishops() {
-        if (Long.bitCount(whiteBishopCount) > 1)
+        if(Long.bitCount(whiteBishopCount)>1)
             score += BONUS_BISHOP_PAIR;
         temp = whiteBishops;
         while (temp != 0) {
-            square = getIndexFromBoard(temp);
+            squareIndex = getIndexFromBoard(temp);
             score += BISHOP_VALUE;
-            score += BISHOP_POS_W[square];
-            score += BISHOP_DISTANCE[DISTANCE[square][blackKingSquare]];
-            temp ^= getSquare[square];
+            score += BISHOP_POS_B[squareIndex^56];
+            score += BISHOP_DISTANCE[DISTANCE[squareIndex][blackKingSquare]];
+            temp ^= getSquare[squareIndex];
         }
     }
-
-
     private void evaluateWhiteRooks() {
         temp = whiteRooks;
         while (temp != 0) {
-            square = getIndexFromBoard(temp);
+            squareIndex = getIndexFromBoard(temp);
             score += ROOK_VALUE;
-            score += ROOK_POS_W[square];
-            score += ROOK_DISTANCE[DISTANCE[square][blackKingSquare]];
-            if ((COLUMN[square % 8] & whitePassedPawns) != 0)
-                if (square < getLastIndexFromBoard((COLUMN[square % 8] & whitePassedPawns)))
+            score += ROOK_POS_B[squareIndex^56];
+            score += ROOK_DISTANCE[DISTANCE[squareIndex][blackKingSquare]];
+            if ((COLUMN[getColumnOfIndex(squareIndex)] & whitePassedPawns) != 0)
+                if (squareIndex < getLastIndexFromBoard((COLUMN[getColumnOfIndex(squareIndex)] & whitePassedPawns)))
                     score += BONUS_ROOK_BEHIND_PASSED_PAWN;
-
-            if ((COLUMN[square % 8] & blackPawns) == 0) {
+            if ((COLUMN[getColumnOfIndex(squareIndex)] & blackPawns) == 0) {
                 score += BONUS_ROOK_ON_OPEN_FILE;
-                if ((COLUMN[square % 8] & (whiteRooks & ~Long.lowestOneBit(temp))) != 0)
-                    score += BONUS_TWO_ROOKS_ON_OPEN_FILE;
+                if ((COLUMN[getColumnOfIndex(squareIndex)] & (whiteRooks & ~Long.lowestOneBit(temp))) != 0)
+                    score+=BONUS_TWO_ROOKS_ON_OPEN_FILE;
             }
-            temp ^= getSquare[square];
+            temp ^= getSquare[squareIndex];
         }
     }
-
-
     private void evaluateWhiteQueens() {
         temp = whiteQueens;
         while (temp != 0) {
-            square = getIndexFromBoard(temp);
+            squareIndex = getIndexFromBoard(temp);
             score += QUEEN_VALUE;
-            score += QUEEN_POS_W[square];
-            score += QUEEN_DISTANCE[DISTANCE[square][blackKingSquare]];
-            temp ^= getSquare[square];
+            score += QUEEN_POS_B[63- squareIndex];
+            score += QUEEN_DISTANCE[DISTANCE[squareIndex][blackKingSquare]];
+            temp ^= getSquare[squareIndex];
         }
     }
-
-
     private void evaluateWhiteKing() {
         if (endGame) {
-            score += KING_POS_ENDGAME_W[whiteKingSquare];
+            score += KING_POS_ENDGAME_B[whiteKingSquare^56];
         } else {
-            score += KING_POS_W[whiteKingSquare];
-            //Not end-game so add pawn shield bonus
-            //Strong pawn shield bonus if pawns are close to the king
+            score += KING_POS_B[whiteKingSquare^56];
+        //Not end-game so add pawn shield bonus
+        //Strong pawn shield bonus if pawns are close to the king
             score += BONUS_PAWN_SHIELD_STRONG * Long.bitCount((STRONG_SAFE_WHITE[whiteKingSquare] & whitePawns));
-
-            //Weak pawn shield bonus if pawns are not very close to the king
+        //Weak pawn shield bonus if pawns are not very close to the king
             score += BONUS_PAWN_SHIELD_WEAK * Long.bitCount((WEAK_SAFE_WHITE[whiteKingSquare] & whitePawns));
         }
     }
-
     private void evaluateBlackPawns() {
         blackPassedPawns = 0;
         temp = blackPawns;
         while (temp != 0) {
-            square = getIndexFromBoard(temp);
+            squareIndex = getIndexFromBoard(temp);
             score -= PAWN_VALUE;
-            score -= PAWN_POS_B[square];
-            score -= PAWN_OPPONENT_DISTANCE[DISTANCE[square][whiteKingSquare]];
+            score -= PAWN_POS_B[squareIndex];
+            score -= PAWN_OPPONENT_DISTANCE[DISTANCE[squareIndex][whiteKingSquare]];
             if (endGame)
-                score -= PAWN_OWN_DISTANCE[DISTANCE[square][blackKingSquare]];
-
-            //Passed pawn bonus
-            if ((PASSED_BLACK[square] & whitePawns) == 0) {
+                score -= PAWN_OWN_DISTANCE[DISTANCE[squareIndex][blackKingSquare]];
+//Passed pawn bonus
+            if ((PASSED_BLACK[squareIndex] & whitePawns) == 0) {
                 score -= BONUS_PASSED_PAWN;
-                blackPassedPawns ^= getSquare[square];
+                blackPassedPawns ^= getSquare[squareIndex];
             }
-
-            //Doubled pawn penalty
-            if (((blackPawns ^ getSquare[square]) & COLUMN[square % 8]) != 0)
+//Doubled pawn penalty
+            if (((blackPawns ^ getSquare[squareIndex]) & COLUMN[getColumnOfIndex(squareIndex)]) != 0)
                 score += PENALTY_DOUBLED_PAWN;
-
-            //Isolated pawn penalty
-            if ((ISOLATED_BLACK[square] & blackPawns) == 0) {
+//Isolated pawn penalty
+            if ((ISOLATED_BLACK[squareIndex] & blackPawns) == 0) {
                 score += PENALTY_ISOLATED_PAWN;
             } else {
-                /*  Not isolated but maybe backwards if the following are both true:
-                 *  1. the next square is controlled by an enemy pawn
-                 *  2. No pawns left that can defend the pawn.
-                */
-
-                if ((blackPawn[square + 8] & whitePawns) != 0)
-                    if ((BACKWARD_BLACK[square] & blackPawns) == 0)
+/* Not isolated but maybe backwards if the following are both true:
+* 1. the next square is controlled by an enemy pawn
+* 2. No pawns left that can defend the pawn.
+*/
+                if ((blackPawn[squareIndex - 8] & whitePawns) != 0)
+                    if ((BACKWARD_BLACK[squareIndex] & blackPawns) == 0)
                         score += PENALTY_BACKWARD_PAWN;
             }
-            temp ^= getSquare[square];
+            temp ^= getSquare[squareIndex];
         }
     }
-
     private void evaluateBlackKnights() {
         temp = blackKnights;
         while (temp != 0) {
-            square = getIndexFromBoard(temp);
+            squareIndex = getIndexFromBoard(temp);
             score -= KNIGHT_VALUE;
-            score -= KNIGHT_POS_B[square];
-            score -= KNIGHT_DISTANCE[DISTANCE[square][whiteKingSquare]];
-            temp ^= getSquare[square];
+            score -= KNIGHT_POS_B[squareIndex];
+            score -= KNIGHT_DISTANCE[DISTANCE[squareIndex][whiteKingSquare]];
+            temp ^= getSquare[squareIndex];
         }
     }
-
     private void evaluateBlackBishops() {
-        if (Long.bitCount(blackBishopCount) > 1)
+        if(Long.bitCount(blackBishopCount)>1)
             score -= BONUS_BISHOP_PAIR;
         temp = blackBishops;
         while (temp != 0) {
-            square = getIndexFromBoard(temp);
+            squareIndex = getIndexFromBoard(temp);
             score -= BISHOP_VALUE;
-            score -= BISHOP_POS_B[square];
-            score -= BISHOP_DISTANCE[DISTANCE[square][whiteKingSquare]];
-            temp ^= getSquare[square];
+            score -= BISHOP_POS_B[squareIndex];
+            score -= BISHOP_DISTANCE[DISTANCE[squareIndex][whiteKingSquare]];
+            temp ^= getSquare[squareIndex];
         }
     }
-
     private void evaluateBlackRooks() {
         temp = blackRooks;
         while (temp != 0) {
-            square = getIndexFromBoard(temp);
+            squareIndex = getIndexFromBoard(temp);
             score -= ROOK_VALUE;
-            score -= ROOK_POS_B[square];
-            score -= ROOK_DISTANCE[DISTANCE[square][whiteKingSquare]];
-            if ((COLUMN[square % 8] & blackPassedPawns) != 0)
-                if (square < getLastIndexFromBoard((COLUMN[square % 8] & blackPassedPawns)))
+            score -= ROOK_POS_B[squareIndex];
+            score -= ROOK_DISTANCE[DISTANCE[squareIndex][whiteKingSquare]];
+            if ((COLUMN[getColumnOfIndex(squareIndex)] & blackPassedPawns) != 0)
+                if (squareIndex < getLastIndexFromBoard((getColumn(squareIndex) & blackPassedPawns)))
                     score -= BONUS_ROOK_BEHIND_PASSED_PAWN;
-            if ((COLUMN[square % 8] & whitePawns) == 0) {
+            if ((COLUMN[getColumnOfIndex(squareIndex)] & whitePawns) == 0) {
                 score -= BONUS_ROOK_ON_OPEN_FILE;
-                if ((COLUMN[square % 8] & (blackRooks & ~Long.lowestOneBit(temp))) != 0)
+                if ((COLUMN[getColumnOfIndex(squareIndex)] & (blackRooks & ~Long.lowestOneBit(temp))) != 0)
                     score -= BONUS_TWO_ROOKS_ON_OPEN_FILE;
             }
-            temp ^= getSquare[square];
+            temp ^= getSquare[squareIndex];
         }
     }
-
     private void evaluateBlackQueens() {
         temp = blackQueens;
         while (temp != 0) {
-            square = getIndexFromBoard(temp);
+            squareIndex = getIndexFromBoard(temp);
             score -= QUEEN_VALUE;
-            score -= QUEEN_POS_B[square];
-            score -= QUEEN_DISTANCE[DISTANCE[square][whiteKingSquare]];
-            temp ^= getSquare[square];
+            score -= QUEEN_POS_B[squareIndex];
+            score -= QUEEN_DISTANCE[DISTANCE[squareIndex][whiteKingSquare]];
+            temp ^= getSquare[squareIndex];
         }
     }
-
     private void evaluateBlackKing() {
         if (endGame) {
             score -= KING_POS_ENDGAME_B[blackKingSquare];
         } else {
             score -= KING_POS_B[blackKingSquare];
-            //Not end-game so add pawn shield bonus
-            //Strong pawn shield bonus if pawns are close to the king
+//Not end-game so add pawn shield bonus
+//Strong pawn shield bonus if pawns are close to the king
             score -= BONUS_PAWN_SHIELD_STRONG * Long.bitCount((STRONG_SAFE_BLACK[blackKingSquare] & blackPawns));
-
-            //Weak pawn shield bonus if pawns are not very close to the king
-            score -= BONUS_PAWN_SHIELD_WEAK * Long.bitCount((WEAK_SAFE_WHITE[blackKingSquare] & blackPawns));
+//Weak pawn shield bonus if pawns are not very close to the king
+            score -= BONUS_PAWN_SHIELD_WEAK * Long.bitCount((WEAK_SAFE_BLACK[blackKingSquare] & blackPawns));
         }
     }
-
 }

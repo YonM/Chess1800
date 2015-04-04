@@ -104,6 +104,10 @@ public class Move {
         return Move.getMoveType(move) >= TYPE_PROMOTION_QUEEN;
     }
 
+    public static final boolean isUnderPromotion(int move) {
+        return  Move.getMoveType(move) > TYPE_PROMOTION_QUEEN;
+    }
+
     public static final String getPromotionPiece(int move){
         switch (getMoveType(move)) {
             case TYPE_PROMOTION_QUEEN:
@@ -120,7 +124,7 @@ public class Move {
     }
 
     //SAN representation
-    public static String moveToString(int move) {
+    public static String moveToString(int move, Chessboard board) {
         String moveString = "";
         if (Move.getMoveType(move) == Move.TYPE_KINGSIDE_CASTLING)
             return "0-0";
@@ -146,12 +150,12 @@ public class Move {
                 moveString = "";
                 break;
         }
-        moveString += Bitboard.intToAlgebraicLoc(Move.getFromIndex(move));
+        moveString += board.index2Algebraic(Move.getFromIndex(move));
         if (Move.isCapture(move))
             moveString += "x";
         else
             moveString += "-";
-        moveString += Bitboard.intToAlgebraicLoc(Move.getToIndex(move));
+        moveString += board.index2Algebraic(Move.getToIndex(move));
 
         switch (Move.getMoveType(move)) {
             case Move.TYPE_EN_PASSANT:

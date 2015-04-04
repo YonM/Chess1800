@@ -172,6 +172,8 @@ public class Chess1800Controller implements SearchObserver, ActionListener, Mous
             default:
                 break;
         }
+        String side = model.isWhiteToMove()? "Wwhite": "Black";
+        System.out.println(" user to move >> " +userToMove + " model to move: " + side);
         acceptInput = userToMove;
         update(!userToMove);
         System.out.println(userToMove +" << user to move");

@@ -13,8 +13,12 @@ public interface MoveGenerator {
 
     public int genCaptures(int[] captures);
 
-    public int genNonCaptures (int[] nonCaptures);
+    public int generateCaptures (int[] moves, int startIndex, int ttMove);
 
+    public int generateNonCaptures (int[] moves, int startIndex, int ttMove);
+
+
+    public int sEE(int move);
 
     public boolean makeMove(int move);
 
@@ -34,12 +38,8 @@ public interface MoveGenerator {
     public boolean isWhiteToMove();
 
     //Pieces
-    public long getMyPieces();
+    public char getPieceAt(int loc);
 
-    public long getOpponentPieces();
-
-    public long getAllPieces();
-
-    public int getEPSquare();
+    public long getEPSquare();
 
 }
