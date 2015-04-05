@@ -165,8 +165,10 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
             // 50mr
             if(arr.size() >12) {
                 fiftyMove = Integer.parseInt(arr.get(11));
+                fiftyMove = ((fiftyMove > 0 ? fiftyMove - 1 : fiftyMove) << 1) + (whiteToMove ? 0 : 1); //Convert from Moves to Ply.
                 // move number
                 moveNumber = Integer.parseInt(arr.get(12));
+                moveNumber = ((moveNumber > 0 ? moveNumber - 1 : moveNumber) << 1 + (whiteToMove ? 0 : 1));//Convert from Moves to Ply. (Left Shifted by 1 means double the value. +1 if black to move.)
             }else{
                 fiftyMove = 0;
                 moveNumber = 1;
@@ -238,7 +240,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         sb.append(" ");
         sb.append((ePSquare != 0 ? square2Algebraic(ePSquare) : "-"));
         sb.append(" ");
-        sb.append(fiftyMove);
+        sb.append((fiftyMove >> 1) + 1);
         sb.append(" ");
         sb.append((moveNumber >> 1) + 1); // 0,1->1.. 2,3->2
         return sb.toString();
@@ -1181,7 +1183,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
 
     @Override
     public boolean isMoveLegal(int move) {
-        moves= new int[MAX_MOVES];
+        int moves[]= new int[MAX_MOVES];
         int legalMovesCount=getAllLegalMoves(moves);
         for(int i=0; i<legalMovesCount; i++)
             if(move == moves[i]) return true;

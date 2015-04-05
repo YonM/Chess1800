@@ -172,8 +172,6 @@ public class Chess1800Controller implements SearchObserver, ActionListener, Mous
             default:
                 break;
         }
-        String side = model.isWhiteToMove()? "Wwhite": "Black";
-        System.out.println(" user to move >> " +userToMove + " model to move: " + side);
         acceptInput = userToMove;
         update(!userToMove);
         System.out.println(userToMove +" << user to move");
@@ -266,7 +264,7 @@ public class Chess1800Controller implements SearchObserver, ActionListener, Mous
         if(userToMove) return;
         view.unHighlight();
         view.highlight(Move.getFromIndex(bestMove), Move.getToIndex(bestMove));
-        model.userMove(bestMove);
+        model.makeEngineMove(bestMove);
         checkUserToMove();
     }
 

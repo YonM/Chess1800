@@ -10,7 +10,7 @@ import com.yonathan.chess.core.move.Move;
  */
 public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAttacks implements MoveGenerator {
 
-    protected int[] moves;
+    private int[] moves;
     private int moveIndex;
     private long all;
     private long mines;
@@ -72,7 +72,7 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
                             if (((square & b2_d) != 0) && (((square << 16) & all) == 0))
                                 addMoves(Move.PAWN, index, index + 16, false, 0);
                         }
-                        generatePawnCapturesFromAttacks(index, whitePawn[index], getEPSquare());
+                        generatePawnCapturesFromAttacks(index, whitePawn[index], ePSquare);
                     } else {
                         if (((square >>> 8) & all) == 0) {
                             addMoves(Move.PAWN, index, index - 8, false, 0);
@@ -80,7 +80,7 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
                             if (((square & b2_u) != 0) && (((square >>> 16) & all) == 0))
                                 addMoves(Move.PAWN, index, index - 16, false, 0);
                         }
-                        generatePawnCapturesFromAttacks(index, blackPawn[index], getEPSquare());
+                        generatePawnCapturesFromAttacks(index, blackPawn[index], ePSquare);
                     }
                 }
             }
@@ -169,7 +169,7 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
     }
 
 
-    protected void updateAggregateBitboards() {
+    protected final void updateAggregateBitboards() {
         whitePieces = whiteKing | whiteQueens | whiteRooks | whiteBishops | whiteKnights | whitePawns;
         blackPieces = blackKing | blackQueens | blackRooks | blackBishops | blackKnights | blackPawns;
         allPieces = whitePieces | blackPieces;

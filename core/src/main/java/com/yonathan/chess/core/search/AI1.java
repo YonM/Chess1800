@@ -16,6 +16,7 @@ public class AI1 extends PVS {
 
     //Fail Soft implementation
     protected int PVS(int nodeType, int ply, int depth, int alpha, int beta) throws SearchRunException {
+        System.out.println("my ply :" + ply);
         nodes++;
         triangularLength[ply] = ply;
         // Check if time is up
@@ -53,8 +54,8 @@ public class AI1 extends PVS {
         int pvMovesFound = 0;
         int[] moves = new int[MoveGenerator.MAX_MOVES*2];
         int num_moves = board.getAllMoves(moves);
-        int bestScore = alpha;
         boolean checkEvasion = board.isCheck();
+        System.out.println("number of moves: " + num_moves);
         //try the first legal move with an open window.
         int j;
         for (int i = 0; i < num_moves; i++) {
@@ -70,14 +71,11 @@ public class AI1 extends PVS {
                     else {
                         score = -PVS(NODE_NULL, ply + 1, depth - 1, -alpha - 1, -alpha); // PVS Search
                     }
-                    if ((score > alpha) && (score < beta)) {
+                    if ((score > alpha) && (score < beta))
                         score = -PVS(NODE_PV, ply + 1, depth - 1, -beta, -alpha); //Better move found, re-search with Open Window
-                        if (score > alpha)
-                            alpha = score;
-                    }
                 }
                 board.unmakeMove();
-                if (score > bestScore) {
+                if (score > alpha) {
                     if (score >= beta) {
                         if (board.isWhiteToMove())
                             whiteHeuristics[Move.getFromIndex(moves[i])][Move.getToIndex(moves[i])] += depth * depth;
@@ -86,11 +84,11 @@ public class AI1 extends PVS {
                         return score;
                     }
                     alpha= score;
-                    bestScore = score;
                     pvMovesFound++;
                     triangularArray[ply][ply] = moves[i]; //save the move
                     for (j = ply + 1; j < triangularLength[ply + 1]; j++)
                         triangularArray[ply][j] = triangularArray[ply + 1][j]; //appends latest best PV from deeper plies
+
                     triangularLength[ply] = triangularLength[ply + 1];
                     if (ply == 0) rememberPV();
                 }
@@ -103,7 +101,7 @@ public class AI1 extends PVS {
                 blackHeuristics[Move.getFromIndex(triangularArray[ply][ply])][Move.getToIndex(triangularArray[ply][ply])] += depth * depth;
         }
         if (board.getFiftyMove() >= 100) return Evaluator.DRAWSCORE; //Fifty-move rule
-        return bestScore; //Fail Soft
+        return alpha; //Fail Soft
     }
 
     protected int quiescenceSearch(int nodeType, int ply, int alpha, int beta) throws SearchRunException {
@@ -129,7 +127,7 @@ public class AI1 extends PVS {
         int goodCaptureCount=0;
         for(int i =0; i<captureCount; i++){
             int sEEScore= board.sEE(captures[i]);
-            if(sEEScore>=0){
+            if(sEEScore>=1){
                 goodCaptures[goodCaptureCount] = captures[i];
                 goodCapturesScores[goodCaptureCount++] = sEEScore;
             }
@@ -144,6 +142,7 @@ public class AI1 extends PVS {
                         break;
                     }
                     generationState=PHASE_END;
+                    break;
             }
             if (move != Move.EMPTY) {
                 if (board.makeMove(move)) {

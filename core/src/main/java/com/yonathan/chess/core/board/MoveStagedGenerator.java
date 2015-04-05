@@ -14,22 +14,11 @@ public abstract class MoveStagedGenerator extends AbstractBitboardMoveGenC imple
     private int[] captures = new int[Bitboard.MAX_MOVES*2];
     private int[] nonCaptures = new int[Bitboard.MAX_MOVES*2]; // Stores non captures and underpromotions
 
-    protected int[] moves;
     private long all;
     private long mines;
     private long others;
-    protected boolean whiteToMove;
-    protected int castleWhite;
-    protected int castleBlack;
 
-
-    protected void updateAggregateBitboards() {
-        whitePieces = whiteKing | whiteQueens | whiteRooks | whiteBishops | whiteKnights | whitePawns;
-        blackPieces = blackKing | blackQueens | blackRooks | blackBishops | blackKnights | blackPawns;
-        allPieces = whitePieces | blackPieces;
-    }
-
-    public int generateCaptures(int[] moves,int startIndex, int ttMove) {
+    public int generateCaptures(int[] moves, int startIndex, int ttMove) {
         this.ttMove = ttMove;
         this.captures = moves;
         captureIndex =startIndex;

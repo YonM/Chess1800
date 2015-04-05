@@ -225,6 +225,11 @@ public abstract class PVS extends AbstractSearch {
         }
     }
 
+    protected void betaCutOff(int move, int depth, boolean whiteToMove){
+        if(whiteToMove) whiteHeuristics[Move.getFromIndex(move)] [Move.getToIndex(move)] += depth * depth;
+        else blackHeuristics[Move.getFromIndex(move)] [Move.getToIndex(move)] += depth * depth;
+    }
+
     protected int valueMatedIn(int distanceToInitialPly) {
         return -Evaluator.CHECKMATE + distanceToInitialPly;
     }

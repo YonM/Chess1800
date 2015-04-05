@@ -44,6 +44,10 @@ public class Chess1800Model {
         }
     }
 
+    public void makeEngineMove(int move){
+        b.makeMove(move);
+    }
+
     public String getFEN(){
         return b.getFEN();
     }
