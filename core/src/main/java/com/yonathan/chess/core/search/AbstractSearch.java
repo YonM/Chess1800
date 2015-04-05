@@ -5,13 +5,11 @@ import com.yonathan.chess.core.board.Chessboard;
 /**
  * Created by Yonathan on 24/03/2015.
  */
-public abstract class AbstractSearch extends AbstractSearchInfo implements Search {
+public abstract class AbstractSearch extends AbstractSearchInfo implements Search, Runnable {
     protected boolean searching;
     protected boolean initialized;
     protected Thread thread;
     protected static Chessboard board;
-
-
 
     protected boolean stopSearch;
 

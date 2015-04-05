@@ -16,7 +16,7 @@ public interface Chessboard extends Evaluator {
     //Move related
     public int getMoveFromString(String move, boolean legalityCheck);
     public boolean isMoveLegal(int move);
-    public String index2Algebraic(int index);
+
 
 
     public int getLastMove();

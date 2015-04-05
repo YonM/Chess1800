@@ -30,4 +30,6 @@ public interface Evaluator extends MoveGenerator {
 
     public static final int DRAWSCORE = 0;
     public static final int INFINITY = KING_VALUE + 1;
+
+    public String index2Algebraic(int index);
 }

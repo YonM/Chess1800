@@ -21,13 +21,13 @@ public abstract class PVS extends AbstractSearch {
     protected static final int SCORE_UNDERPROMOTION = Integer.MIN_VALUE + 1;
 
     public final static int PHASE_HASH = 0;
-    //public final static int PHASE_GEN_CAPTURES = 1;
-    public final static int PHASE_GOOD_CAPTURES_AND_PROMOS = 1;
+    public final static int PHASE_GEN_CAPTURES = 1;
+    public final static int PHASE_GOOD_CAPTURES_AND_PROMOS = 2;
     //public final static int PHASE_EQUAL_CAPTURES = 3;
-    //public final static int PHASE_GEN_NON_CAPTURES = 2;
-    public final static int PHASE_NON_CAPTURES = 2;
-    public final static int PHASE_BAD_CAPTURES = 3;
-    public final static int PHASE_END = 4;
+    public final static int PHASE_GEN_NON_CAPTURES = 3;
+    public final static int PHASE_NON_CAPTURES = 4;
+    public final static int PHASE_BAD_CAPTURES = 5;
+    public final static int PHASE_END = 6;
 
     protected int initialPly;
 

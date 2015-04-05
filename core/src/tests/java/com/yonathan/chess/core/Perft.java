@@ -2,7 +2,9 @@ package com.yonathan.chess.core;
 
 import com.yonathan.chess.core.board.Bitboard;
 
+import com.yonathan.chess.core.board.MoveGenerator;
 import com.yonathan.chess.core.move.Move;
+import junit.framework.Assert;
 import org.junit.Test;
 
 /**
@@ -13,7 +15,7 @@ import org.junit.Test;
 public class Perft {
     Bitboard b;
 
-    private final int DEPTH =5;
+    private final int DEPTH =6;
     long moveCount[];
     long captures[];
     long passantCaptures[];
@@ -89,36 +91,63 @@ public class Perft {
         boolean loaded = b.initializeFromFEN(test2);
         System.out.println(b);
         long nodes;
-        if (loaded) {
             //System.out.println("true");
             long start = System.currentTimeMillis();
             nodes = perft(b, 0, DEPTH-1);
             long stop = System.currentTimeMillis();
             System.out.println("Found " + nodes + " nodes in " + (stop - start) + " ms.");
-            for (int i = 1; i < DEPTH; i++) {
-                System.out.println("Moves: " + moveCount[i] + " Pawn Moves: "+ pawnMoves[i] +
-                        " Knight Moves: "+ knightMoves[i] + " Bishop Moves: "+ bishopMoves[i] +
-                        " Rook Moves: "+ rookMoves[i] + " Queen Moves: "+ queenMoves[i] +
-                        " King Moves: "+ kingMoves[i] + " Pawn Captures: "+ pawnCaptures[i] +
-                        " Knight Captures: "+ knightCaptures[i] + " Bishop Captures: "+ bishopCaptures[i] +
-                        " Rook Captures: "+ rookCaptures[i] + " Queen Captures: "+ queenCaptures[i] +
-                        " King Captures: "+ kingCaptures[i] +
-                        " Captures=" + captures[i] + " E.P.=" + passantCaptures[i] + " Castles="
-                        + castles[i] + " Promotions=" + promotions[i] + " Checks="
-                        + checks[i] + " CheckMates=" + checkMates[i]);
-            }
-        } else {
-            System.out.print("false");
-        }
+        Assert.assertEquals(193690690, nodes);
 
     }
-    private void print(int depth) {
-        for (int i = 0; i < depth; i++) {
-            System.out.println("Moves: " + " Captures="
-                    + captures[i] + " E.P.=" + passantCaptures[i] + " Castles="
+    @Test
+    public void sortPerft(){
+        moveCount = new long[DEPTH];
+        captures = new long[DEPTH];
+        passantCaptures = new long[DEPTH];
+        castles = new long[DEPTH];
+        promotions = new long[DEPTH];
+        checks = new long[DEPTH];
+        checkMates = new long[DEPTH];
+        pawnMoves= new long [DEPTH];
+        knightMoves= new long [DEPTH];
+        bishopMoves= new long [DEPTH];
+        queenMoves= new long [DEPTH];
+        rookMoves= new long [DEPTH];
+        kingMoves= new long [DEPTH];
+        pawnCaptures= new long [DEPTH];
+        knightCaptures= new long [DEPTH];
+        bishopCaptures= new long [DEPTH];
+        queenCaptures= new long [DEPTH];
+        rookCaptures= new long [DEPTH];
+        kingCaptures= new long [DEPTH];
+        b = new Bitboard();
+        b.initializeFromFEN(test2);
+
+        //System.out.println(b);
+        long nodes;
+            long start = System.currentTimeMillis();
+            nodes = recursive(b, 0, DEPTH-1);
+            long stop = System.currentTimeMillis();
+            print();
+        Assert.assertEquals(193690690, nodes);
+
+
+
+    }
+    private void print() {
+        for (int i = 1; i < DEPTH; i++) {
+            System.out.println("Moves: " + moveCount[i] + " Pawn Moves: "+ pawnMoves[i] +
+                    " Knight Moves: "+ knightMoves[i] + " Bishop Moves: "+ bishopMoves[i] +
+                    " Rook Moves: "+ rookMoves[i] + " Queen Moves: "+ queenMoves[i] +
+                    " King Moves: "+ kingMoves[i] + " Pawn Captures: "+ pawnCaptures[i] +
+                    " Knight Captures: "+ knightCaptures[i] + " Bishop Captures: "+ bishopCaptures[i] +
+                    " Rook Captures: "+ rookCaptures[i] + " Queen Captures: "+ queenCaptures[i] +
+                    " King Captures: "+ kingCaptures[i] +
+                    " Captures=" + captures[i] + " E.P.=" + passantCaptures[i] + " Castles="
                     + castles[i] + " Promotions=" + promotions[i] + " Checks="
                     + checks[i] + " CheckMates=" + checkMates[i]);
         }
+
     }
 
     private long perft(Bitboard b, int ply, int depth) {
@@ -178,5 +207,89 @@ public class Perft {
         }
         return count;
 
+    }
+
+    private long recursive(Bitboard b,int ply, int depth){
+        if (depth == 0) return 1;
+//        int[] moves = new int[b.MAX_MOVES];
+//        int num_moves = b.getAllLegalMoves(moves);
+//        ArrayList<Integer> moveList = new ArrayList<Integer>();
+//        for (int i = 0; i < num_moves; i++) {
+//            moveList.add(moves[i]);
+//        }
+
+        Integer move;
+        long count = 0;
+        int moves[] = new int[MoveGenerator.MAX_MOVES*4];
+        int captureCount;
+        int nonCaptureCount;
+        /*Staged Move Generation.
+    *  Order:
+    *  1. TT move
+    *  2. Good Captures (Ordered by SEE)
+    *  3. Equal Captures
+    *  4. Non-Captures (Ordered by History Heuristic)
+    *  5. Bad Captures
+     */
+        //int phase = MoveStagedGenerator.PHASE_HASH;
+        int ttMove = Move.EMPTY;
+        //int movesToGenerate = MoveStagedGenerator.GENERATE_ALL;
+        captureCount= b.generateCaptures(moves,0,ttMove);
+        nonCaptureCount = b.generateNonCaptures(moves, captureCount, ttMove);
+
+        for(int i = 0; i<(captureCount +nonCaptureCount);i++){
+            if(b.makeMove(moves[i])) {
+                if (depth > 0) {
+                    moveCount[depth]++;
+                    if (Move.isCapture(moves[i])) captures[depth]++;
+                    if (Move.getMoveType(moves[i]) == Move.TYPE_EN_PASSANT) passantCaptures[depth]++;
+                    if (Move.getMoveType(moves[i]) == Move.TYPE_KINGSIDE_CASTLING
+                            || Move.getMoveType(moves[i]) == Move.TYPE_QUEENSIDE_CASTLING) castles[depth]++;
+                    if (Move.isPromotion(moves[i])) promotions[depth]++;
+                    if (b.isCheck()) {
+                        checks[depth]++;
+                    }
+                    if (b.isCheckMate()) {
+                        checkMates[depth]++;
+                    }
+                    switch (Move.getPieceMoved(moves[i])) {
+                        case Move.PAWN:
+                            pawnMoves[depth]++;
+                            if (Move.isCapture(moves[i])) pawnCaptures[depth]++;
+                            break;
+                        case Move.KNIGHT:
+                            knightMoves[depth]++;
+                            if (Move.isCapture(moves[i])) knightCaptures[depth]++;
+                            break;
+                        case Move.BISHOP:
+                            bishopMoves[depth]++;
+                            if (Move.isCapture(moves[i])) bishopCaptures[depth]++;
+                            break;
+                        case Move.ROOK:
+                            rookMoves[depth]++;
+                            if (Move.isCapture(moves[i])) rookCaptures[depth]++;
+                            break;
+                        case Move.QUEEN:
+                            queenMoves[depth]++;
+                            if (Move.isCapture(moves[i])) queenCaptures[depth]++;
+                            break;
+                        case Move.KING:
+                            kingMoves[depth]++;
+                            if (Move.isCapture(moves[i])) kingCaptures[depth]++;
+                            break;
+                        default:
+                            System.out.println("no piece moved" + moves[i]);
+                            if(Move.isCapture(moves[i])) System.out.println("capture error");
+                            else System.out.println("non capture error");
+                    }
+                }
+                count += recursive(b, ply + 1, depth - 1);
+                b.unmakeMove();
+                //moveList.remove(move);
+            }
+
+
+        }
+        return count;
     }
 }

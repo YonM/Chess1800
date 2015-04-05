@@ -987,9 +987,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         return -1;
     }
 
-    public String index2Algebraic(int index) {
-        return squareNames[index];
-    }
+
 
     public int getPieceCaptured(int move) {
         if (Move.getMoveType(move) == Move.TYPE_EN_PASSANT) {
@@ -1026,7 +1024,6 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         move = move.replace("+", "").replace("x", "").replace("-", "").replace("=", "").replace("#", "").replaceAll(" ", "").replaceAll("0", "o")
                 .replaceAll("O", "o");
 
-        System.out.println("Side to move: "+ (isWhiteToMove() ? "white": "black"));
 
         //castling move check
         if ("ooo".equalsIgnoreCase(move)) {
@@ -1056,7 +1053,6 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         // If promotion, remove the last char
         if (moveType != 0){
             move = move.substring(0, move.length() - 1);
-            System.out.println("promotion piece removed");
         }
 
 

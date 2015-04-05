@@ -69,23 +69,26 @@ public class AI2 extends PVS {
         int movesFound = 0;
         int hashMove=0;
         int j;
-        int[] nonCaptures = new int[MoveGenerator.MAX_MOVES * 3];
-        int[] nonCapturesScores = new int[MoveGenerator.MAX_MOVES * 3];
-        int[] captures = new int[MoveGenerator.MAX_MOVES * 3];
-        int[] goodCaptures = new int [MoveGenerator.MAX_MOVES * 3]; //for good & equal captures as rated by SEE/ queen promotions
-        int[] badCaptures = new int [MoveGenerator.MAX_MOVES * 3]; //for bad captures as rated by SEE, also for underPromotions
+        int[] nonCaptures = new int[MoveGenerator.MAX_MOVES * 4];
+        int[] nonCapturesScores = new int[MoveGenerator.MAX_MOVES * 4];
+        int[] captures = new int[MoveGenerator.MAX_MOVES * 4];
+        int[] goodCaptures = new int [MoveGenerator.MAX_MOVES * 4]; //for good & equal captures as rated by SEE/ queen promotions
+        int[] badCaptures = new int [MoveGenerator.MAX_MOVES * 4]; //for bad captures as rated by SEE, also for underPromotions
+        int initialNonCaptureCount=0;
         int nonCapturesCount=0;
-        int capturesCount;
+        int capturesCount=0;
         int goodCaptureCount=0;
-        int[] goodCapturesScores= new int [MoveGenerator.MAX_MOVES * 3];
-        int[] badCapturesScores = new int [MoveGenerator.MAX_MOVES * 3];
+        int[] goodCapturesScores= new int [MoveGenerator.MAX_MOVES * 4];
+        int[] badCapturesScores = new int [MoveGenerator.MAX_MOVES * 4];
         int badCaptureCount=0;
         int move = Move.EMPTY;
-        int generationState = PHASE_GOOD_CAPTURES_AND_PROMOS;
+        int generationState = PHASE_GEN_CAPTURES;
         while(generationState < PHASE_END) {
             switch (generationState) {
-                case PHASE_GOOD_CAPTURES_AND_PROMOS:
+                case PHASE_GEN_CAPTURES:
                     capturesCount = board.generateCaptures(captures, 0, hashMove);
+                    generationState++;
+                case PHASE_GOOD_CAPTURES_AND_PROMOS:
                     for (int i = 0; i < capturesCount; i++) {
                         int sEEScore = board.sEE(captures[i]);
                         if (Move.isUnderPromotion(captures[i])) {
@@ -103,9 +106,12 @@ public class AI2 extends PVS {
                     if (move != Move.EMPTY) break;
                     generationState++;
                     //END PHASE_GOOD_CAPTURES_AND_PROMOS
-                case PHASE_NON_CAPTURES:
-                    int initialNonCaptureCount = nonCapturesCount; //Don't include underPromotion captures in the scoring of non-captures.
+                case PHASE_GEN_NON_CAPTURES:
+                    initialNonCaptureCount = nonCapturesCount;
                     nonCapturesCount = board.generateNonCaptures(nonCaptures, nonCapturesCount, hashMove);
+                    generationState++;
+                case PHASE_NON_CAPTURES:
+                     //Don't include underPromotion captures in the scoring of non-captures.
                     for (int i = initialNonCaptureCount; i < nonCapturesCount; i++) {
                         if (board.isWhiteToMove())
                             nonCapturesScores[i] = whiteHeuristics[Move.getFromIndex(nonCaptures[i])][Move.getToIndex(nonCaptures[i])];

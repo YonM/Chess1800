@@ -179,7 +179,7 @@ public class Move {
 
     //For UCI
     public static String toString (int move, Chessboard board){
-        if(move ==0) return "none";
+        if(move ==Move.EMPTY) return "none";
         String moveString="";
         moveString+=board.index2Algebraic(Move.getFromIndex(move));
         moveString+=board.index2Algebraic(Move.getToIndex(move));
