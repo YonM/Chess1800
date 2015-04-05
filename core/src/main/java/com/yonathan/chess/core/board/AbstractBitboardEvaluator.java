@@ -248,12 +248,12 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
         blackRookCount = Long.bitCount(blackRooks);
         blackQueenCount = Long.bitCount(blackQueens);
         blackTotal = blackPawnCount + blackKnightCount + blackBishopCount + blackRookCount + blackQueenCount;
-//Test for end game if white or black total material less than the value of a Rook+ Queen.
+        //Test for end game if white or black total material less than the value of a Rook+ Queen.
         endGame = (whitePieceMaterial() < (QUEEN_VALUE + ROOK_VALUE) || blackPieceMaterial() < (QUEEN_VALUE + ROOK_VALUE));
-/* Evaluate material. Winning side will prefer to exchange pieces.
-* Add 3 centipawns to score for exchange with unequal material
-* Losing a piece (from balanced material) becomes more severe in the endgame.
-*/
+        /* Evaluate material. Winning side will prefer to exchange pieces.
+        * Add 3 centipawns to score for exchange with unequal material
+        * Losing a piece (from balanced material) becomes more severe in the endgame.
+        */
         if (whitePieceMaterial() + PAWN_VALUE * whitePawnCount > blackPieceMaterial() + PAWN_VALUE * blackPawnCount) {
             score += 45 + 3 * whiteTotal - 6 * blackTotal;
         } else if (whitePieceMaterial() + PAWN_VALUE * whitePawnCount < blackPieceMaterial() + PAWN_VALUE * blackPawnCount) {

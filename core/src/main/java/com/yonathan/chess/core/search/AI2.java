@@ -18,7 +18,7 @@ public class AI2 extends PVS {
         super(b);
     }
 
-    protected int PVS(int nodeType, int ply, int depth, int alpha, int beta) throws SearchRunException {
+    protected int PVS(int nodeType, int ply, int depthRemaining, int alpha, int beta) throws SearchRunException {
         nodes++;
         triangularLength[ply] = ply;
         // Check if time is up
@@ -32,7 +32,7 @@ public class AI2 extends PVS {
         }
         //}
 
-        if (depth <= 0) {
+        if (depthRemaining <= 0) {
             follow_pv = false;
             return quiescenceSearch(nodeType, ply, alpha, beta);
         }
@@ -57,7 +57,7 @@ public class AI2 extends PVS {
         if (nullAllowed()) {
             null_allowed = false;
             board.makeNullMove();
-            score = -PVS(NODE_NULL, ply, depth - NULLMOVE_REDUCTION, -beta, -beta + 1);
+            score = -PVS(NODE_NULL, ply, depthRemaining - NULLMOVE_REDUCTION, -beta, -beta + 1);
             board.unmakeMove();
             null_allowed = true;
             if (score >= beta) {
@@ -69,16 +69,16 @@ public class AI2 extends PVS {
         int movesFound = 0;
         int hashMove=0;
         int j;
-        int[] nonCaptures = new int[MoveGenerator.MAX_MOVES * 2];
-        int[] nonCapturesScores = new int[MoveGenerator.MAX_MOVES * 2];
-        int[] captures = new int[MoveGenerator.MAX_MOVES * 2];
-        int[] goodCaptures = new int [MoveGenerator.MAX_MOVES * 2]; //for good & equal captures as rated by SEE/ queen promotions
-        int[] badCaptures = new int [MoveGenerator.MAX_MOVES * 2]; //for bad captures as rated by SEE, also for underPromotions
+        int[] nonCaptures = new int[MoveGenerator.MAX_MOVES * 3];
+        int[] nonCapturesScores = new int[MoveGenerator.MAX_MOVES * 3];
+        int[] captures = new int[MoveGenerator.MAX_MOVES * 3];
+        int[] goodCaptures = new int [MoveGenerator.MAX_MOVES * 3]; //for good & equal captures as rated by SEE/ queen promotions
+        int[] badCaptures = new int [MoveGenerator.MAX_MOVES * 3]; //for bad captures as rated by SEE, also for underPromotions
         int nonCapturesCount=0;
         int capturesCount;
         int goodCaptureCount=0;
-        int[] goodCapturesScores= new int [MoveGenerator.MAX_MOVES * 2];
-        int[] badCapturesScores = new int [MoveGenerator.MAX_MOVES * 2];
+        int[] goodCapturesScores= new int [MoveGenerator.MAX_MOVES * 3];
+        int[] badCapturesScores = new int [MoveGenerator.MAX_MOVES * 3];
         int badCaptureCount=0;
         int move = Move.EMPTY;
         int generationState = PHASE_GOOD_CAPTURES_AND_PROMOS;
@@ -130,24 +130,24 @@ public class AI2 extends PVS {
                 if (board.makeMove(move)) {
                     movesFound++;
                     if (movesFound == 1 && (nodeType == NODE_PV || nodeType == NODE_ROOT))
-                        score = -PVS(NODE_PV, ply + 1, depth - 1, -beta, -alpha); //PV move search
+                        score = -PVS(NODE_PV, ply + 1, depthRemaining - 1, -beta, -alpha); //PV move search
                     else {
-                        if (movesFound > LATEMOVE_THRESHOLD && depth > LATEMOVE_DEPTH_THRESHOLD && !board.isCheck() && !Move.isCapture(move) && !Move.isPromotion(move))
-                            score = -PVS(NODE_NULL, ply + 1, depth - 2, -alpha - 1, -alpha); //LMR
+                        if (movesFound > LATEMOVE_THRESHOLD && depthRemaining > LATEMOVE_DEPTH_THRESHOLD && !board.isCheck() && !Move.isCapture(move) && !Move.isPromotion(move))
+                            score = -PVS(NODE_NULL, ply + 1, depthRemaining - 2, -alpha - 1, -alpha); //LMR
                         else
-                            score = -PVS(NODE_NULL, ply + 1, depth - 1, -alpha - 1, -alpha); // Null Window Search}
+                            score = -PVS(NODE_NULL, ply + 1, depthRemaining - 1, -alpha - 1, -alpha); // Null Window Search}
 
                         if ((score > alpha) && (score < beta)) {
-                            score = -PVS(NODE_PV, ply + 1, depth - 1, -beta, -alpha); //Better move found, normal alpha-beta.
+                            score = -PVS(NODE_PV, ply + 1, depthRemaining - 1, -beta, -alpha); //Better move found, normal alpha-beta.
                         }
                     }
                     if (score > alpha) {
                         if (score >= beta) {
                             if(!Move.isCapture(move) && !Move.isPromotion(move)) {
                                 if (board.isWhiteToMove())
-                                    whiteHeuristics[Move.getFromIndex(move)][Move.getToIndex(move)] += depth * depth;
+                                    whiteHeuristics[Move.getFromIndex(move)][Move.getToIndex(move)] += depthRemaining * depthRemaining;
                                 else
-                                    blackHeuristics[Move.getFromIndex(move)][Move.getToIndex(move)] += depth * depth;
+                                    blackHeuristics[Move.getFromIndex(move)][Move.getToIndex(move)] += depthRemaining * depthRemaining;
                             }
                             return score;
                         }

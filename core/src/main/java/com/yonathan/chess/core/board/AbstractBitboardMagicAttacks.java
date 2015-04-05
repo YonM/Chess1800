@@ -16,6 +16,7 @@ public abstract class AbstractBitboardMagicAttacks{
     public static long[] king;
     public static long[] blackPawn;
     public static long[] whitePawn; //
+
     //pieces
     protected long whitePawns;
     protected long whiteKnights;
@@ -104,7 +105,7 @@ public abstract class AbstractBitboardMagicAttacks{
     // To use with square2Index
     private static final byte[] bitTable = {63, 30, 3, 32, 25, 41, 22, 33, 15, 50, 42, 13, 11, 53, 19, 34, 61, 29, 2, 51, 21, 43, 45, 10, 18, 47, 1, 54, 9, 57,
             0, 35, 62, 31, 40, 4, 49, 5, 52, 26, 60, 6, 23, 44, 46, 27, 56, 16, 7, 39, 48, 24, 59, 14, 12, 55, 38, 28, 58, 20, 37, 17, 36, 8};
-    public static String[] changeEndianArray64(String sArray[]) {
+    protected final static String[] changeEndianArray64(String sArray[]) {
         String out[] = new String[64];
         for (int i = 0; i < 64; i++) {
             out[i] = sArray[63 - i];
@@ -232,7 +233,7 @@ public abstract class AbstractBitboardMagicAttacks{
      * otherwise.
      * @return true if the square is being attacked, false otherwise.
      */
-    public boolean isSquareAttacked(long square, boolean white) {
+    protected final boolean isSquareAttacked(long square, boolean white) {
         return isIndexAttacked(square2Index(square), white);
     }
     /**
@@ -243,7 +244,7 @@ public abstract class AbstractBitboardMagicAttacks{
         int fold = (int) (b ^ (b >>> 32));
         return bitTable[(fold * 0x783a9b23) >>> 26];
     }
-    public static String square2Algebraic(long square) {
+    protected static String square2Algebraic(long square) {
         return squareNames[square2Index(square)];
     }
     protected boolean isIndexAttacked(byte i, boolean white) {

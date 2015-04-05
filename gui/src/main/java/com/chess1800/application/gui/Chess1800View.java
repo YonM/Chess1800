@@ -30,7 +30,7 @@ public class Chess1800View extends JFrame{
     JComboBox comboOpponent, comboTime;
     String opponentString[] = {"AI1 Whites", "AI1 Blacks", "AI2 Whites", "AI2 Blacks", "AI 1 vs AI2", "AI2 vs A1"};
     int opponentDefaultIndex = 1;
-    private char[] boardPieces;
+
     private JTextField fenField;
     private JButton button;
     private JLabel label, message;
@@ -126,16 +126,6 @@ public class Chess1800View extends JFrame{
         invalidate();
         validate();
         repaint();
-    }
-
-
-
-    public void setBoardData(char[] pieces){
-        boardPieces = pieces;
-    }
-
-    public void userMove(int i, int i1) {
-
     }
 
     public void setFENText(String fen){

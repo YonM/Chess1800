@@ -19,7 +19,6 @@ public abstract class AbstractSearch extends AbstractSearchInfo implements Searc
         initialized = false;
         if (AbstractSearch.board == null) {
             AbstractSearch.board = board;
-            System.out.println("initialized");
             AbstractSearch.board.initialize();
         }
         initialized = true;

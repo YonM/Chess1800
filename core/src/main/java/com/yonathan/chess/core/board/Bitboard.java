@@ -566,7 +566,10 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
 
 
     public void unmakeMove(int moveNumber) {
-        if (moveNumber < 0 || moveNumber < initMoveNumber) return;
+        if (moveNumber < 0 || moveNumber < initMoveNumber){
+            System.out.println("illegal unmake");
+            return;
+        }
 
         whitePawns = white_pawn_history[moveNumber];
         whiteKnights = white_knight_history[moveNumber];

@@ -10,24 +10,25 @@ import com.yonathan.chess.core.move.Move;
  * PVS with Fail Soft.
  */
 public class AI1 extends PVS {
+
     public AI1(Chessboard b) {
         super(b);
     }
 
     //Fail Soft implementation
-    protected int PVS(int nodeType, int ply, int depth, int alpha, int beta) throws SearchRunException {
-        System.out.println("my ply :" + ply);
+    protected int PVS(int nodeType, int ply, int depthRemaining, int alpha, int beta) throws SearchRunException {
         nodes++;
         triangularLength[ply] = ply;
         // Check if time is up
         if (!useFixedDepth) {
 
             if (System.currentTimeMillis() - startTime > timeForMove && moveFound && nodeType != NODE_ROOT) {
+                System.out.println(" i hit my limit");
                 finishRun();
             }
         }
 
-        if (depth <= 0) {
+        if (depthRemaining <= 0) {
             follow_pv = false;
             return quiescenceSearch(nodeType, ply, alpha, beta);
         }
@@ -44,7 +45,7 @@ public class AI1 extends PVS {
         if (nullAllowed()) {
             null_allowed = false;
             board.makeNullMove();
-            score = -PVS(NODE_NULL, ply, depth - NULLMOVE_REDUCTION, -beta, -beta + 1);
+            score = -PVS(NODE_NULL, ply, depthRemaining - NULLMOVE_REDUCTION, -beta, -beta + 1);
             board.unmakeMove();
             null_allowed = true;
             if (score >= beta) return score; //Fail Soft
@@ -55,32 +56,31 @@ public class AI1 extends PVS {
         int[] moves = new int[MoveGenerator.MAX_MOVES*2];
         int num_moves = board.getAllMoves(moves);
         boolean checkEvasion = board.isCheck();
-        System.out.println("number of moves: " + num_moves);
         //try the first legal move with an open window.
         int j;
         for (int i = 0; i < num_moves; i++) {
-            selectBestMoveFirst(moves, num_moves, ply, depth, i);
+            selectBestMoveFirst(moves, num_moves, ply, depthRemaining, i);
             if (board.makeMove(moves[i])) {
                 movesFound++;
-                if(movesFound==1) score = -PVS(NODE_PV, ply + 1, depth - 1, -beta, -alpha); //First move searched with Open window
+                if(movesFound==1) score = -PVS(NODE_PV, ply + 1, depthRemaining - 1, -beta, -alpha); //First move searched with Open window
 
                 else {
                     //Late Move Reduction
-                    if (movesFound > LATEMOVE_THRESHOLD && depth > LATEMOVE_DEPTH_THRESHOLD && !checkEvasion && !board.isCheck() && !Move.isCapture(moves[i]))
-                        score = -PVS(NODE_NULL, ply + 1, depth - 2, -alpha - 1, -alpha);
+                    if (movesFound > LATEMOVE_THRESHOLD && depthRemaining > LATEMOVE_DEPTH_THRESHOLD && !checkEvasion && !board.isCheck() && !Move.isCapture(moves[i]))
+                        score = -PVS(NODE_NULL, ply + 1, depthRemaining - 2, -alpha - 1, -alpha);
                     else {
-                        score = -PVS(NODE_NULL, ply + 1, depth - 1, -alpha - 1, -alpha); // PVS Search
+                        score = -PVS(NODE_NULL, ply + 1, depthRemaining - 1, -alpha - 1, -alpha); // PVS Search
                     }
                     if ((score > alpha) && (score < beta))
-                        score = -PVS(NODE_PV, ply + 1, depth - 1, -beta, -alpha); //Better move found, re-search with Open Window
+                        score = -PVS(NODE_PV, ply + 1, depthRemaining - 1, -beta, -alpha); //Better move found, re-search with Open Window
                 }
                 board.unmakeMove();
                 if (score > alpha) {
                     if (score >= beta) {
                         if (board.isWhiteToMove())
-                            whiteHeuristics[Move.getFromIndex(moves[i])][Move.getToIndex(moves[i])] += depth * depth;
+                            whiteHeuristics[Move.getFromIndex(moves[i])][Move.getToIndex(moves[i])] += depthRemaining * depthRemaining;
                         else
-                            blackHeuristics[Move.getFromIndex(moves[i])][Move.getToIndex(moves[i])] += depth * depth;
+                            blackHeuristics[Move.getFromIndex(moves[i])][Move.getToIndex(moves[i])] += depthRemaining * depthRemaining;
                         return score;
                     }
                     alpha= score;
@@ -96,9 +96,9 @@ public class AI1 extends PVS {
         }
         if (pvMovesFound != 0) {
             if (board.isWhiteToMove())
-                whiteHeuristics[Move.getFromIndex(triangularArray[ply][ply])][Move.getToIndex(triangularArray[ply][ply])] += depth * depth;
+                whiteHeuristics[Move.getFromIndex(triangularArray[ply][ply])][Move.getToIndex(triangularArray[ply][ply])] += depthRemaining * depthRemaining;
             else
-                blackHeuristics[Move.getFromIndex(triangularArray[ply][ply])][Move.getToIndex(triangularArray[ply][ply])] += depth * depth;
+                blackHeuristics[Move.getFromIndex(triangularArray[ply][ply])][Move.getToIndex(triangularArray[ply][ply])] += depthRemaining * depthRemaining;
         }
         if (board.getFiftyMove() >= 100) return Evaluator.DRAWSCORE; //Fifty-move rule
         return alpha; //Fail Soft

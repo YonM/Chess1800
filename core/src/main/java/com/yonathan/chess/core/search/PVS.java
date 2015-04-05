@@ -74,7 +74,6 @@ public abstract class PVS extends AbstractSearch {
             follow_pv = true;
             null_allowed = true;
             rootScore = PVS(NODE_ROOT, 0, currentDepth, alpha, beta);
-
             if (stopSearch) {
                 if (VERBOSE) System.out.println("Search stopped at depth:" + currentDepth);
                 break;
@@ -86,13 +85,16 @@ public abstract class PVS extends AbstractSearch {
                         + ((System.currentTimeMillis() - startTime) / 1000.0) + "s ("
                         + Move.moveToString(lastPV[0], board) + ") -- " + nodes
                         + " nodes evaluated.");
+
             // stop searching if the current depth leads to a forced mate:
             if ((rootScore > (Chessboard.CHECKMATE - currentDepth)) || (rootScore < -(Chessboard.CHECKMATE - currentDepth))) {
                 if (VERBOSE) System.out.println("cut search");
                 currentDepth = MAX_DEPTH;
             }
             if (moveFound) {
-                if (currentDepth == depth) break;
+                if (currentDepth == depth){
+                    break;
+                }
 
                 else if (moveTime != Integer.MAX_VALUE) {
                     if (System.currentTimeMillis() - startTime > timeForMove) {
@@ -116,10 +118,11 @@ public abstract class PVS extends AbstractSearch {
                     + " nodes evaluated.");
             System.out.println(nodes + " positions evaluated. Move returned->" + lastPV[0]);
         }
+
         finishRun();
     }
 
-    protected abstract int PVS(int nodeType, int ply, int currentDepth, int alpha, int beta) throws SearchRunException;
+    protected abstract int PVS(int nodeType, int ply, int depthRemaining, int alpha, int beta) throws SearchRunException;
 
 
     protected abstract int quiescenceSearch(int nodeType, int ply, int alpha, int beta) throws SearchRunException;
@@ -205,10 +208,12 @@ public abstract class PVS extends AbstractSearch {
 
     @Override
     protected void finishRun() throws SearchRunException {
+        System.out.println("do i get here?");
         board.unmakeMove(initialPly);
         searching = false;
         if(globalBestMove!= lastPV[0]) System.out.println("best move discrepancy");
         if (observer != null) {
+            System.out.println("sent best move");
             observer.bestMove(globalBestMove);
         }
         if (VERBOSE) displaySearchStats();
