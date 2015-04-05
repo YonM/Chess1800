@@ -987,9 +987,7 @@ public class Board extends AbstractBitboardEvaluator implements Bitboard {
         return -1;
     }
 
-    public String index2Algebraic(int index) {
-        return squareNames[index];
-    }
+
 
     @Override
     public int getPieceCaptured(int move) {
