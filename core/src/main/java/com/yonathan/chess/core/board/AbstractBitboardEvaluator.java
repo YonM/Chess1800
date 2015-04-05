@@ -205,15 +205,15 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
         for (i = 0; i < 64; i++) {
             for (square = 0; square < 64; square++) {
                 if ((PASSED_WHITE[i] & getSquare[square]) != 0)
-                    PASSED_BLACK[63-i] |= getSquare[63-square];
+                    PASSED_BLACK[i^56] |= getSquare[i^56];
                 if ((ISOLATED_WHITE[i] & getSquare[square]) != 0)
-                    ISOLATED_BLACK[63-i] |= getSquare[63-square];
+                    ISOLATED_BLACK[i^56] |= getSquare[i^56];
                 if ((BACKWARD_WHITE[i] & getSquare[square]) != 0)
-                    BACKWARD_BLACK[63-i] |= getSquare[63-square];
+                    BACKWARD_BLACK[i^56] |= getSquare[i^56];
                 if ((STRONG_SAFE_WHITE[i] & getSquare[square]) != 0)
-                    STRONG_SAFE_BLACK[63-i] |= getSquare[63-square];
+                    STRONG_SAFE_BLACK[i^56] |= getSquare[i^56];
                 if ((WEAK_SAFE_WHITE[i] & getSquare[square]) != 0)
-                    WEAK_SAFE_BLACK[63-i] |= getSquare[63-square];
+                    WEAK_SAFE_BLACK[i^56] |= getSquare[i^56];
             }
         }
     }
@@ -360,7 +360,7 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
         while (temp != 0) {
             squareIndex = getIndexFromBoard(temp);
             score += QUEEN_VALUE;
-            score += QUEEN_POS_B[63- squareIndex];
+            score += QUEEN_POS_B[squareIndex ^56];
             score += QUEEN_DISTANCE[DISTANCE[squareIndex][blackKingSquare]];
             temp ^= getSquare[squareIndex];
         }
@@ -387,22 +387,22 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
             score -= PAWN_OPPONENT_DISTANCE[DISTANCE[squareIndex][whiteKingSquare]];
             if (endGame)
                 score -= PAWN_OWN_DISTANCE[DISTANCE[squareIndex][blackKingSquare]];
-//Passed pawn bonus
+            //Passed pawn bonus
             if ((PASSED_BLACK[squareIndex] & whitePawns) == 0) {
                 score -= BONUS_PASSED_PAWN;
                 blackPassedPawns ^= getSquare[squareIndex];
             }
-//Doubled pawn penalty
+            //Doubled pawn penalty
             if (((blackPawns ^ getSquare[squareIndex]) & COLUMN[getColumnOfIndex(squareIndex)]) != 0)
                 score += PENALTY_DOUBLED_PAWN;
-//Isolated pawn penalty
+            //Isolated pawn penalty
             if ((ISOLATED_BLACK[squareIndex] & blackPawns) == 0) {
                 score += PENALTY_ISOLATED_PAWN;
             } else {
-/* Not isolated but maybe backwards if the following are both true:
-* 1. the next square is controlled by an enemy pawn
-* 2. No pawns left that can defend the pawn.
-*/
+            /* Not isolated but maybe backwards if the following are both true:
+            * 1. the next square is controlled by an enemy pawn
+            * 2. No pawns left that can defend the pawn.
+            */
                 if ((blackPawn[squareIndex - 8] & whitePawns) != 0)
                     if ((BACKWARD_BLACK[squareIndex] & blackPawns) == 0)
                         score += PENALTY_BACKWARD_PAWN;
@@ -465,10 +465,10 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
             score -= KING_POS_ENDGAME_B[blackKingSquare];
         } else {
             score -= KING_POS_B[blackKingSquare];
-//Not end-game so add pawn shield bonus
-//Strong pawn shield bonus if pawns are close to the king
+        //Not end-game so add pawn shield bonus
+        //Strong pawn shield bonus if pawns are close to the king
             score -= BONUS_PAWN_SHIELD_STRONG * Long.bitCount((STRONG_SAFE_BLACK[blackKingSquare] & blackPawns));
-//Weak pawn shield bonus if pawns are not very close to the king
+        //Weak pawn shield bonus if pawns are not very close to the king
             score -= BONUS_PAWN_SHIELD_WEAK * Long.bitCount((WEAK_SAFE_BLACK[blackKingSquare] & blackPawns));
         }
     }

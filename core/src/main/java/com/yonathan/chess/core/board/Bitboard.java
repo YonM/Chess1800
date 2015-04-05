@@ -165,7 +165,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
             // 50mr
             if(arr.size() >12) {
                 fiftyMove = Integer.parseInt(arr.get(11));
-                fiftyMove = ((fiftyMove > 0 ? fiftyMove - 1 : fiftyMove) << 1) + (whiteToMove ? 0 : 1); //Convert from Moves to Ply.
+                fiftyMove = (fiftyMove > 0 ? fiftyMove <<1  + (whiteToMove ? 0 : 1) : fiftyMove); //Convert from Moves to Ply.
                 // move number
                 moveNumber = Integer.parseInt(arr.get(12));
                 moveNumber = ((moveNumber > 0 ? moveNumber - 1 : moveNumber) << 1 + (whiteToMove ? 0 : 1));//Convert from Moves to Ply. (Left Shifted by 1 means double the value. +1 if black to move.)
@@ -200,7 +200,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         long i = A8;
         int j = 0;
         while (i != 0) {
-            char p = getPieceAt(Long.numberOfTrailingZeros(i));
+            char p = getPieceAt(i);
             if (p == ' ') {
                 j++;
             }
@@ -240,7 +240,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         sb.append(" ");
         sb.append((ePSquare != 0 ? square2Algebraic(ePSquare) : "-"));
         sb.append(" ");
-        sb.append((fiftyMove >> 1) + 1);
+        sb.append(fiftyMove >> 1);
         sb.append(" ");
         sb.append((moveNumber >> 1) + 1); // 0,1->1.. 2,3->2
         return sb.toString();
@@ -327,7 +327,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
                     pieceToRemove = (whiteToMove) ? (toBoard >>> 8) : (toBoard << 8);
                     pieceToRemoveIndex = (whiteToMove) ? (to - 8) : (to + 8);
                 }
-                char pieceRemoved = getPieceAt(pieceToRemoveIndex);
+                char pieceRemoved = getPieceAt(pieceToRemove);
                 if (whiteToMove) { // captured a black piece
                     blackPawns &= ~pieceToRemove;
                     blackKnights &= ~pieceToRemove;
@@ -632,7 +632,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
             if(isCheck()){
                 endGame= whiteToMove? BLACK_WIN : WHITE_WIN;
             }else{
-                endGame=isDraw();
+                endGame=DRAW_BY_STALEMATE;
             }
         else endGame=isDraw();
 
@@ -1253,7 +1253,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         int j = 8;
         long i = A8;
         while (i != 0) {
-            sb.append(getPieceAt(square2Index(i)));
+            sb.append(getPieceAt(i));
             sb.append(" ");
             if ((i & b_r) != 0) {
                 sb.append(j--);

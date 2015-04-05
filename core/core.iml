@@ -21,9 +21,9 @@
       </library>
     </orderEntry>
     <orderEntry type="module-library">
-      <library>
+      <library name="commons-lang3-3.3.2">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../lib/commons-lang3-3.3.2.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/commons-lang3-3.3.2.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

@@ -55,8 +55,12 @@ public class Zobrist {
 
     public static long getKeyFromBoard(Bitboard b) {
         long key = 0;
-        for (int loc = 0; loc < 64; loc++) {
-            key ^= getKeyPieceIndex(loc, b.getPieceAt(loc));
+        int index =0;
+        long square = 0x0000000000000001L;
+        while (square != 0) {
+            key ^= getKeyPieceIndex(index, b.getPieceAt(square));
+            square <<=1;
+            index++;
         }
         if ((b.getCastleWhite() & Bitboard.CANCASTLEOO) != 0)
             key ^= whiteKingSideCastling;

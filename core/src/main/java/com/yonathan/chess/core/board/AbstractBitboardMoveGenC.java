@@ -12,8 +12,6 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
 
     private int[] moves;
     private int moveIndex;
-    private long all;
-    private long mines;
     private long others;
 
 
@@ -45,8 +43,8 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
     public int getAllMoves(int[] moves) {
         this.moves = moves;
         moveIndex = 0;
-        all = allPieces;
-        mines = getMyPieces();
+        long all = allPieces;
+        long mines = getMyPieces();
         others = getOpponentPieces();
 
         int index = 0;
@@ -179,23 +177,22 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
     /**
      * Gets what is found at a particular location.
      *
-     * @param loc an integer in [0, 63] representing a position.
+     * @param square an integer in [0, 63] representing a position.
      * @return a character representing the piece at the passed location.
      */
-    public char getPieceAt(int loc) {
-        long sq = getSquare[loc];
-        if (((whitePawns | blackPawns) & sq) != 0L)
-            return (whitePieces & sq) != 0 ? 'P' : 'p';
-        if (((whiteKnights | blackKnights) & sq) != 0L)
-            return (whitePieces & sq) != 0 ? 'N' : 'n';
-        if (((whiteBishops | blackBishops) & sq) != 0L)
-            return (whitePieces & sq) != 0 ? 'B' : 'b';
-        if (((whiteRooks | blackRooks) & sq) != 0L)
-            return (whitePieces & sq) != 0 ? 'R' : 'r';
-        if (((whiteQueens | blackQueens) & sq) != 0L)
-            return (whitePieces & sq) != 0 ? 'Q' : 'q';
-        if (((whiteKing | blackKing) & sq) != 0L)
-            return (whitePieces & sq) != 0 ? 'K' : 'k';
+    public char getPieceAt(long square) {
+        if (((whitePawns | blackPawns) & square) != 0L)
+            return (whitePieces & square) != 0 ? 'P' : 'p';
+        if (((whiteKnights | blackKnights) & square) != 0L)
+            return (whitePieces & square) != 0 ? 'N' : 'n';
+        if (((whiteBishops | blackBishops) & square) != 0L)
+            return (whitePieces & square) != 0 ? 'B' : 'b';
+        if (((whiteRooks | blackRooks) & square) != 0L)
+            return (whitePieces & square) != 0 ? 'R' : 'r';
+        if (((whiteQueens | blackQueens) & square) != 0L)
+            return (whitePieces & square) != 0 ? 'Q' : 'q';
+        if (((whiteKing | blackKing) & square) != 0L)
+            return (whitePieces & square) != 0 ? 'K' : 'k';
         return ' ';
     }
 

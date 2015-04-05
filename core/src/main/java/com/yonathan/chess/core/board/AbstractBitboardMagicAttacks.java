@@ -342,8 +342,8 @@ public abstract class AbstractBitboardMagicAttacks{
         return ((blackPieces & whitePawn[index] | whitePieces & blackPawn[index]) & (whitePawns | blackPawns))
                 | (knight[index] & (whiteKnights | blackKnights))
                 | (king[index] & (whiteKing | blackKing))
-                | (getRookAttacks(index, all) & ((whiteRooks & blackRooks) | (whiteQueens | blackQueens)))
-                | (getBishopAttacks(index, all) & ((whiteBishops & blackBishops) | (whiteQueens | blackQueens)));
+                | (getRookAttacks(index, all) & ((whiteRooks | blackRooks) | (whiteQueens | blackQueens)))
+                | (getBishopAttacks(index, all) & ((whiteBishops | blackBishops) | (whiteQueens | blackQueens)));
     }
     protected final int getColumnOfIndex(int index) {
         return 7 - index & 7;

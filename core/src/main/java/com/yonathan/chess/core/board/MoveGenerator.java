@@ -38,7 +38,7 @@ public interface MoveGenerator {
     public boolean isWhiteToMove();
 
     //Pieces
-    public char getPieceAt(int loc);
+    public char getPieceAt(long square);
 
     public long getEPSquare();
 
