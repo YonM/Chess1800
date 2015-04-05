@@ -37,20 +37,22 @@ public class AI2 extends PVS {
             return quiescenceSearch(nodeType, ply, alpha, beta);
         }
 
-        // Draw check, evaluate the board if so to check if it's a draw.
+        /*// Draw check, evaluate the board if so to check if it's a draw.
         int drawCheck = board.isDraw();
         if (drawCheck != Chessboard.NOT_ENDED) {
             follow_pv = false;
             return Evaluator.DRAWSCORE;
+        }*/
+
+        int endGameCheck = board.isEndOfGame();
+        if (endGameCheck != Chessboard.NOT_ENDED) {
+            follow_pv = false;
+            if (endGameCheck != Chessboard.WHITE_WIN && endGameCheck != Chessboard.BLACK_WIN)
+                return Evaluator.DRAWSCORE; //if draw
+            return -Evaluator.CHECKMATE + ply - 1; //if checkmate
         }
 
-        /*// Mate distance pruning
-        alpha = Math.max(valueMatedIn(distanceToInitialPly), alpha);
-        beta = Math.min(valueMateIn(distanceToInitialPly + 1), beta);
-        if(alpha>=beta) return alpha;*/
-
-        int score= -Evaluator.CHECKMATE;
-        int bestMove =Move.EMPTY;
+        int score;
         // Try Null move
         if (nullAllowed()) {
             null_allowed = false;
@@ -66,6 +68,7 @@ public class AI2 extends PVS {
         null_allowed = true;
         int movesFound = 0;
         int hashMove=0;
+        int j;
         int[] nonCaptures = new int[MoveGenerator.MAX_MOVES * 2];
         int[] nonCapturesScores = new int[MoveGenerator.MAX_MOVES * 2];
         int[] captures = new int[MoveGenerator.MAX_MOVES * 2];
@@ -81,12 +84,6 @@ public class AI2 extends PVS {
         int generationState = PHASE_GOOD_CAPTURES_AND_PROMOS;
         while(generationState < PHASE_END) {
             switch (generationState) {
-                case PHASE_HASH:
-                    generationState++;
-                    if (hashMove != Move.EMPTY) {
-                        move = hashMove;
-                        break;
-                    }
                 case PHASE_GOOD_CAPTURES_AND_PROMOS:
                     capturesCount = board.generateCaptures(captures, 0, hashMove);
                     for (int i = 0; i < capturesCount; i++) {
@@ -144,17 +141,35 @@ public class AI2 extends PVS {
                             score = -PVS(NODE_PV, ply + 1, depth - 1, -beta, -alpha); //Better move found, normal alpha-beta.
                         }
                     }
+                    if (score > alpha) {
+                        if (score >= beta) {
+                            if(!Move.isCapture(move) && !Move.isPromotion(move)) {
+                                if (board.isWhiteToMove())
+                                    whiteHeuristics[Move.getFromIndex(move)][Move.getToIndex(move)] += depth * depth;
+                                else
+                                    blackHeuristics[Move.getFromIndex(move)][Move.getToIndex(move)] += depth * depth;
+                            }
+                            return score;
+                        }
+                        alpha= score;
+                        triangularArray[ply][ply] = move; //save the move
+                        for (j = ply + 1; j < triangularLength[ply + 1]; j++)
+                            triangularArray[ply][j] = triangularArray[ply + 1][j]; //appends latest best PV from deeper plies
+
+                        triangularLength[ply] = triangularLength[ply + 1];
+                        if (ply == 0) rememberPV();
+                    }
                     board.unmakeMove();
                 }
             }else break; //no more moves
         }//end while loop
 
         if (board.getFiftyMove() >= 100) return Evaluator.DRAWSCORE;                 //Fifty-move rule
-
+/*
         if (movesFound == 0){
             if(board.isCheck()) return -Evaluator.CHECKMATE +ply-1;
             return Evaluator.DRAWSCORE;
-        }
+        }*/
         return alpha; //Fail Hard
     }
 
