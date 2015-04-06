@@ -80,7 +80,6 @@ public abstract class PVS extends AbstractSearch {
                 break;
             }
 
-
             if (VERBOSE)
                 System.out.println("(" + currentDepth + ") "
                         + ((System.currentTimeMillis() - startTime) / 1000.0) + "s ("

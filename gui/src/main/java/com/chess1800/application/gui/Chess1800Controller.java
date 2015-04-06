@@ -47,13 +47,13 @@ public class Chess1800Controller implements SearchObserver, ActionListener, Mous
             view.unHighlight();
             userToMove = true;
             model.stop();
-            while(model.isSearching()){
-                try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e1) {
-                    e1.printStackTrace();
-                }
-            }
+//            while(model.isSearching()){
+//                try {
+//                    Thread.sleep(10);
+//                } catch (InterruptedException e1) {
+//                    e1.printStackTrace();
+//                }
+//            }
             model.startPosition();
             checkUserToMove();
         } else if ("back".equals(e.getActionCommand())) {
