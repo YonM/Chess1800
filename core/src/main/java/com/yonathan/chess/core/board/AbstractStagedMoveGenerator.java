@@ -7,7 +7,7 @@ import org.apache.commons.lang3.ArrayUtils;
  * Created by Yonathan on 01/04/2015.
  * Staged Move Generator based largely off of Alberto Ruibal's Carballo (Source @ https://githucom/albertoruibal/carballo/) and Mediocre Chess by Jonatan Pettersson (Source @ http://sourceforge.net/projects/mediocrechess/).
  */
-public abstract class MoveStagedGenerator extends AbstractBitboardMoveGenC implements MoveGenerator{
+public abstract class AbstractStagedMoveGenerator extends AbstractBitboardMoveGenerator implements MoveGenerator{
     private int captureIndex;
     private int nonCaptureIndex;
     private int ttMove=0;

@@ -8,7 +8,7 @@ import org.junit.Test;
 /**
  * Created by Yonathan on 05/04/2015.
  */
-public class BT2450EloTest extends EPDTest {
+public class BTEloTest extends EPDTest {
 
     Bitboard b;
     Search search;
@@ -19,6 +19,16 @@ public class BT2450EloTest extends EPDTest {
         long time = processEPDFile(this.getClass().getResourceAsStream("/BT2450.epd"), 15 * 60 * 1000);
         double timeSeconds = time/1000;
         double elo = 2450- timeSeconds /30;
+        System.out.println("AI 1 BT 2450 Elo = " + elo);
+    }
+
+    @Test
+    public void testBT2630AI1(){
+        b= new Bitboard();
+        search = new AI1(b);
+        long time = processEPDFile(this.getClass().getResourceAsStream("/BT2630.epd"), 15 * 60 * 1000);
+        double timeSeconds = time/1000;
+        double elo = 2630- timeSeconds /30;
         System.out.println("AI 1 BT 2450 Elo = " + elo);
     }
 }

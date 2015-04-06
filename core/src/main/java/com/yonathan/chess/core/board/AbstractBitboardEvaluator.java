@@ -15,7 +15,7 @@ package com.yonathan.chess.core.board;
  * Scores calculated from white perspective and then returns the score from the perspective
  * of the side to move.
  */
-public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator implements Evaluator {
+public abstract class AbstractBitboardEvaluator extends AbstractStagedMoveGenerator implements Evaluator {
 
     private static final boolean VERBOSE = false;
     private static final int TEMPO_BONUS = 10;

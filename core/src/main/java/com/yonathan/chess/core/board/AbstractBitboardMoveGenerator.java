@@ -8,7 +8,7 @@ import com.yonathan.chess.core.move.Move;
 /**
  * Created by Yonathan on 21/03/2015.
  */
-public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAttacks implements MoveGenerator {
+public abstract class AbstractBitboardMoveGenerator extends AbstractBitboardMagicAttacks implements MoveGenerator {
 
     private int[] moves;
     private int moveIndex;
