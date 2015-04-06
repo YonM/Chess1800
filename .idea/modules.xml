@@ -2,7 +2,10 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Chess1800.iml" filepath="$PROJECT_DIR$/Chess1800.iml" />
+      <module fileurl="file://$PROJECT_DIR$//Chess1800.iml" filepath="$PROJECT_DIR$//Chess1800.iml" />
+      <module fileurl="file://$PROJECT_DIR$/core/core.iml" filepath="$PROJECT_DIR$/core/core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/gui/gui.iml" filepath="$PROJECT_DIR$/gui/gui.iml" />
+      <module fileurl="file://$PROJECT_DIR$/uci/uci.iml" filepath="$PROJECT_DIR$/uci/uci.iml" />
     </modules>
   </component>
 </project>
