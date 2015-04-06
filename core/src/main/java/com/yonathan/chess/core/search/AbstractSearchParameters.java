@@ -17,7 +17,7 @@ public abstract class AbstractSearchParameters implements SearchParameters {
     protected int depth = Integer.MAX_VALUE;
     // Search only this number of nodes
     protected int nodes = Integer.MAX_VALUE;
-
+    protected int thinkToDepth;
     // Search movetime seconds
     protected int moveTime = Integer.MAX_VALUE;
 
@@ -91,6 +91,7 @@ public abstract class AbstractSearchParameters implements SearchParameters {
         else timeForMove = moveTime;
         if (depth != Integer.MAX_VALUE) useFixedDepth = true;
         else useFixedDepth = false;
+        thinkToDepth=depth;
         //nextTimeCheck = TIME_CHECK_INTERVAL;
     }
 

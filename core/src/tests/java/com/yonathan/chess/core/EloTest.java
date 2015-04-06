@@ -27,140 +27,21 @@ public class EloTest extends TestCase {
     Chessboard b;
     Search search;
 
-    int solved;
-    int fails;
-    int total;
-    int totalTime;
-    long totalNodes;
-    int lctPoints;
-
-    int avoidMoves[];
-    int bestMoves[];
-    boolean solutionFound;
-
-    int bestMove;
-    int solutionTime;
-    long solutionNodes;
-
-    ArrayList<Integer> allSolutionTimes;
-    ArrayList<Long> allSolutionNodes;
 
 
-    @Test
-    public void testBT2450AI1(){
-        b= new Bitboard();
-        search = new AI1(b);
-        long time = processEPDFile(this.getClass().getResourceAsStream("/BT2450.epd"), 2 * 60 * 1000);
-        double timeSeconds = time/1000;
-        double elo = 2450- timeSeconds /30;
-        System.out.println("AI 1 BT 2450 Elo = " + elo);
-    }
 
-    @Test
-    public void testBratkoKopec(){
-        b= new Bitboard();
-        search = new AI1(b);
-        long time = processEPDFile(this.getClass().getResourceAsStream("/bratko-kopec.epd"), 15 * 60 * 1000);
-        double timeSeconds = time/1000;
-        double elo = 2450- timeSeconds /30;
-        System.out.println("Bratko-Kopec Elo = " + elo);
-    }
-    @Test
+   /* @Test
     public void testBT2450AI2(){
         b= new Bitboard();
         search = new AI2(b);
         long time = processEPDFile(this.getClass().getResourceAsStream("/BT2450.epd"), 2 * 60 * 1000);
         double timeSeconds = time/1000;
         double elo = 2450- timeSeconds /30;
-        System.out.println("AI 1 BT 2450 Elo = " + elo);
-    }
+        System.out.println("AI 2 BT 2450 Elo = " + elo);
+    }*/
 
 
-    private long processEPDFile(InputStream is, int timeLimit) {
-        solved = 0;
-        total = 0;
-        totalTime = 0;
-        lctPoints = 0;
-        StringBuilder notSolved = new StringBuilder();
-        //goes through all positions
-        BufferedReader br = new BufferedReader(new InputStreamReader(is));
-        try {
-            String line;
-            while ((line = br.readLine()) != null) {
-                //logger.debug("Test = " + line);
 
-                int i0 = line.indexOf(" am ");
-                int i1 = line.indexOf(" bm ");
-                if (i0 < 0 || i1 < i0) {
-                    i0 = i1;
-                }
-
-                int i2 = line.indexOf(";", i1 + 4);
-                String fen="";
-                int timeSolved = testPosition(fen, line.substring(0, i0), line.substring(i1 + 4, i2), timeLimit);
-                totalTime += timeSolved;
-
-                /*
-                *   * 30 points, if solution is found between 0 and 9 seconds
-                *   * 25 points, if solution is found between 10 and 29 seconds
-                *   * 20 points, if solution is found between 30 and 89 seconds
-                *   * 15 points, if solution is found between 90 and 209 seconds
-                *   * 10 points, if solution is found between 210 and 389 seconds
-                *   * 5 points, if solution is found between 390 and 600 seconds
-                *   * 0 points, if not found with in 10 minutes
-                */
-                if (timeSolved < timeLimit) {
-                    if (0 <= timeSolved && timeSolved < 10000) {
-                        lctPoints += 30;
-                    } else if (10000 <= timeSolved && timeSolved < 30000) {
-                        lctPoints += 25;
-                    } else if (30000 <= timeSolved && timeSolved < 90000) {
-                        lctPoints += 20;
-                    } else if (90000 <= timeSolved && timeSolved < 210000) {
-                        lctPoints += 15;
-                    } else if (210000 <= timeSolved && timeSolved < 390000) {
-                        lctPoints += 10;
-                    } else if (390000 <= timeSolved && timeSolved < 600000) {
-                        lctPoints += 5;
-                    }
-                } else {
-                    notSolved.append(line);
-                    notSolved.append("\n");
-                }
-            }
-        }catch (IOException e){
-
-        }
-        fails=total-solved;
-        return totalTime;
-    }
-
-    private int testPosition(String fen, String avoidMovesString, String bestMovesString, int timeLimit) {
-        bestMove = 0;
-        solutionFound = false;
-
-        search.getBoard().initializeFromFEN(fen);
-        //avoidMoves = parseMoves(avoidMovesString);
-        if (avoidMovesString != null) {
-        }
-        //bestMoves = parseMoves(bestMovesString);
-        if (bestMovesString != null) {
-        }
-
-        search.resetMoveTime(timeLimit);
-        search.go();
-
-        if (solutionFound) {
-            totalNodes += solutionNodes;
-            allSolutionNodes.add(solutionNodes);
-            allSolutionTimes.add(solutionTime);
-            return solutionTime;
-        } else {
-            //allSolutionNodes.add(search.getNodes());
-            allSolutionTimes.add(timeLimit);
-            return timeLimit;
-        }
-    }
 
     public void testElo() {
         int elo1 = 1000;
@@ -389,7 +270,7 @@ public class EloTest extends TestCase {
         search.getBoard().initializeFromFEN(fen);
         search.resetMoveTime(5 * 60000); // five minutes
         search.go();
-        String move = Move.toString(1,search.getBoard());
+        String move = Move.toString(search.getGlobalBestMove(),search.getBoard());
         System.out.println("result = " + move);
         return move;
     }

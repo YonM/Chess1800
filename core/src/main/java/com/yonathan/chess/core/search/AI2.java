@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 /**
  * Created by Yonathan on 02/03/2015.
- * PVS with Fail Hard.
+ * PVS with Fail Hard. The class was unsuccessful, Not working. TODO select PV move from PV array first.
  */
 public class AI2 extends PVS {
 

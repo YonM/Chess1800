@@ -21,11 +21,12 @@ public class AI1 extends PVS {
         triangularLength[ply] = ply;
         // Check if time is up
         if (!useFixedDepth) {
-
             if (System.currentTimeMillis() - startTime > timeForMove && moveFound && nodeType != NODE_ROOT) {
                 System.out.println(" i hit my limit");
                 finishRun();
             }
+        }else{
+            System.out.println("somehow fixed depth");
         }
 
         if (depthRemaining <= 0) {
@@ -48,7 +49,7 @@ public class AI1 extends PVS {
             score = -PVS(NODE_NULL, ply, depthRemaining - NULLMOVE_REDUCTION, -beta, -beta + 1);
             board.unmakeMove();
             null_allowed = true;
-            if (score >= beta) return score; //Fail Soft
+            if (score >= beta) return beta; //Fail Hard
         }
         null_allowed = true;
         int movesFound = 0;
@@ -101,7 +102,7 @@ public class AI1 extends PVS {
                 blackHeuristics[Move.getFromIndex(triangularArray[ply][ply])][Move.getToIndex(triangularArray[ply][ply])] += depthRemaining * depthRemaining;
         }
         if (board.getFiftyMove() >= 100) return Evaluator.DRAWSCORE; //Fifty-move rule
-        return alpha; //Fail Soft
+        return alpha; //Fail Hard
     }
 
     protected int quiescenceSearch(int nodeType, int ply, int alpha, int beta) throws SearchRunException {
@@ -112,7 +113,7 @@ public class AI1 extends PVS {
         int bestScore;
         bestScore = board.eval();
         if (bestScore >= beta) {
-            return bestScore;
+            return beta; //fail hard
         }
         if (bestScore > alpha) alpha = bestScore;
 
@@ -149,7 +150,7 @@ public class AI1 extends PVS {
                     score = -quiescenceSearch(nodeType, ply + 1, -beta, -alpha);
                     board.unmakeMove();
                     if (score > alpha) {
-                        if (score >= beta) return score;
+                        if (score >= beta) return beta;
 
 
                         alpha = score;
@@ -165,7 +166,7 @@ public class AI1 extends PVS {
                 }
             }else break;
         }
-        return bestScore; //Fail Soft
+        return alpha; //Fail Hard
     }
     private int sortMoves(int[] moves, int arrayLength, int[] moveScores) {
         if(arrayLength == 0){

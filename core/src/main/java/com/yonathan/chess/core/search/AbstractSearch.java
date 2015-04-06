@@ -5,10 +5,9 @@ import com.yonathan.chess.core.board.Chessboard;
 /**
  * Created by Yonathan on 24/03/2015.
  */
-public abstract class AbstractSearch extends AbstractSearchInfo implements Search, Runnable {
+public abstract class AbstractSearch extends AbstractSearchInfo implements Search {
     protected boolean searching;
     protected boolean initialized;
-    protected Thread thread;
     protected static Chessboard board;
 
     protected boolean stopSearch;
@@ -44,25 +43,17 @@ public abstract class AbstractSearch extends AbstractSearchInfo implements Searc
         if (!isSearching()) {
             try {
                 setupRun();
-                thread = new Thread(this);
-                thread.start();
+                run();
             } catch (Exception e) {
 
             }
         }
     }
 
-    public final void stop() {
+    public void stop() {
         timeForMove = 0;
-        depth = 0;
+        thinkToDepth = 0;
         stopSearch = true;
-        while (isSearching()) {
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException e) {
-
-            }
-        }
     }
 
     protected abstract void setupRun();

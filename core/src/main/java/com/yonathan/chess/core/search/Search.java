@@ -18,6 +18,7 @@ public interface Search extends Runnable, SearchInfo {
     public void stop();
 
     public long getGlobalBestMoveTime();
+    public int getGlobalBestMove();
 
     //Null move + Late Move Reduction related
     public static final int LATEMOVE_THRESHOLD = 4;

@@ -3,7 +3,7 @@ package com.yonathan.chess.core.search;
 import com.yonathan.chess.core.board.Chessboard;
 import com.yonathan.chess.core.board.Evaluator;
 import com.yonathan.chess.core.move.Move;
-import com.yonathan.chess.core.transposition_table.TranspositionTable;
+//import com.yonathan.chess.core.transposition_table.TranspositionTable;
 
 /**
  * Created by Yonathan on 21/12/2014.
@@ -49,6 +49,7 @@ public abstract class PVS extends AbstractSearch {
     protected boolean follow_pv;
     protected boolean null_allowed;
     protected static final boolean VERBOSE = true;
+
     //protected TranspositionTable transpositionTable;
 
 
@@ -92,7 +93,7 @@ public abstract class PVS extends AbstractSearch {
                 currentDepth = MAX_DEPTH;
             }
             if (moveFound) {
-                if (currentDepth == depth){
+                if (currentDepth >= thinkToDepth){
                     break;
                 }
 
@@ -275,6 +276,11 @@ public abstract class PVS extends AbstractSearch {
     @Override
     public final long getGlobalBestMoveTime() {
         return globalBestMoveTime;
+    }
+
+    @Override
+    public int getGlobalBestMove(){
+        return globalBestMove;
     }
 
 
