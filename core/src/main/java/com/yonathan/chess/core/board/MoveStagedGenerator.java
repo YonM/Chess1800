@@ -1,6 +1,7 @@
 package com.yonathan.chess.core.board;
 
 import com.yonathan.chess.core.move.Move;
+import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * Created by Yonathan on 01/04/2015.
@@ -11,12 +12,15 @@ public abstract class MoveStagedGenerator extends AbstractBitboardMoveGenC imple
     private int nonCaptureIndex;
     private int ttMove=0;
     // Move generation phases
-    private int[] captures = new int[Bitboard.MAX_MOVES*2];
-    private int[] nonCaptures = new int[Bitboard.MAX_MOVES*2]; // Stores non captures and underpromotions
+    private int[] captures;
+    private int[] captureScores;
+    private int[] nonCaptures; // Stores non captures and underpromotions
 
     private long all;
     private long mines;
     private long others;
+    private final int QUEEN_PROMOTION = 875; //975-100 (queen value - pawn value)
+
 
     public int generateCaptures(int[] moves, int startIndex, int ttMove) {
         this.ttMove = ttMove;
@@ -57,6 +61,24 @@ public abstract class MoveStagedGenerator extends AbstractBitboardMoveGenC imple
         }
         return captureIndex-startIndex;
     }
+
+    public int genCaptures(int[] moves){
+        captureScores = new int[MAX_MOVES*2];
+        generateCaptures(moves,0,0);
+        for (int i = 0; i < captureIndex; i++) {
+            int val=captureScores[i];
+            if(val<MINCAPTVAL){
+                moves= ArrayUtils.remove(moves, i);
+                captureScores=ArrayUtils.remove(captureScores,i);
+                captureIndex--;
+                i--;
+                continue;
+            }
+        }
+        sortCaptures(captureScores,moves,captureIndex);
+        return captureIndex;
+    }
+
     public int generateNonCaptures(int[] moves, int startIndex, int ttMove) {
         this.ttMove = ttMove;
         this.nonCaptures= moves;
@@ -158,7 +180,7 @@ public abstract class MoveStagedGenerator extends AbstractBitboardMoveGenC imple
         int toIndex= square2Index(to);
         int tempMove = Move.genMove(fromIndex, toIndex, pieceMoved, capture, moveType);
         if (tempMove==ttMove) return;
-        if (capture || moveType == Move.TYPE_PROMOTION_QUEEN) captures[captureIndex++]=tempMove;
+        if (capture || moveType == Move.TYPE_PROMOTION_QUEEN) captures[captureIndex++] = tempMove;
         else nonCaptures[nonCaptureIndex++] = tempMove;
 
     }

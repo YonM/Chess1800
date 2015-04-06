@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="Chess1800.jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/Chess1800_jar</output-path>
+    <root id="archive" name="uci.jar">
+      <element id="module-output" name="uci" />
+      <element id="module-output" name="core" />
+      <element id="library" level="module" name="commons-lang3-3.3.2" module-name="core" />
+    </root>
+  </artifact>
+</component>

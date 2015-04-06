@@ -2,10 +2,7 @@ package com.chess1800.chess.uci;
 
 import com.yonathan.chess.core.board.Bitboard;
 import com.yonathan.chess.core.move.Move;
-import com.yonathan.chess.core.search.AbstractSearchInfo;
-import com.yonathan.chess.core.search.AI1;
-import com.yonathan.chess.core.search.Search;
-import com.yonathan.chess.core.search.SearchObserver;
+import com.yonathan.chess.core.search.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -23,7 +20,7 @@ public class UCI implements SearchObserver {
 
 
     public UCI (){
-        search = new AI1(new Bitboard());
+        search = new AI1Threaded(new Bitboard());
         search.setObserver(this);
     }
 

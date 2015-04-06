@@ -22,11 +22,9 @@ public class AI1 extends PVS {
         // Check if time is up
         if (!useFixedDepth) {
             if (System.currentTimeMillis() - startTime > timeForMove && moveFound && nodeType != NODE_ROOT) {
-                System.out.println(" i hit my limit");
                 finishRun();
             }
         }else{
-            System.out.println("somehow fixed depth");
         }
 
         if (depthRemaining <= 0) {
@@ -107,66 +105,48 @@ public class AI1 extends PVS {
 
     protected int quiescenceSearch(int nodeType, int ply, int alpha, int beta) throws SearchRunException {
         triangularLength[ply] = ply;
+
         //Check if we are in check.
         if (board.isCheck()) return PVS(nodeType, ply, 1, alpha, beta);
+
+
         //Standing pat
         int bestScore;
         bestScore = board.eval();
         if (bestScore >= beta) {
-            return beta; //fail hard
+            return bestScore;
         }
         if (bestScore > alpha) alpha = bestScore;
 
-        int hashMove =0;
         // generate captures & promotions:
-        // generateCaptures returns a sorted move list
-        int [] captures = new int[MoveGenerator.MAX_MOVES];
-        int [] goodCapturesScores= new int [MoveGenerator.MAX_MOVES];
-        int [] goodCaptures = new int [MoveGenerator.MAX_MOVES];
-        int move=Move.EMPTY;
-        int captureCount= board.generateCaptures(captures,0,hashMove);
-        int goodCaptureCount=0;
-        for(int i =0; i<captureCount; i++){
-            int sEEScore= board.sEE(captures[i]);
-            if(sEEScore>=1){
-                goodCaptures[goodCaptureCount] = captures[i];
-                goodCapturesScores[goodCaptureCount++] = sEEScore;
-            }
-        }
+        // genCaptures gives a sorted move list
+        int[] captures = new int[MoveGenerator.MAX_MOVES*2];
+        int num_captures = board.genCaptures(captures);
+
         int score;
-        int generationState = PHASE_GOOD_CAPTURES_AND_PROMOS;
-        while(generationState < PHASE_END){
-            switch(generationState){
-                case PHASE_GOOD_CAPTURES_AND_PROMOS:
-                    move=sortMoves(goodCaptures,goodCaptureCount, goodCapturesScores);
-                    if(move != Move.EMPTY){
-                        break;
+        for (int i = 0; i < num_captures; i++) {
+            if (board.makeMove(captures[i])) {
+                score = -quiescenceSearch(nodeType, ply + 1, -beta, -alpha);
+                board.unmakeMove();
+                if (score > alpha) {
+                    if (score >= beta) {
+                        //Fail Soft
+                        return score;
                     }
-                    generationState=PHASE_END;
-                    break;
-            }
-            if (move != Move.EMPTY) {
-                if (board.makeMove(move)) {
-                    score = -quiescenceSearch(nodeType, ply + 1, -beta, -alpha);
-                    board.unmakeMove();
-                    if (score > alpha) {
-                        if (score >= beta) return beta;
 
-
-                        alpha = score;
-
-                        triangularArray[ply][ply] = move; //save the move
+                    alpha = score;
+                    if (score > bestScore) {
+                        bestScore = score;
+                        triangularArray[ply][ply] = captures[i]; //save the best capture
                         for (int j = ply + 1; j < triangularLength[ply + 1]; j++) {
                             triangularArray[ply][j] = triangularArray[ply + 1][j];
                         }
                         triangularLength[ply] = triangularLength[ply + 1];
-
                     }
-
                 }
-            }else break;
+            }
         }
-        return alpha; //Fail Hard
+        return bestScore;  //Fail Soft
     }
     private int sortMoves(int[] moves, int arrayLength, int[] moveScores) {
         if(arrayLength == 0){

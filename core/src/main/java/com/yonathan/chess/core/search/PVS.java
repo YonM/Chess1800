@@ -39,7 +39,7 @@ public abstract class PVS extends AbstractSearch {
 
     protected int[][] triangularArray;
     protected int[] triangularLength;
-    protected final int MAX_DEPTH = 16;
+    protected final int MAX_DEPTH = Integer.MAX_VALUE;
 
 
     protected SearchObserver observer;
@@ -208,12 +208,9 @@ public abstract class PVS extends AbstractSearch {
 
     @Override
     protected void finishRun() throws SearchRunException {
-        System.out.println("do i get here?");
         board.unmakeMove(initialPly);
         searching = false;
-        if(globalBestMove!= lastPV[0]) System.out.println("best move discrepancy");
         if (observer != null) {
-            System.out.println("sent best move");
             observer.bestMove(globalBestMove);
         }
         if (VERBOSE) displaySearchStats();

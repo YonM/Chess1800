@@ -203,7 +203,6 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
         int[] captureValues = new int[MAX_MOVES];
         int num_captures = getAllCaptures(captures);
         int val;
-        int insertIndex;
         for (int i = 0; i < num_captures; i++) {
             val = sEE(captures[i]);
             captureValues[i] = val;
@@ -214,7 +213,6 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
                 i--;
                 continue;
             }
-            insertIndex = i;
 
         }
         sortCaptures(captureValues, captures, num_captures);
@@ -222,7 +220,7 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
     }
 
 
-    private int getAllCaptures(int[] captures) {
+    protected int getAllCaptures(int[] captures) {
         int lastIndex = getAllMoves(captures);
         int num_captures = 0;
         for (int i = 0; i < lastIndex; i++) {
@@ -233,7 +231,7 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
 
     }
 
-    private void sortCaptures(int[] captureValues, int[] captures, int num_captures) {
+    protected void sortCaptures(int[] captureValues, int[] captures, int num_captures) {
         //Insertion sort of captures.
         for (int i = 1; i < num_captures; i++) {
             int tempVal = captureValues[i];
