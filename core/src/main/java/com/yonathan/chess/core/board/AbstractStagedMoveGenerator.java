@@ -44,7 +44,7 @@ public abstract class AbstractStagedMoveGenerator extends AbstractBitboardMoveGe
                 } else if ((square & (whiteKnights | blackKnights)) != 0) { // Knight
                     generateMovesFromAttacks(Move.KNIGHT, index, knight[index] & others, true);
                 } else if ((square & (whitePawns | blackPawns)) != 0) { // Pawns
-                    if(isWhiteToMove())
+                    if(whiteToMove)
                         generatePawnCapturesOrGoodPromos(index,
                                 (others | ePSquare) & whitePawn[index]//
                                         | (((square & b2_u) != 0) && (((square << 8) & all) == 0) ? (square << 8) : 0), // Pushes only if promotion
@@ -66,13 +66,17 @@ public abstract class AbstractStagedMoveGenerator extends AbstractBitboardMoveGe
         captureScores = new int[MAX_MOVES*2];
         generateCaptures(moves,0,0);
         for (int i = 0; i < captureIndex; i++) {
-            int val=captureScores[i];
-            if(val<MINCAPTVAL){
-                moves= ArrayUtils.remove(moves, i);
-                captureScores=ArrayUtils.remove(captureScores,i);
-                captureIndex--;
-                i--;
-                continue;
+            if(!Move.isCapture(moves[i])) captureScores[i] = QUEEN_PROMOTION;
+            else {
+                int val = sEE(moves[i]);
+                captureScores[i] = val;
+                if (val < MINCAPTVAL) {
+                    moves = ArrayUtils.remove(moves, i);
+                    captureScores = ArrayUtils.remove(captureScores, i);
+                    captureIndex--;
+                    i--;
+                    continue;
+                }
             }
         }
         sortCaptures(captureScores,moves,captureIndex);
@@ -102,7 +106,7 @@ public abstract class AbstractStagedMoveGenerator extends AbstractBitboardMoveGe
                     generateMovesFromAttacks(Move.KNIGHT, index, knight[index] & ~all, false);
                 }
                 else if ((square & (whitePawns | blackPawns)) != 0) { // Pawns excluding the already generated promos
-                    if (isWhiteToMove()) {
+                    if (whiteToMove) {
                         generatePawnNonCapturesAndBadPromos(index, (((square << 8) & all) == 0 ? (square << 8) : 0) //if the square ahead is empty, add pawn push square
                                 | ((square & b2_d) != 0 && (((square << 8) | (square << 16)) & all) == 0 ? (square << 16) : 0)); //if the square ahead and 2nd square ahead is empty, add pawn double push square and we are in the second rank.
                     } else {

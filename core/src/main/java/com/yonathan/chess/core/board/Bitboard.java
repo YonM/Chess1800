@@ -165,10 +165,10 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
             // 50mr
             if(arr.size() >12) {
                 fiftyMove = Integer.parseInt(arr.get(11));
-                fiftyMove = (fiftyMove > 0 ? fiftyMove <<1  + (whiteToMove ? 0 : 1) : fiftyMove); //Convert from Moves to Ply.
+                //fiftyMove = (fiftyMove > 0 ? fiftyMove <<1  + (whiteToMove ? 0 : 1) : fiftyMove); //Convert from Moves to Ply.
                 // move number
                 moveNumber = Integer.parseInt(arr.get(12));
-                moveNumber = ((moveNumber > 0 ? moveNumber - 1 : moveNumber) << 1 + (whiteToMove ? 0 : 1));//Convert from Moves to Ply. (Left Shifted by 1 means double the value. +1 if black to move.)
+                //moveNumber = ((moveNumber > 1 ? (moveNumber - 1) << 1 : moveNumber)  + (whiteToMove ? 0 : 1));//Convert from Moves to Ply. (Left Shifted by 1 == double the value. +1 if black to move.)
             }else{
                 fiftyMove = 0;
                 moveNumber = 1;
@@ -217,7 +217,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
             i >>>= 1;
         }
         sb.append(" ");
-        sb.append(isWhiteToMove()? "w" : "b");
+        sb.append(whiteToMove? "w" : "b");
         sb.append(" ");
         boolean castleAvailable=false;
         if ((castleWhite & CANCASTLEOO)!=0) {

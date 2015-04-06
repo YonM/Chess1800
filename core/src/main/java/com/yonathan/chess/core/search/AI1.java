@@ -126,6 +126,7 @@ public class AI1 extends PVS {
         int score;
         for (int i = 0; i < num_captures; i++) {
             if (board.makeMove(captures[i])) {
+                nodes++;
                 score = -quiescenceSearch(nodeType, ply + 1, -beta, -alpha);
                 board.unmakeMove();
                 if (score > alpha) {

@@ -35,7 +35,7 @@ public abstract class AbstractBitboardMagicAttacks{
     protected long allPieces;
 
     protected static final long A8 = 0x8000000000000000L;
-    protected static final long H1 = 0x0000000000000001L; // AbstractBitboardMagicAttacks uses H1=0 A8=63
+    protected static final long H1 = 0x0000000000000001L; // Mapping -> H1=0 A8=63
     protected static final long WHITE_SQUARES = 0xaa55aa55aa55aa55L;
     protected static final long BLACK_SQUARES = 0x55aa55aa55aa55aaL;
     // Board borders

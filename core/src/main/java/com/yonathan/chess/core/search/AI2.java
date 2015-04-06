@@ -87,14 +87,20 @@ public class AI2 extends PVS {
             switch (generationState) {
                 case PHASE_GEN_CAPTURES:
                     capturesCount = board.generateCaptures(captures, 0, hashMove);
+                    System.out.println("captures count: " + capturesCount);
+                    System.out.flush();
                     generationState++;
                 case PHASE_GOOD_CAPTURES_AND_PROMOS:
                     for (int i = 0; i < capturesCount; i++) {
-                        int sEEScore = board.sEE(captures[i]);
                         if (Move.isUnderPromotion(captures[i])) {
+                            if(nonCapturesCount>=1024)System.out.println(nonCapturesCount);
                             nonCaptures[nonCapturesCount] = captures[i];
                             nonCapturesScores[nonCapturesCount++] = SCORE_UNDERPROMOTION;
-                        } else if (sEEScore >= 0) {
+                            continue;
+                        }
+                        int sEEScore = board.sEE(captures[i]);
+
+                        if (sEEScore >= 0) {
                             goodCaptures[goodCaptureCount] = captures[i];
                             goodCapturesScores[goodCaptureCount++] = sEEScore;
                         } else {
@@ -229,6 +235,7 @@ public class AI2 extends PVS {
             }
             if (move != Move.EMPTY) {
                 if (board.makeMove(move)) {
+                    nodes++;
                     score = -quiescenceSearch(nodeType, ply + 1, -beta, -alpha);
                     board.unmakeMove();
                     if (score > alpha) {
@@ -296,9 +303,9 @@ public class AI2 extends PVS {
         int bestScore = SCORE_LOWEST;
         int bestIndex = -1;
         for (int i =0 ; i< arrayLength ; i++){
-            if(moves[i] > bestScore){
+            if(moveScores[i] > bestScore){
                 bestScore = moveScores[i];
-                bestIndex =i;
+                bestIndex = i;
             }
         }
         if (bestIndex != -1) {

@@ -4,7 +4,7 @@ import com.yonathan.chess.core.board.Bitboard;
 
 import com.yonathan.chess.core.board.MoveGenerator;
 import com.yonathan.chess.core.move.Move;
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -100,7 +100,7 @@ public class Perft {
 
     }
     @Test
-    public void sortPerft(){
+    public void stagedPerft(){
         moveCount = new long[DEPTH];
         captures = new long[DEPTH];
         passantCaptures = new long[DEPTH];

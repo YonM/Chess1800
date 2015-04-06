@@ -60,12 +60,12 @@ public class Chess1800View extends JFrame{
         label = new JLabel("Engine");
         control.add(label);
 
-        comboOpponent = new JComboBox(opponentString);
+        comboOpponent = new JComboBox<>(opponentString);
         comboOpponent.setActionCommand("opponent");
         control.add(comboOpponent);
 
 
-        comboTime = new JComboBox(timeString);
+        comboTime = new JComboBox<>(timeString);
         comboTime.setActionCommand("time");
         control.add(comboTime);
 
