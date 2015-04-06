@@ -36,6 +36,5 @@ public interface Search extends Runnable, SearchInfo {
 
     public boolean isSearching();
 
-    public int getMoveScore(int move);
 
 }

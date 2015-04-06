@@ -13,7 +13,7 @@ import java.util.StringTokenizer;
  * and Ulysse Carion's Godot @ https://github.com/ucarion/godot
  * and Alberto Alonso Ruibal's Carballo @ https://github.com/albertoruibal/carballo
  */
-public class Board extends AbstractBitboardEvaluator implements Bitboard {
+public class Board extends AbstractBitboardEvaluator implements Chessboard {
 
     protected int moveNumber;
 
@@ -635,7 +635,7 @@ public class Board extends AbstractBitboardEvaluator implements Bitboard {
             if(isCheck()){
                 endGame= whiteToMove? BLACK_WIN : WHITE_WIN;
             }else{
-                endGame=isDraw();
+                endGame=DRAW_BY_STALEMATE;
             }
         else endGame=isDraw();
 
@@ -716,7 +716,7 @@ public class Board extends AbstractBitboardEvaluator implements Bitboard {
     }
 
     public boolean isCheck() {
-        return isSquareAttacked((whiteKing | blackKing)& getMyPieces(), whiteToMove? true : false);
+        return isSquareAttacked((whiteKing | blackKing)& getMyPieces(), whiteToMove);
     }
 
     public int movingSideMaterial() {
@@ -1271,63 +1271,6 @@ public class Board extends AbstractBitboardEvaluator implements Bitboard {
         return sb.toString();
     }
 
-    @Override
-    public long getWhitePawns() {
-        return whitePawns;
-    }
 
-    @Override
-    public long getBlackPawns() {
-        return blackPawns;
-    }
 
-    @Override
-    public long getWhiteKnights() {
-        return whiteKnights;
-    }
-
-    @Override
-    public long getBlackKnights() {
-        return blackKnights;
-    }
-
-    @Override
-    public long getWhiteBishops() {
-        return whiteBishops;
-    }
-
-    @Override
-    public long getBlackBishops() {
-        return blackBishops;
-    }
-
-    @Override
-    public long getWhiteRooks() {
-        return whiteRooks;
-    }
-
-    @Override
-    public long getBlackRooks() {
-        return blackRooks;
-    }
-
-    @Override
-    public long getWhiteQueens() {
-        return whiteQueens;
-    }
-
-    @Override
-    public long getBlackQueens() {
-        return blackQueens;
-    }
-
-    @Override
-    public long getWhiteKing() {
-        return whiteKing;
-    }
-
-    @Override
-    public long getBlackKing() {
-        return blackKing;
-    }
 }

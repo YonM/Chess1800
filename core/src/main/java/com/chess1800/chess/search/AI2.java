@@ -16,13 +16,13 @@ import java.util.ArrayList;
  */
 /**
  * Created by Yonathan on 02/03/2015.
- * PVS with Fail Hard.
+ * PVS.
  */
-public class PVSHard extends PVS {
+public class AI2 extends PVS {
 
 
 
-    public PVSHard(Chessboard b) {
+    public AI2(Chessboard b) {
         super(b);
     }
 

@@ -4,7 +4,7 @@ import com.chess1800.chess.board.Board;
 import com.chess1800.chess.board.Chessboard;
 import junit.framework.TestCase;
 import org.junit.Test;
-import com.chess1800.chess.search.PVSHard;
+import com.chess1800.chess.search.AI2;
 import com.chess1800.chess.search.Search;
 
 
@@ -33,7 +33,7 @@ public class EloTest extends TestCase {
     @Test
     public void testBT2450(){
         b= new Board();
-        search = new PVSHard(b);
+        search = new AI2(b);
 
         long time = processEPDFile(this.getClass().getResourceAsStream("/BT2450.epd"), 2 * 60 * 1000);
         double timeSeconds = time/1000;
@@ -44,7 +44,7 @@ public class EloTest extends TestCase {
     @Test
     public void testBratkoKopec(){
         b= new Board();
-        search = new PVSHard(b);
+        search = new AI2(b);
         long time = processEPDFile(this.getClass().getResourceAsStream("/bratko-kopec.epd"), 15 * 60 * 1000);
         double timeSeconds = time/1000;
         double elo = 2450- timeSeconds /30;

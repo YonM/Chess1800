@@ -3,8 +3,8 @@ package com.chess1800.chess.application.gui;
 import com.chess1800.chess.board.Chessboard;
 import com.chess1800.chess.board.Board;
 import com.chess1800.chess.board.MoveGenerator;
-import com.chess1800.chess.search.PVSHard;
-import com.chess1800.chess.search.PVSSoft;
+import com.chess1800.chess.search.AI2;
+import com.chess1800.chess.search.AI1;
 import com.chess1800.chess.search.Search;
 import com.chess1800.chess.move.Move;
 
@@ -23,8 +23,8 @@ public class BoardModel extends Observable {
     public BoardModel(Chessboard b, BoardView view) {
         this.b=b;
         this.view=view;
-        searchSoft = new PVSSoft(this.b);
-        searchHard = new PVSHard(this.b);
+        searchSoft = new AI1(this.b);
+        searchHard = new AI2(this.b);
     }
     public void makeMove(int move) {
         if (b.getMoveNumber() % 2 == 0)

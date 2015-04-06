@@ -96,12 +96,12 @@ public abstract class PVS extends AbstractSearch {
             }
 
 
-            if (currentDepth<=6)
-//                System.out.println("(" + currentDepth + ") "
-//                        + ((System.currentTimeMillis() - startTime) / 1000.0) + "s ("
-//                        + Move.toString(lastPV[0], board) + ") -- " + nodes
-//                        + " nodes evaluated.");
-                    notifyMoveFound(globalBestMove, globalBestScore);
+            if (VERBOSE)
+                System.out.println("(" + currentDepth + ") "
+                        + ((System.currentTimeMillis() - startTime) / 1000.0) + "s ("
+                        + Move.toString(lastPV[0], board) + ") -- " + nodes
+                        + " nodes evaluated.");
+
             // stop searching if the current depth leads to a forced mate:
             if ((rootScore > (Chessboard.CHECKMATE - currentDepth)) || (rootScore < -(Chessboard.CHECKMATE - currentDepth))) {
                 if (VERBOSE) System.out.println("cut search, mate inbound");
@@ -292,11 +292,6 @@ public abstract class PVS extends AbstractSearch {
         return globalBestMoveTime;
     }
 
-    @Override
-    public final int getMoveScore(int move){
-        if (board.isWhiteToMove()) return whiteHeuristics[Move.getFromIndex(move)][Move.getToIndex(move)];
-        return blackHeuristics[Move.getFromIndex(move)][Move.getToIndex(move)];
-    }
 
 
 }

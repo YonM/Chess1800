@@ -29,9 +29,10 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
     private final int BONUS_PAWN_SHIELD_STRONG = 9;
     private final int BONUS_PAWN_SHIELD_WEAK = 4;
 
-    private final boolean VERBOSE=true;
+    private final boolean VERBOSE=false;
 
-
+    //TEMPO Bonus
+    private final int TEMPO = 10;
 
     //King Distance Safety
     private final int[] PAWN_OWN_DISTANCE = {0, 8, 4, 2, 0, 0, 0, 0};
@@ -269,19 +270,19 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
         for (i = 0; i < 64; i++) {
             for (square = 0; square < 64; square++) {
                 if ((PASSED_WHITE[i] & getSquare[square]) != 0)
-                    PASSED_BLACK[63-i] |= getSquare[63-square];
+                    PASSED_BLACK[i^56] |= getSquare[square^56];
 
                 if ((ISOLATED_WHITE[i] & getSquare[square]) != 0)
-                    ISOLATED_BLACK[63-i] |= getSquare[63-square];
+                    ISOLATED_BLACK[i^56] |= getSquare[square^56];
 
                 if ((BACKWARD_WHITE[i] & getSquare[square]) != 0)
-                    BACKWARD_BLACK[63-i] |= getSquare[63-square];
+                    BACKWARD_BLACK[i^56] |= getSquare[square^56];
 
                 if ((STRONG_SAFE_WHITE[i] & getSquare[square]) != 0)
-                    STRONG_SAFE_BLACK[63-i] |= getSquare[63-square];
+                    STRONG_SAFE_BLACK[i^56] |= getSquare[square^56];
 
                 if ((WEAK_SAFE_WHITE[i] & getSquare[square]) != 0)
-                    WEAK_SAFE_BLACK[63-i] |= getSquare[63-square];
+                    WEAK_SAFE_BLACK[i^56] |= getSquare[square^56];
 
             }
         }
@@ -298,7 +299,7 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
 
 
     public static int getIndexFromBoard(long board) {
-        return (square2Index(Long.lowestOneBit(board)));
+        return (Long.numberOfTrailingZeros(Long.lowestOneBit(board)));
     }
 
     public static int getLastIndexFromBoard(long board) {
@@ -329,8 +330,13 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
 
         //Test for end game if white or black total material less than the value of a Rook+ Queen.
         endGame = (whitePieceMaterial() < (QUEEN_VALUE + ROOK_VALUE) || blackPieceMaterial() < (QUEEN_VALUE + ROOK_VALUE));
+        if(!endGame){
+            score+= whiteToMove? TEMPO : -TEMPO;
+            if (VERBOSE) System.out.println("Tempo: " + (whiteToMove? TEMPO: -TEMPO));
+        }
         if (VERBOSE)
             System.out.println("End game: " + endGame);
+
 
         /* Evaluate material. Winning side will prefer to exchange pieces.
         *  Add 3 centipawns to score for exchange with unequal material
@@ -388,11 +394,11 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
         while (temp != 0) {
             squareIndex = getIndexFromBoard(temp);
             score += PAWN_VALUE;
-            score += PAWN_POS_B[63- squareIndex];
+            score += PAWN_POS_B[56^squareIndex];
             score += PAWN_OPPONENT_DISTANCE[DISTANCE[squareIndex][blackKingIndex]];
             if (VERBOSE) {
                 System.out.println("Pawn on " + index2Algebraic(squareIndex) + ":");
-                System.out.println("\tPSQ: " + PAWN_POS_B[63 - squareIndex]);
+                System.out.println("\tPSQ: " + PAWN_POS_B[56^ squareIndex]);
                 System.out.println(("\tOpp king safety: "
                         + PAWN_OPPONENT_DISTANCE[DISTANCE[squareIndex][blackKingIndex]]));
             }
@@ -492,13 +498,13 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
         while (temp != 0) {
             squareIndex = getIndexFromBoard(temp);
             score += KNIGHT_VALUE;
-            score += KNIGHT_POS_B[63- squareIndex];
+            score += KNIGHT_POS_B[56^squareIndex];
             score += KNIGHT_DISTANCE[DISTANCE[squareIndex][blackKingIndex]];
 
             temp ^= getSquare[squareIndex];
             if (VERBOSE) {
                 System.out.println("Knight on " + index2Algebraic(squareIndex) + ":");
-                System.out.println("\tPSQ: " + KNIGHT_POS_B[63- squareIndex]);
+                System.out.println("\tPSQ: " + KNIGHT_POS_B[56^ squareIndex]);
                 System.out.println("\tKing safety: " + KNIGHT_DISTANCE[DISTANCE[squareIndex][blackKingIndex]]);
             }
         }
@@ -530,12 +536,12 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
         while (temp != 0) {
             squareIndex = getIndexFromBoard(temp);
             score += BISHOP_VALUE;
-            score += BISHOP_POS_B[63- squareIndex];
+            score += BISHOP_POS_B[56^ squareIndex];
             score += BISHOP_DISTANCE[DISTANCE[squareIndex][blackKingIndex]];
             temp ^= getSquare[squareIndex];
             if (VERBOSE) {
                 System.out.println("Bishop on " + index2Algebraic(squareIndex) + ":");
-                System.out.println("\tPSQ: " + BISHOP_POS_B[63- squareIndex]);
+                System.out.println("\tPSQ: " + BISHOP_POS_B[56^ squareIndex]);
                 System.out.println("\tKing safety: " + BISHOP_DISTANCE[DISTANCE[squareIndex][blackKingIndex]]);
             }
         }
@@ -568,11 +574,11 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
         while (temp != 0) {
             squareIndex = getIndexFromBoard(temp);
             score += ROOK_VALUE;
-            score += ROOK_POS_B[63- squareIndex];
+            score += ROOK_POS_B[56^squareIndex];
             score += ROOK_DISTANCE[DISTANCE[squareIndex][blackKingIndex]];
             if (VERBOSE) {
                 System.out.println("Rook on " + index2Algebraic(squareIndex) + ":");
-                System.out.println("\tPSQ: " + ROOK_POS_B[63- squareIndex]);
+                System.out.println("\tPSQ: " + ROOK_POS_B[56^ squareIndex]);
                 System.out.println("\tKing safety: " + ROOK_DISTANCE[DISTANCE[squareIndex][blackKingIndex]]);
             }
             if ((COLUMN[getColumnOfIndex(squareIndex)] & whitePassedPawns) != 0)
@@ -608,11 +614,12 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
                 System.out.println("\tPSQ: " + ROOK_POS_B[squareIndex]);
                 System.out.println("\tKing safety: " + ROOK_DISTANCE[DISTANCE[squareIndex][whiteKingIndex]]);
             }
-            if ((COLUMN[getColumnOfIndex(squareIndex)] & blackPassedPawns) != 0)
+            if ((COLUMN[getColumnOfIndex(squareIndex)] & blackPassedPawns) != 0) {
                 if (squareIndex < getLastIndexFromBoard((getColumn(squareIndex) & blackPassedPawns)))
                     score -= BONUS_ROOK_BEHIND_PASSED_PAWN;
                 if (VERBOSE)
-                System.out.println("\tBehind passed: " + BONUS_ROOK_BEHIND_PASSED_PAWN);
+                    System.out.println("\tBehind passed: " + BONUS_ROOK_BEHIND_PASSED_PAWN);
+            }
             if ((COLUMN[getColumnOfIndex(squareIndex)] & whitePawns) == 0) {
                 score -= BONUS_ROOK_ON_OPEN_FILE;
                 if (VERBOSE)
@@ -632,12 +639,12 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
         while (temp != 0) {
             squareIndex = getIndexFromBoard(temp);
             score += QUEEN_VALUE;
-            score += QUEEN_POS_B[63- squareIndex];
+            score += QUEEN_POS_B[56^ squareIndex];
             score += QUEEN_DISTANCE[DISTANCE[squareIndex][blackKingIndex]];
             temp ^= getSquare[squareIndex];
             if (VERBOSE) {
                 System.out.println("Queen on " + index2Algebraic(squareIndex) + ":");
-                System.out.println("\tPSQ: " + QUEEN_POS_B[63- squareIndex]);
+                System.out.println("\tPSQ: " + QUEEN_POS_B[56^ squareIndex]);
                 System.out.println("\tKing safety: " + QUEEN_DISTANCE[DISTANCE[squareIndex][blackKingIndex]]);
             }
         }
@@ -667,13 +674,13 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
 
     private void evaluateWhiteKing() {
         if (endGame) {
-            score += KING_POS_ENDGAME_B[63- whiteKingIndex];
+            score += KING_POS_ENDGAME_B[56^ whiteKingIndex];
             if (VERBOSE) {
                 System.out.println("King on " + index2Algebraic(whiteKingIndex) + ":");
-                System.out.println("\tPSQ: " + KING_POS_ENDGAME_B[63- whiteKingIndex]);
+                System.out.println("\tPSQ: " + KING_POS_ENDGAME_B[56^ whiteKingIndex]);
             }
         } else {
-            score += KING_POS_B[63- whiteKingIndex];
+            score += KING_POS_B[56^whiteKingIndex];
             //Not end-game so add pawn shield bonus
             //Strong pawn shield bonus if pawns are close to the king
             score += BONUS_PAWN_SHIELD_STRONG * Long.bitCount((STRONG_SAFE_WHITE[whiteKingIndex] & whitePawns));
@@ -682,7 +689,7 @@ public abstract class AbstractBitboardEvaluator extends MoveStagedGenerator impl
             score += BONUS_PAWN_SHIELD_WEAK * Long.bitCount((WEAK_SAFE_WHITE[whiteKingIndex] & whitePawns));
             if (VERBOSE) {
                 System.out.println("King on " + index2Algebraic(whiteKingIndex) + ":");
-                System.out.println("\tPSQ: " + KING_POS_ENDGAME_B[63- whiteKingIndex]);
+                System.out.println("\tPSQ: " + KING_POS_ENDGAME_B[56^ whiteKingIndex]);
                 System.out.println("\tStrong shield: " + BONUS_PAWN_SHIELD_STRONG
                         * Long.bitCount(STRONG_SAFE_WHITE[whiteKingIndex] & whitePawns));
                 System.out.println("\tWeak shield: " + BONUS_PAWN_SHIELD_WEAK

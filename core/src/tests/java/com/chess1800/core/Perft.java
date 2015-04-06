@@ -147,7 +147,7 @@ public class Perft {
 //            moveList.add(moves[i]);
 //        }
 
-        b.genMoves(Move.EMPTY);
+
         Integer move;
         long count = 0;
         int moves[] = new int[MoveGenerator.MAX_MOVES*4];

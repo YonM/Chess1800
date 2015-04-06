@@ -10,15 +10,13 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
 
     protected int[] moves;
     private int moveIndex;
-    private long all;
-    private long mines;
     private long others;
 
 
     protected boolean whiteToMove;
     protected int castleWhite;
     protected int castleBlack;
-    protected int ePSquare;
+    protected long ePSquare;
 
 
     //For SEE & Quiescence Search
@@ -37,8 +35,8 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
     public int getAllMoves(int[] moves) {
         this.moves = moves;
         moveIndex=0;
-        all = getAllPieces();
-        mines = getMyPieces();
+        long all = getAllPieces();
+        long mines = getMyPieces();
         others = getOpponentPieces();
 
         int index = 0;
@@ -198,7 +196,6 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
         int[] captureValues = new int[MAX_MOVES];
         int num_captures = getAllCaptures(captures);
         int val;
-        int insertIndex;
         for(int i = 0; i < num_captures; i++){
             val = sEE(captures[i]);
             captureValues[i] = val;
@@ -209,7 +206,6 @@ public abstract class AbstractBitboardMoveGenC extends AbstractBitboardMagicAtta
                 i--;
                 continue;
             }
-            insertIndex = i;
 
         }
         sortCaptures(captureValues,captures,num_captures);
