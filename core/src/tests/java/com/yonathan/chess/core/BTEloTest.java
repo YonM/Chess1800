@@ -29,6 +29,6 @@ public class BTEloTest extends EPDTest {
         long time = processEPDFile(this.getClass().getResourceAsStream("/BT2630.epd"), 15 * 60 * 1000);
         double timeSeconds = time/1000;
         double elo = 2630- timeSeconds /30;
-        System.out.println("AI 1 BT 2450 Elo = " + elo);
+        System.out.println("AI 1 BT 2630 Elo = " + elo);
     }
 }

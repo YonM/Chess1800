@@ -48,7 +48,7 @@ public abstract class PVS extends AbstractSearch {
     protected int[] lastPV;
     protected boolean follow_pv;
     protected boolean null_allowed;
-    protected static final boolean VERBOSE = true;
+    protected static final boolean VERBOSE = false;
 
     //protected TranspositionTable transpositionTable;
 

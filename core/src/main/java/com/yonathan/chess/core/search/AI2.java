@@ -88,6 +88,7 @@ public class AI2 extends PVS {
                 case PHASE_GEN_CAPTURES:
                     capturesCount = board.generateCaptures(captures, 0, hashMove);
                     System.out.println("captures count: " + capturesCount);
+                    System.out.println(captures[0]);
                     System.out.flush();
                     generationState++;
                 case PHASE_GOOD_CAPTURES_AND_PROMOS:
@@ -135,6 +136,7 @@ public class AI2 extends PVS {
                     if (move != Move.EMPTY) break;
                     else generationState++;
                     move = Move.EMPTY;
+                    break;
 
 
             }
@@ -232,6 +234,8 @@ public class AI2 extends PVS {
                         break;
                     }
                     generationState=PHASE_END;
+                    move = Move.EMPTY;
+                    break;
             }
             if (move != Move.EMPTY) {
                 if (board.makeMove(move)) {

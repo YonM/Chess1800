@@ -315,7 +315,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         if (move != 0) {
             if ((fromBoard & getMyPieces()) == 0) {
                 System.out.println("Not my move: " + move);
-                System.out.println("not my piece");
+                //System.out.println("not my piece");
                 return false;
             }
             if (capture) {
@@ -1014,12 +1014,12 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
         return true;
     }
 
+    @Override
     public final int getMoveFromString(String move, boolean legalityCheck) {
         int fromIndex;
         int toIndex;
         int moveType = 0;
         int pieceMoved = 0;
-
         // Ignore checks & captures indicators
         move = move.replace("+", "").replace("x", "").replace("-", "").replace("=", "").replace("#", "").replaceAll(" ", "").replaceAll("0", "o")
                 .replaceAll("O", "o");
@@ -1027,10 +1027,10 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
 
         //castling move check
         if ("ooo".equalsIgnoreCase(move)) {
-            if (isWhiteToMove()) move = "e1c1";
+            if (whiteToMove) move = "e1c1";
             else move = "e8c8";
         } else if ("oo".equalsIgnoreCase(move)) {
-            if (isWhiteToMove()) move = "e1g1";
+            if (whiteToMove) move = "e1g1";
             else move = "e8g8";
         }
 
@@ -1058,7 +1058,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
 
         //To is always the last 2 characters.
         toIndex = algebraic2Index(move.substring(move.length() - 2, move.length()));
-        long toBoard = 0X1L << toIndex;
+        long toBoard = H1 << toIndex;
         long fromBoard = 0;
 
         // Fills from with a mask of possible from values... may need to disambiguate, if it's not a pawn move.
@@ -1152,7 +1152,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
                 pieceMoved = Move.QUEEN;
             else if ((myFrom & (whiteKing | blackKing)) != 0) {
                 pieceMoved = Move.KING;
-                if (fromIndex == 4 || fromIndex == 4 + (8 * 7)) {
+                if (fromIndex == 3 || fromIndex == 59) {
                     if (toIndex == (fromIndex + 2))
                         moveType = Move.TYPE_QUEENSIDE_CASTLING;
                     if (toIndex == (fromIndex - 2))
@@ -1176,7 +1176,7 @@ public class Bitboard extends AbstractBitboardEvaluator implements Chessboard {
 
         }
 
-        return 1;
+        return -1;
 
     }
 

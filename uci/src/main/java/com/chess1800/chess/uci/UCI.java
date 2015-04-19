@@ -1,6 +1,7 @@
 package com.chess1800.chess.uci;
 
 import com.yonathan.chess.core.board.Bitboard;
+import com.yonathan.chess.core.board.Chessboard;
 import com.yonathan.chess.core.move.Move;
 import com.yonathan.chess.core.search.*;
 
@@ -17,10 +18,11 @@ public class UCI implements SearchObserver {
     static final String AUTHOR = "Yonathan Maalo";
 
     Search search;
-
+    Chessboard board;
 
     public UCI (){
-        search = new AI1Threaded(new Bitboard());
+        board = new Bitboard();
+        search = new AI1Threaded(board);
         search.setObserver(this);
     }
 
@@ -72,12 +74,12 @@ public class UCI implements SearchObserver {
                 } else if ("stop".equals(command))
                     search.stop();
                 else if ("ucinewgame".equals(command))
-                    search.getBoard().initialize();
+                    board.initialize();
                 else if ("position".equals(command)) {
                     if (index < tokens.length) {
                         String arg = tokens[index++];
                         if ("startpos".equals(arg)) {
-                            search.getBoard().initialize();
+                            board.initialize();
                         } else if ("fen".equals(arg)) {
                             // FEN string may have spaces
                             StringBuilder fenSb = new StringBuilder();
@@ -90,15 +92,15 @@ public class UCI implements SearchObserver {
                                     fenSb.append(" ");
                                 }
                             }
-                            search.getBoard().initializeFromFEN(fenSb.toString());
+                            board.initializeFromFEN(fenSb.toString());
                         }
                     }
                     if (index < tokens.length) {
                         String arg1 = tokens[index++];
                         if ("moves".equals(arg1)) {
                             while (index < tokens.length) {
-                                int move = search.getBoard().getMoveFromString(tokens[index++], true);
-                                search.getBoard().makeMove(move);
+                                int move = board.getMoveFromString(tokens[index++], true);
+                                board.makeMove(move);
                             }
                         }
                     }

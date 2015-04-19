@@ -15,9 +15,9 @@ import java.io.InputStreamReader;
  * Created by Yonathan on 06/04/2015.
  */
 public class EPDTest {
-    int solved;
-    int fails;
-    int total;
+    protected int solved;
+    protected int fails;
+    protected int total;
     long totalTime;
     long totalNodes;
     int lctPoints;
@@ -51,8 +51,8 @@ public class EPDTest {
                 }
 
                 int i2 = line.indexOf(";", i1 + 4);
-                System.out.println("fen "+line.substring(0, i0));
-                System.out.println("move "+line.substring(i1 + 4, i2));
+//                System.out.println("fen "+line.substring(0, i0));
+ //               System.out.println("move "+line.substring(i1 + 4, i2));
                 long timeSolved = testPosition(line.substring(0, i0), line.substring(i1 + 4, i2), timeLimit);
                 totalTime += timeSolved;
 
@@ -83,6 +83,11 @@ public class EPDTest {
                     notSolved.append(line);
                     notSolved.append("\n");
                 }
+
+                total++;
+                if (timeSolved < timeLimit) {
+                    solved++;
+                }
             }
         }catch (IOException e){
 
@@ -98,20 +103,20 @@ public class EPDTest {
         if(search.getBoard().initializeFromFEN(fen)){
             String moveStringArray[] = moveString.split(" ");
             int moves[] = new int[moveStringArray.length];
-            //System.out.println("move string: " +moveStringArray[0] + " Int: "+ board.getMoveFromString(moveStringArray[0], true));
+            System.out.println("move string: " +moveStringArray[0]);
             for(int i=0; i<moves.length; i++){
-                moves[i] = board.getMoveFromString(moveStringArray[i], true);
+                moves[i] = search.getBoard().getMoveFromString(moveStringArray[i], true);
             }
             boolean found = false;
-            int moveFound=1;
+            int moveFound;
             for(int move: moves){
                 search.resetMoveTime(timeLimit);
                 search.go();
                 moveFound= search.getGlobalBestMove();
-                //System.out.println("best move: " +move + " Found move: " + moveFound);
+                System.out.println("best move: " +move + " Found move: " + moveFound);
                 if(move==moveFound){
                     long moveTime=search.getGlobalBestMoveTime();
-                    if(moveTime>timeLimit){
+                    if(moveTime>timeLimit){ //enforce limit
                         moveTime=timeLimit;
                     }
                     time+=moveTime;

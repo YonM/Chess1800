@@ -38,6 +38,7 @@ public class Chess1800View extends JFrame{
 
 
     public Chess1800View() throws HeadlessException {
+        this.setTitle("Chess 1800");
         control = new JPanel();
         control.setLayout(new GridLayout(17,1));
         setSize(800, 800);

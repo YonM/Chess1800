@@ -11,6 +11,7 @@ package com.yonathan.chess.core.board;
  * -Piece Square Tables including bonus for Rooking being on open file or behind a passed pawn.
  * -King protection by own pawns in the opening and mid-game and away from enemy pieces.
  * -King positional bonus/penalty different in end game, must be central and near his own pawns.
+ * -Bonus for moving side, if not endgame. (TEMPO)
  *
  * Scores calculated from white perspective and then returns the score from the perspective
  * of the side to move.
@@ -301,32 +302,34 @@ public abstract class AbstractBitboardEvaluator extends AbstractStagedMoveGenera
             score += PAWN_VALUE;
             score += PAWN_POS_B[squareIndex^56];
             score += PAWN_OPPONENT_DISTANCE[DISTANCE[squareIndex][blackKingIndex]];
-            if (VERBOSE) {
-                System.out.println("Pawn on " + index2Algebraic(squareIndex) + ":");
-                System.out.println("\tPSQ: " + PAWN_POS_B[56^squareIndex]);
-                System.out.println(("\tOpp king safety: "
-                        + PAWN_OPPONENT_DISTANCE[DISTANCE[squareIndex][blackKingIndex]]));
-            }
+//            if (VERBOSE) {
+//                System.out.println("Pawn on " + index2Algebraic(squareIndex) + ":");
+//                System.out.println("\tPSQ: " + PAWN_POS_B[56^squareIndex]);
+//                System.out.println(("\tOpp king safety: "
+//                        + PAWN_OPPONENT_DISTANCE[DISTANCE[squareIndex][blackKingIndex]]));
+//            }
             if (endGame) {
                 score += PAWN_OWN_DISTANCE[DISTANCE[squareIndex][whiteKingIndex]];
-                if(VERBOSE) System.out.println("\tOwn king safety: " + PAWN_OWN_DISTANCE[DISTANCE[squareIndex][whiteKingIndex]]);
+//                if(VERBOSE) System.out.println("\tOwn king safety: " + PAWN_OWN_DISTANCE[DISTANCE[squareIndex][whiteKingIndex]]);
             }
             //Passed pawn bonus
             if ((PASSED_WHITE[squareIndex] & blackPawns) == 0) {
                 score += BONUS_PASSED_PAWN;
                 whitePassedPawns ^= getSquare[squareIndex];
-                if (VERBOSE)
-                    System.out.println("\tPassed: " + BONUS_PASSED_PAWN);
+//                if (VERBOSE)
+//                    System.out.println("\tPassed: " + BONUS_PASSED_PAWN);
             }
             //Doubled pawn penalty
             if (((whitePawns ^ getSquare[squareIndex]) & COLUMN[getColumnOfIndex(squareIndex)]) != 0) {
                 score -= PENALTY_DOUBLED_PAWN;
-                if (VERBOSE)
-                    System.out.println("\tDoubled: -" + PENALTY_DOUBLED_PAWN);
+//                if (VERBOSE)
+//                    System.out.println("\tDoubled: -" + PENALTY_DOUBLED_PAWN);
             }
             //Isolated pawn penalty
             if ((ISOLATED_WHITE[squareIndex] & whitePawns) == 0) {
                 score -= PENALTY_ISOLATED_PAWN;
+//                if (VERBOSE)
+//                    System.out.println("\tIsolated: " + PENALTY_ISOLATED_PAWN);
             } else {
                 /* Not isolated but maybe backwards if the following are both true:
                 * 1. the next square is controlled by an enemy pawn
@@ -335,7 +338,7 @@ public abstract class AbstractBitboardEvaluator extends AbstractStagedMoveGenera
                 if ((whitePawn[squareIndex + 8] & blackPawns) != 0)
                     if ((BACKWARD_WHITE[squareIndex] & whitePawns) == 0) {
                         score -= PENALTY_BACKWARD_PAWN;
-                        if(VERBOSE) System.out.println("\tBackward: -" + PENALTY_BACKWARD_PAWN);
+//                        if(VERBOSE) System.out.println("\tBackward: -" + PENALTY_BACKWARD_PAWN);
                     }
             }
             temp ^= getSquare[squareIndex];
@@ -350,28 +353,28 @@ public abstract class AbstractBitboardEvaluator extends AbstractStagedMoveGenera
             score -= PAWN_VALUE;
             score -= PAWN_POS_B[squareIndex];
             score -= PAWN_OPPONENT_DISTANCE[DISTANCE[squareIndex][whiteKingIndex]];
-            if (VERBOSE) {
-                System.out.println("Pawn on " + index2Algebraic(squareIndex) + ":");
-                System.out.println("\tPSQ: " + PAWN_POS_B[squareIndex]);
-                System.out.println(("\tOpp king safety: "
-                        + PAWN_OPPONENT_DISTANCE[DISTANCE[squareIndex][whiteKingIndex]]));
-            }
+//            if (VERBOSE) {
+//                System.out.println("Pawn on " + index2Algebraic(squareIndex) + ":");
+//                System.out.println("\tPSQ: " + PAWN_POS_B[squareIndex]);
+//                System.out.println(("\tOpp king safety: "
+//                        + PAWN_OPPONENT_DISTANCE[DISTANCE[squareIndex][whiteKingIndex]]));
+//            }
             if (endGame) {
                 score -= PAWN_OWN_DISTANCE[DISTANCE[squareIndex][blackKingIndex]];
-                if(VERBOSE) System.out.println("\tOwn king safety: " + PAWN_OWN_DISTANCE[DISTANCE[squareIndex][blackKingIndex]]);
+//                if(VERBOSE) System.out.println("\tOwn king safety: " + PAWN_OWN_DISTANCE[DISTANCE[squareIndex][blackKingIndex]]);
             }
             //Passed pawn bonus
             if ((PASSED_BLACK[squareIndex] & whitePawns) == 0) {
                 score -= BONUS_PASSED_PAWN;
                 blackPassedPawns ^= getSquare[squareIndex];
-                if (VERBOSE)
-                    System.out.println("\tPassed: " + BONUS_PASSED_PAWN);
+//                if (VERBOSE)
+//                    System.out.println("\tPassed: " + BONUS_PASSED_PAWN);
             }
             //Doubled pawn penalty
             if (((blackPawns ^ getSquare[squareIndex]) & COLUMN[getColumnOfIndex(squareIndex)]) != 0) {
                 score += PENALTY_DOUBLED_PAWN;
-                if (VERBOSE)
-                    System.out.println("\tDoubled: -" + PENALTY_DOUBLED_PAWN);
+//                if (VERBOSE)
+//                    System.out.println("\tDoubled: -" + PENALTY_DOUBLED_PAWN);
             }
             //Isolated pawn penalty
             if ((ISOLATED_BLACK[squareIndex] & blackPawns) == 0) {
