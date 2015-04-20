@@ -50,7 +50,6 @@ public abstract class PVS extends AbstractSearch {
     protected boolean null_allowed;
     protected static final boolean VERBOSE = false;
 
-    //protected TranspositionTable transpositionTable;
 
 
     protected PVS(Chessboard b) {
