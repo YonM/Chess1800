@@ -1,21 +1,9 @@
 package com.yonathan.chess.core;
 
-import com.yonathan.chess.core.board.Bitboard;
 import com.yonathan.chess.core.board.Chessboard;
 import com.yonathan.chess.core.move.Move;
-import com.yonathan.chess.core.search.AI1;
-import com.yonathan.chess.core.search.AI2;
 import com.yonathan.chess.core.search.Search;
-import com.yonathan.chess.core.search.SearchParameters;
 import junit.framework.TestCase;
-import org.junit.Test;
-
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
 
 
 /**
@@ -30,15 +18,7 @@ public class EloTest extends TestCase {
 
 
 
-   /* @Test
-    public void testBT2450AI2(){
-        b= new Bitboard();
-        search = new AI2(b);
-        long time = processEPDFile(this.getClass().getResourceAsStream("/BT2450.epd"), 2 * 60 * 1000);
-        double timeSeconds = time/1000;
-        double elo = 2450- timeSeconds /30;
-        System.out.println("AI 2 BT 2450 Elo = " + elo);
-    }*/
+
 
 
 

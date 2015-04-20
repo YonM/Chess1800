@@ -8,15 +8,15 @@ import com.yonathan.chess.core.board.Chessboard;
 public abstract class AbstractSearch extends AbstractSearchInfo implements Search {
     protected boolean searching;
     protected boolean initialized;
-    protected static Chessboard board;
+    protected Chessboard board;
 
     protected boolean stopSearch;
 
     protected AbstractSearch(Chessboard board) {
         initialized = false;
-        if (AbstractSearch.board == null) {
-            AbstractSearch.board = board;
-            AbstractSearch.board.initialize();
+        if (this.board == null) {
+            this.board = board;
+            this.board.initialize();
         }
         initialized = true;
     }

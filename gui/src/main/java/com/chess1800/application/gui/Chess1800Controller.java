@@ -155,7 +155,6 @@ public class Chess1800Controller implements SearchObserver, ActionListener, Mous
     }
     private void checkUserToMove() {
         userToMove = false;
-        System.out.println(view.getGameType() + " << game type");
         switch(view.getGameType()) {
             case 0:
                 if (!model.isWhiteToMove()) userToMove = true;
@@ -174,36 +173,19 @@ public class Chess1800Controller implements SearchObserver, ActionListener, Mous
         }
         acceptInput = userToMove;
         update(!userToMove);
-        System.out.println(userToMove +" << user to move");
         if (!userToMove && (model.isEndOfGame() == Chessboard.NOT_ENDED)){
             int gameType=view.getGameType();
 
             if(gameType== 0 | gameType == 1 ){  //AI1
-                System.out.println("AI 1 called");
                 model.engine1Go();
-            }
-            else if(gameType == 2 | gameType == 3){ //AI2
-                System.out.println("AI 2 called");
-                model.engine2Go();
-                update(false);
-            }else if(gameType ==4){                 //AI1 is White vs AI2
-                if(model.isWhiteToMove()) model.engine1Go();
-                else model.engine2Go();
-                update(true);
-            }else{                                  //AI1 is Black vs AI2
-                if(!model.isWhiteToMove()) model.engine1Go();
-                else model.engine2Go();
-                update(true);
             }
         }
 
-        System.out.println("checkUserToMove... userToMove="+userToMove);
     }
 
     private void update(boolean thinking) {
         view.setFEN(model.getFEN(), flip, false);
         view.setFENText(model.getFEN());
-        System.out.println("value=" + model.eval());
         switch (model.isEndOfGame()) {
             case Chessboard.WHITE_WIN :
                 view.setMessageText("White win");
@@ -258,9 +240,6 @@ public class Chess1800Controller implements SearchObserver, ActionListener, Mous
 
     @Override
     public void bestMove(int bestMove) {
-        System.out.println("bestMove: " + bestMove);
-        System.out.println("From Index: " +  Move.getFromIndex(bestMove));
-        System.out.println("move to UCI: " + Move.toString(bestMove, model.getBoard()));
         if(userToMove) return;
         view.unHighlight();
         view.highlight(Move.getFromIndex(bestMove), Move.getToIndex(bestMove));

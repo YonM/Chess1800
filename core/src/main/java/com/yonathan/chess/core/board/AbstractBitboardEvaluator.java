@@ -140,8 +140,9 @@ public abstract class AbstractBitboardEvaluator extends AbstractStagedMoveGenera
     private final long[] BACKWARD_BLACK;
     private final long[] STRONG_SAFE_BLACK;
     private final long[] WEAK_SAFE_BLACK;
-    public AbstractBitboardEvaluator(){
+    private boolean evaluatePawnStructure;
 
+    public AbstractBitboardEvaluator(){
         //DISTANCE -distance is measured as max of (rank,file)-difference
         DISTANCE = new int[64][64];
         int square;
@@ -312,35 +313,35 @@ public abstract class AbstractBitboardEvaluator extends AbstractStagedMoveGenera
                 score += PAWN_OWN_DISTANCE[DISTANCE[squareIndex][whiteKingIndex]];
 //                if(VERBOSE) System.out.println("\tOwn king safety: " + PAWN_OWN_DISTANCE[DISTANCE[squareIndex][whiteKingIndex]]);
             }
-            //Passed pawn bonus
-            if ((PASSED_WHITE[squareIndex] & blackPawns) == 0) {
-                score += BONUS_PASSED_PAWN;
-                whitePassedPawns ^= getSquare[squareIndex];
-//                if (VERBOSE)
-//                    System.out.println("\tPassed: " + BONUS_PASSED_PAWN);
-            }
-            //Doubled pawn penalty
-            if (((whitePawns ^ getSquare[squareIndex]) & COLUMN[getColumnOfIndex(squareIndex)]) != 0) {
+                //Passed pawn bonus
+                if ((PASSED_WHITE[squareIndex] & blackPawns) == 0) {
+                    score += BONUS_PASSED_PAWN;
+                    whitePassedPawns ^= getSquare[squareIndex];
+                if (VERBOSE)
+                    System.out.println("\tPassed: " + BONUS_PASSED_PAWN);
+                }
+                //Doubled pawn penaltylumnOfIndex(squareIndex)]) != 0) {
                 score -= PENALTY_DOUBLED_PAWN;
-//                if (VERBOSE)
-//                    System.out.println("\tDoubled: -" + PENALTY_DOUBLED_PAWN);
-            }
-            //Isolated pawn penalty
-            if ((ISOLATED_WHITE[squareIndex] & whitePawns) == 0) {
-                score -= PENALTY_ISOLATED_PAWN;
-//                if (VERBOSE)
-//                    System.out.println("\tIsolated: " + PENALTY_ISOLATED_PAWN);
-            } else {
+                if (((whitePawns ^ getSquare[squareIndex]) & COLUMN[getColumnOfIndex(squareIndex)]) != 0) {
+                if (VERBOSE)
+                    System.out.println("\tDoubled: -" + PENALTY_DOUBLED_PAWN);
+                }
+                //Isolated pawn penalty
+                if ((ISOLATED_WHITE[squareIndex] & whitePawns) == 0) {
+                    score -= PENALTY_ISOLATED_PAWN;
+                if (VERBOSE)
+                    System.out.println("\tIsolated: " + PENALTY_ISOLATED_PAWN);
+                } else {
                 /* Not isolated but maybe backwards if the following are both true:
                 * 1. the next square is controlled by an enemy pawn
                 * 2. No pawns left that can defend the pawn.
                 */
-                if ((whitePawn[squareIndex + 8] & blackPawns) != 0)
-                    if ((BACKWARD_WHITE[squareIndex] & whitePawns) == 0) {
-                        score -= PENALTY_BACKWARD_PAWN;
-//                        if(VERBOSE) System.out.println("\tBackward: -" + PENALTY_BACKWARD_PAWN);
-                    }
-            }
+                    if ((whitePawn[squareIndex + 8] & blackPawns) != 0)
+                        if ((BACKWARD_WHITE[squareIndex] & whitePawns) == 0) {
+                            score -= PENALTY_BACKWARD_PAWN;
+                        if(VERBOSE) System.out.println("\tBackward: -" + PENALTY_BACKWARD_PAWN);
+                        }
+                }
             temp ^= getSquare[squareIndex];
         }
     }
@@ -353,45 +354,45 @@ public abstract class AbstractBitboardEvaluator extends AbstractStagedMoveGenera
             score -= PAWN_VALUE;
             score -= PAWN_POS_B[squareIndex];
             score -= PAWN_OPPONENT_DISTANCE[DISTANCE[squareIndex][whiteKingIndex]];
-//            if (VERBOSE) {
-//                System.out.println("Pawn on " + index2Algebraic(squareIndex) + ":");
-//                System.out.println("\tPSQ: " + PAWN_POS_B[squareIndex]);
-//                System.out.println(("\tOpp king safety: "
-//                        + PAWN_OPPONENT_DISTANCE[DISTANCE[squareIndex][whiteKingIndex]]));
-//            }
+            if (VERBOSE) {
+                System.out.println("Pawn on " + index2Algebraic(squareIndex) + ":");
+                System.out.println("\tPSQ: " + PAWN_POS_B[squareIndex]);
+                System.out.println(("\tOpp king safety: "
+                        + PAWN_OPPONENT_DISTANCE[DISTANCE[squareIndex][whiteKingIndex]]));
+            }
             if (endGame) {
                 score -= PAWN_OWN_DISTANCE[DISTANCE[squareIndex][blackKingIndex]];
-//                if(VERBOSE) System.out.println("\tOwn king safety: " + PAWN_OWN_DISTANCE[DISTANCE[squareIndex][blackKingIndex]]);
+                if(VERBOSE) System.out.println("\tOwn king safety: " + PAWN_OWN_DISTANCE[DISTANCE[squareIndex][blackKingIndex]]);
             }
-            //Passed pawn bonus
-            if ((PASSED_BLACK[squareIndex] & whitePawns) == 0) {
-                score -= BONUS_PASSED_PAWN;
-                blackPassedPawns ^= getSquare[squareIndex];
-//                if (VERBOSE)
-//                    System.out.println("\tPassed: " + BONUS_PASSED_PAWN);
-            }
-            //Doubled pawn penalty
-            if (((blackPawns ^ getSquare[squareIndex]) & COLUMN[getColumnOfIndex(squareIndex)]) != 0) {
-                score += PENALTY_DOUBLED_PAWN;
-//                if (VERBOSE)
-//                    System.out.println("\tDoubled: -" + PENALTY_DOUBLED_PAWN);
-            }
-            //Isolated pawn penalty
-            if ((ISOLATED_BLACK[squareIndex] & blackPawns) == 0) {
-                score += PENALTY_ISOLATED_PAWN;
-//                if (VERBOSE)
-//                    System.out.println("\tIsolated: " + PENALTY_ISOLATED_PAWN);
-            } else {
+                //Passed pawn bonus
+                if ((PASSED_BLACK[squareIndex] & whitePawns) == 0) {
+                    score -= BONUS_PASSED_PAWN;
+                    blackPassedPawns ^= getSquare[squareIndex];
+                if (VERBOSE)
+                    System.out.println("\tPassed: " + BONUS_PASSED_PAWN);
+                }
+                //Doubled pawn penalty
+                if (((blackPawns ^ getSquare[squareIndex]) & COLUMN[getColumnOfIndex(squareIndex)]) != 0) {
+                    score += PENALTY_DOUBLED_PAWN;
+                if (VERBOSE)
+                    System.out.println("\tDoubled: -" + PENALTY_DOUBLED_PAWN);
+                }
+                //Isolated pawn penalty
+                if ((ISOLATED_BLACK[squareIndex] & blackPawns) == 0) {
+                    score += PENALTY_ISOLATED_PAWN;
+                if (VERBOSE)
+                    System.out.println("\tIsolated: " + PENALTY_ISOLATED_PAWN);
+                } else {
             /* Not isolated but maybe backwards if the following are both true:
             * 1. the next square is controlled by an enemy pawn
             * 2. No pawns left that can defend the pawn.
             */
-                if ((blackPawn[squareIndex - 8] & whitePawns) != 0)
-                    if ((BACKWARD_BLACK[squareIndex] & blackPawns) == 0) {
-                        score += PENALTY_BACKWARD_PAWN;
-//                        if(VERBOSE) System.out.println("\tBackward: " + PENALTY_BACKWARD_PAWN);
-                    }
-            }
+                    if ((blackPawn[squareIndex - 8] & whitePawns) != 0)
+                        if ((BACKWARD_BLACK[squareIndex] & blackPawns) == 0) {
+                            score += PENALTY_BACKWARD_PAWN;
+                        if(VERBOSE) System.out.println("\tBackward: " + PENALTY_BACKWARD_PAWN);
+                        }
+                }
             temp ^= getSquare[squareIndex];
         }
     }
@@ -404,11 +405,11 @@ public abstract class AbstractBitboardEvaluator extends AbstractStagedMoveGenera
             score += KNIGHT_POS_B[squareIndex^56];
             score += KNIGHT_DISTANCE[DISTANCE[squareIndex][blackKingIndex]];
             temp ^= getSquare[squareIndex];
-//            if (VERBOSE) {
-//                System.out.println("Knight on " + index2Algebraic(squareIndex) + ":");
-//                System.out.println("\tPSQ: " + KNIGHT_POS_B[squareIndex^56]);
-//                System.out.println("\tKing safety: " + KNIGHT_DISTANCE[DISTANCE[squareIndex][blackKingIndex]]);
-//            }
+            if (VERBOSE) {
+                System.out.println("Knight on " + index2Algebraic(squareIndex) + ":");
+                System.out.println("\tPSQ: " + KNIGHT_POS_B[squareIndex^56]);
+                System.out.println("\tKing safety: " + KNIGHT_DISTANCE[DISTANCE[squareIndex][blackKingIndex]]);
+            }
         }
     }
 
@@ -420,11 +421,11 @@ public abstract class AbstractBitboardEvaluator extends AbstractStagedMoveGenera
             score -= KNIGHT_POS_B[squareIndex];
             score -= KNIGHT_DISTANCE[DISTANCE[squareIndex][whiteKingIndex]];
             temp ^= getSquare[squareIndex];
-//            if (VERBOSE) {
-//                System.out.println("Knight on " + index2Algebraic(squareIndex) + ":");
-//                System.out.println("\tPSQ: " + KNIGHT_POS_B[squareIndex]);
-//                System.out.println("\tKing safety: " + KNIGHT_DISTANCE[DISTANCE[squareIndex][whiteKingIndex]]);
-//            }
+            if (VERBOSE) {
+                System.out.println("Knight on " + index2Algebraic(squareIndex) + ":");
+                System.out.println("\tPSQ: " + KNIGHT_POS_B[squareIndex]);
+                System.out.println("\tKing safety: " + KNIGHT_DISTANCE[DISTANCE[squareIndex][whiteKingIndex]]);
+            }
         }
     }
 
@@ -440,18 +441,18 @@ public abstract class AbstractBitboardEvaluator extends AbstractStagedMoveGenera
             score += BISHOP_POS_B[squareIndex^56];
             score += BISHOP_DISTANCE[DISTANCE[squareIndex][blackKingIndex]];
             temp ^= getSquare[squareIndex];
-//            if (VERBOSE) {
-//                System.out.println("Bishop on " + index2Algebraic(squareIndex) + ":");
-//                System.out.println("\tPSQ: " + BISHOP_POS_B[squareIndex^56]);
-//                System.out.println("\tKing safety: " + BISHOP_DISTANCE[DISTANCE[squareIndex][blackKingIndex]]);
-//            }
+            if (VERBOSE) {
+                System.out.println("Bishop on " + index2Algebraic(squareIndex) + ":");
+                System.out.println("\tPSQ: " + BISHOP_POS_B[squareIndex^56]);
+                System.out.println("\tKing safety: " + BISHOP_DISTANCE[DISTANCE[squareIndex][blackKingIndex]]);
+            }
         }
     }
 
     private void evaluateBlackBishops() {
         if(blackBishopCount>1) {
             score -= BONUS_BISHOP_PAIR;
-//            if(VERBOSE) System.out.println("Bonus bishop pair (black): " + BONUS_BISHOP_PAIR);
+            if(VERBOSE) System.out.println("Bonus bishop pair (black): " + BONUS_BISHOP_PAIR);
         }
         temp = blackBishops;
         while (temp != 0) {
@@ -460,11 +461,11 @@ public abstract class AbstractBitboardEvaluator extends AbstractStagedMoveGenera
             score -= BISHOP_POS_B[squareIndex];
             score -= BISHOP_DISTANCE[DISTANCE[squareIndex][whiteKingIndex]];
             temp ^= getSquare[squareIndex];
-//            if (VERBOSE) {
-//                System.out.println("Bishop on " + index2Algebraic(squareIndex) + ":");
-//                System.out.println("\tPSQ: " + BISHOP_POS_B[squareIndex]);
-//                System.out.println("\tKing safety: " + BISHOP_DISTANCE[DISTANCE[squareIndex][whiteKingIndex]]);
-//            }
+            if (VERBOSE) {
+                System.out.println("Bishop on " + index2Algebraic(squareIndex) + ":");
+                System.out.println("\tPSQ: " + BISHOP_POS_B[squareIndex]);
+                System.out.println("\tKing safety: " + BISHOP_DISTANCE[DISTANCE[squareIndex][whiteKingIndex]]);
+            }
 
         }
     }
@@ -476,25 +477,25 @@ public abstract class AbstractBitboardEvaluator extends AbstractStagedMoveGenera
             score += ROOK_VALUE;
             score += ROOK_POS_B[squareIndex^56];
             score += ROOK_DISTANCE[DISTANCE[squareIndex][blackKingIndex]];
-//            if (VERBOSE) {
-//                System.out.println("Rook on " + index2Algebraic(squareIndex) + ":");
-//                System.out.println("\tPSQ: " + ROOK_POS_B[squareIndex^56]);
-//                System.out.println("\tKing safety: " + ROOK_DISTANCE[DISTANCE[squareIndex][blackKingIndex]]);
-//            }
+            if (VERBOSE) {
+                System.out.println("Rook on " + index2Algebraic(squareIndex) + ":");
+                System.out.println("\tPSQ: " + ROOK_POS_B[squareIndex^56]);
+                System.out.println("\tKing safety: " + ROOK_DISTANCE[DISTANCE[squareIndex][blackKingIndex]]);
+            }
             if ((COLUMN[getColumnOfIndex(squareIndex)] & whitePassedPawns) != 0)
                 if (squareIndex < getLastIndexFromBoard((COLUMN[getColumnOfIndex(squareIndex)] & whitePassedPawns))) {
                     score += BONUS_ROOK_BEHIND_PASSED_PAWN;
-//                    if (VERBOSE)
-//                        System.out.println("\tBehind passed: " + BONUS_ROOK_BEHIND_PASSED_PAWN);
+                    if (VERBOSE)
+                        System.out.println("\tBehind passed: " + BONUS_ROOK_BEHIND_PASSED_PAWN);
                 }
             if ((COLUMN[getColumnOfIndex(squareIndex)] & blackPawns) == 0) {
                 score += BONUS_ROOK_ON_OPEN_FILE;
-//                if (VERBOSE)
-//                    System.out.println("\tOpen file: " + BONUS_ROOK_ON_OPEN_FILE);
+                if (VERBOSE)
+                    System.out.println("\tOpen file: " + BONUS_ROOK_ON_OPEN_FILE);
                 if ((COLUMN[getColumnOfIndex(squareIndex)] & (whiteRooks & ~Long.lowestOneBit(temp))) != 0) {
                     score += BONUS_TWO_ROOKS_ON_OPEN_FILE;
-//                    if (VERBOSE)
-//                        System.out.println("\tTwo on open file: " + BONUS_TWO_ROOKS_ON_OPEN_FILE);
+                    if (VERBOSE)
+                        System.out.println("\tTwo on open file: " + BONUS_TWO_ROOKS_ON_OPEN_FILE);
                 }
             }
             temp ^= getSquare[squareIndex];
@@ -508,25 +509,25 @@ public abstract class AbstractBitboardEvaluator extends AbstractStagedMoveGenera
             score -= ROOK_VALUE;
             score -= ROOK_POS_B[squareIndex];
             score -= ROOK_DISTANCE[DISTANCE[squareIndex][whiteKingIndex]];
-//            if (VERBOSE) {
-//                System.out.println("Rook on " + index2Algebraic(squareIndex) + ":");
-//                System.out.println("\tPSQ: " + ROOK_POS_B[squareIndex]);
-//                System.out.println("\tKing safety: " + ROOK_DISTANCE[DISTANCE[squareIndex][whiteKingIndex]]);
-//            }
+            if (VERBOSE) {
+                System.out.println("Rook on " + index2Algebraic(squareIndex) + ":");
+                System.out.println("\tPSQ: " + ROOK_POS_B[squareIndex]);
+                System.out.println("\tKing safety: " + ROOK_DISTANCE[DISTANCE[squareIndex][whiteKingIndex]]);
+            }
             if ((COLUMN[getColumnOfIndex(squareIndex)] & blackPassedPawns) != 0)
                 if (squareIndex < getLastIndexFromBoard((getColumn(squareIndex) & blackPassedPawns))) {
                     score -= BONUS_ROOK_BEHIND_PASSED_PAWN;
-//                    if (VERBOSE)
-//                        System.out.println("\tBehind passed: " + BONUS_ROOK_BEHIND_PASSED_PAWN);
+                    if (VERBOSE)
+                        System.out.println("\tBehind passed: " + BONUS_ROOK_BEHIND_PASSED_PAWN);
                 }
             if ((COLUMN[getColumnOfIndex(squareIndex)] & whitePawns) == 0) {
                 score -= BONUS_ROOK_ON_OPEN_FILE;
-//                if (VERBOSE)
-//                    System.out.println("\tOpen file: " + BONUS_ROOK_ON_OPEN_FILE);
+                if (VERBOSE)
+                    System.out.println("\tOpen file: " + BONUS_ROOK_ON_OPEN_FILE);
                 if ((COLUMN[getColumnOfIndex(squareIndex)] & (blackRooks & ~Long.lowestOneBit(temp))) != 0) {
                     score -= BONUS_TWO_ROOKS_ON_OPEN_FILE;
-//                    if (VERBOSE)
-//                        System.out.println("\tTwo on open file: " + BONUS_TWO_ROOKS_ON_OPEN_FILE);
+                    if (VERBOSE)
+                        System.out.println("\tTwo on open file: " + BONUS_TWO_ROOKS_ON_OPEN_FILE);
                 }
             }
             temp ^= getSquare[squareIndex];
@@ -540,11 +541,11 @@ public abstract class AbstractBitboardEvaluator extends AbstractStagedMoveGenera
             score += QUEEN_POS_B[squareIndex ^56];
             score += QUEEN_DISTANCE[DISTANCE[squareIndex][blackKingIndex]];
             temp ^= getSquare[squareIndex];
-//            if (VERBOSE) {
-//                System.out.println("Queen on " + index2Algebraic(squareIndex) + ":");
-//                System.out.println("\tPSQ: " + QUEEN_POS_B[56^ squareIndex]);
-//                System.out.println("\tKing safety: " + QUEEN_DISTANCE[DISTANCE[squareIndex][blackKingIndex]]);
-//            }
+            if (VERBOSE) {
+                System.out.println("Queen on " + index2Algebraic(squareIndex) + ":");
+                System.out.println("\tPSQ: " + QUEEN_POS_B[56^ squareIndex]);
+                System.out.println("\tKing safety: " + QUEEN_DISTANCE[DISTANCE[squareIndex][blackKingIndex]]);
+            }
         }
     }
 
@@ -556,21 +557,21 @@ public abstract class AbstractBitboardEvaluator extends AbstractStagedMoveGenera
             score -= QUEEN_POS_B[squareIndex];
             score -= QUEEN_DISTANCE[DISTANCE[squareIndex][whiteKingIndex]];
             temp ^= getSquare[squareIndex];
-//            if (VERBOSE) {
-//                System.out.println("Queen on " + index2Algebraic(squareIndex) + ":");
-//                System.out.println("\tPSQ: " + QUEEN_POS_B[squareIndex]);
-//                System.out.println("\tKing safety: " + QUEEN_DISTANCE[DISTANCE[squareIndex][whiteKingIndex]]);
-//            }
+            if (VERBOSE) {
+                System.out.println("Queen on " + index2Algebraic(squareIndex) + ":");
+                System.out.println("\tPSQ: " + QUEEN_POS_B[squareIndex]);
+                System.out.println("\tKing safety: " + QUEEN_DISTANCE[DISTANCE[squareIndex][whiteKingIndex]]);
+            }
         }
     }
 
     private void evaluateWhiteKing() {
         if (endGame) {
             score += KING_POS_ENDGAME_B[whiteKingIndex ^56];
-//            if (VERBOSE) {
-//                System.out.println("King on " + index2Algebraic(whiteKingIndex) + ":");
-//                System.out.println("\tPSQ: " + KING_POS_ENDGAME_B[56^whiteKingIndex]);
-//            }
+            if (VERBOSE) {
+                System.out.println("King on " + index2Algebraic(whiteKingIndex) + ":");
+                System.out.println("\tPSQ: " + KING_POS_ENDGAME_B[56^whiteKingIndex]);
+            }
         } else {
             score += KING_POS_B[whiteKingIndex ^56];
         //Not end-game so add pawn shield bonus
@@ -578,14 +579,14 @@ public abstract class AbstractBitboardEvaluator extends AbstractStagedMoveGenera
             score += BONUS_PAWN_SHIELD_STRONG * Long.bitCount((STRONG_SAFE_WHITE[whiteKingIndex] & whitePawns));
         //Weak pawn shield bonus if pawns are not very close to the king
             score += BONUS_PAWN_SHIELD_WEAK * Long.bitCount((WEAK_SAFE_WHITE[whiteKingIndex] & whitePawns));
-//            if (VERBOSE) {
-//                System.out.println("King on " + index2Algebraic(whiteKingIndex) + ":");
-//                System.out.println("\tPSQ: " + KING_POS_ENDGAME_B[56^ whiteKingIndex]);
-//                System.out.println("\tStrong shield: " + BONUS_PAWN_SHIELD_STRONG
-//                        * Long.bitCount(STRONG_SAFE_WHITE[whiteKingIndex] & whitePawns));
-//                System.out.println("\tWeak shield: " + BONUS_PAWN_SHIELD_WEAK
-//                        * Long.bitCount(WEAK_SAFE_WHITE[whiteKingIndex] & whitePawns));
-//            }
+            if (VERBOSE) {
+                System.out.println("King on " + index2Algebraic(whiteKingIndex) + ":");
+                System.out.println("\tPSQ: " + KING_POS_ENDGAME_B[56^ whiteKingIndex]);
+                System.out.println("\tStrong shield: " + BONUS_PAWN_SHIELD_STRONG
+                        * Long.bitCount(STRONG_SAFE_WHITE[whiteKingIndex] & whitePawns));
+                System.out.println("\tWeak shield: " + BONUS_PAWN_SHIELD_WEAK
+                        * Long.bitCount(WEAK_SAFE_WHITE[whiteKingIndex] & whitePawns));
+            }
         }
     }
 
@@ -596,10 +597,10 @@ public abstract class AbstractBitboardEvaluator extends AbstractStagedMoveGenera
     private void evaluateBlackKing() {
         if (endGame) {
             score -= KING_POS_ENDGAME_B[blackKingIndex];
-//            if (VERBOSE) {
-//                System.out.println("King on " + index2Algebraic(blackKingIndex) + ":");
-//                System.out.println("\tPSQ: " + KING_POS_ENDGAME_B[whiteKingIndex]);
-//            }
+            if (VERBOSE) {
+                System.out.println("King on " + index2Algebraic(blackKingIndex) + ":");
+                System.out.println("\tPSQ: " + KING_POS_ENDGAME_B[whiteKingIndex]);
+            }
         } else {
             score -= KING_POS_B[blackKingIndex];
         //Not end-game so add pawn shield bonus
@@ -607,12 +608,12 @@ public abstract class AbstractBitboardEvaluator extends AbstractStagedMoveGenera
             score -= BONUS_PAWN_SHIELD_STRONG * Long.bitCount((STRONG_SAFE_BLACK[blackKingIndex] & blackPawns));
         //Weak pawn shield bonus if pawns are not very close to the king
             score -= BONUS_PAWN_SHIELD_WEAK * Long.bitCount((WEAK_SAFE_BLACK[blackKingIndex] & blackPawns));
-//            if (VERBOSE) {
-//                System.out.println("King on " + index2Algebraic(blackKingIndex) + ":");
-//                System.out.println("\tPSQ: " + KING_POS_ENDGAME_B[blackKingIndex]);
-//                System.out.println("\tStrong shield: " + BONUS_PAWN_SHIELD_STRONG * Long.bitCount((STRONG_SAFE_BLACK[blackKingIndex] & blackPawns)));
-//                System.out.println("\tWeak shield: " + BONUS_PAWN_SHIELD_WEAK * Long.bitCount((WEAK_SAFE_BLACK[blackKingIndex] & blackPawns)));
-//            }
+            if (VERBOSE) {
+                System.out.println("King on " + index2Algebraic(blackKingIndex) + ":");
+                System.out.println("\tPSQ: " + KING_POS_ENDGAME_B[blackKingIndex]);
+                System.out.println("\tStrong shield: " + BONUS_PAWN_SHIELD_STRONG * Long.bitCount((STRONG_SAFE_BLACK[blackKingIndex] & blackPawns)));
+                System.out.println("\tWeak shield: " + BONUS_PAWN_SHIELD_WEAK * Long.bitCount((WEAK_SAFE_BLACK[blackKingIndex] & blackPawns)));
+            }
         }
     }
 

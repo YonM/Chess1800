@@ -28,7 +28,7 @@ public class Chess1800View extends JFrame{
     int timeDefaultIndex = 0;
     JPanel global, control;
     JComboBox comboOpponent, comboTime;
-    String opponentString[] = {"AI1 Whites", "AI1 Blacks", "AI2 Whites", "AI2 Blacks", "AI 1 vs AI2", "AI2 vs A1"};
+    String opponentString[] = {"AI1 Whites", "AI1 Blacks"};
     int opponentDefaultIndex = 1;
 
     private JTextField fenField;
